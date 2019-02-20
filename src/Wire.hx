@@ -1,5 +1,6 @@
 import haxegon.*;
 import Main.*;
+import Main.Direction;
 
 /* WIRE SPRITE SHEET MAPPINGS */
 @:enum
@@ -45,72 +46,43 @@ abstract Wire_Status(Int) from Int to Int {
 	}
 }
 
-@:enum
-abstract Wire_Hover(Int) from Int to Int {
-	var none_hover   	= 0;
-	var center_hover 	= 1;
-	var up_hover 	 	= 2;
-	var down_hover 		= 3;
-	var left_hover		= 4;
-	var right_hover		= 5;
-}
-
 typedef Wire_Module = {
 	up : Wire_Status,
 	down : Wire_Status,
 	right : Wire_Status,
 	left : Wire_Status,
+	hovering: Direction,
 }
 
 
 class Wire {
 
 	public static inline function init_wire_module() : Wire_Module {
-		return { up : off, down : disabled, right : disabled, left : disabled };
+		return { up : disabled, down : disabled, right : disabled, left : disabled, hovering : NODIR };
 	}
 
 	/* INTERACTION
 	============== */
-	static var wire_width = 11;
-	static var wire_length = 26;
-
-	public static function wire_hover_status(x:Int, y:Int) {
-		var mx = Mouse.x - x;
-		var my = Mouse.y - y;
-
-		if(mx < 0 || mx >= module_side_length || my < 0 || my >= module_side_length)
-			return none_hover;
-		else if(Geom.inbox(mx, my, wire_length+1, 0, wire_width, wire_length+1))
-			return up_hover;
-		else if(Geom.inbox(mx, my, wire_length+1, wire_length+wire_width+1, wire_width, wire_length))
-			return down_hover;
-		else if(Geom.inbox(mx, my, 0, wire_length+1, wire_length+1, wire_width))
-			return left_hover;
-		else if(Geom.inbox(mx, my, wire_length+wire_width+1, wire_length+1, wire_length, wire_width))
-			return right_hover;
-		else
-			return none_hover;
-	}
-
-	public static function general_wire_hover_status(x:Int, y:Int) {
-		var mx = Mouse.x - x;
-		var my = Mouse.y - y;
-
-		if(mx < 0 || mx >= module_side_length || my < 0 || my >= module_side_length)
-			return none_hover;
-
-		var upper_right = mx >= my;
-		var lower_right = mx >= (module_side_length - my);
-
-		if(upper_right) {
-			if(lower_right)
-				return right_hover;
-			return up_hover;
+	public static function get_wire_status(wm:Wire_Module, dir:Main.Direction) {
+		return switch(dir) {
+			case UP: wm.up;
+			case DOWN: wm.down;
+			case LEFT: wm.left;
+			case RIGHT: wm.right;
+			default: disabled;
 		}
-		if(lower_right)
-			return down_hover;
-		return left_hover;
 	}
+
+	public static function set_wire_status(wm:Wire_Module, dir:Main.Direction, status:Wire_Status) {
+		switch(dir) {
+			case UP: wm.up = status;
+			case DOWN: wm.down = status;
+			case LEFT: wm.left = status;
+			case RIGHT: wm.right = status;
+			default: return;
+		}
+	}
+
 
 	/* RENDERING 
 	============ */
@@ -128,13 +100,17 @@ class Wire {
 		Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.base);
 
 		// HOVER
-		var hover = simulating ? none_hover : general_wire_hover_status(x, y);
+		var hover = wm.hovering;
+		wm.hovering = NODIR;
 
 		// CENTER
 		if(wm.up == disabled && wm.down == disabled && wm.left == disabled && wm.right == disabled) {
-			if(hover != none_hover) Gfx.imagealpha = hover_opacity_off;
-			if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.center_shadow);
-			Gfx.imagealpha = 1;
+			if(hover != NODIR) {
+				Gfx.imagealpha = hover_opacity_off;
+				Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.center_off);
+				Gfx.imagealpha = 1;
+			}
+			else if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.center_shadow);
 		}
 		else if(wm.up == pow_in || wm.down == pow_in || wm.left == pow_in || wm.right == pow_in)
 			Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.center_on);
@@ -143,10 +119,10 @@ class Wire {
 			// If sum of wire_statuses == -3 then 3 are disabled and 1 is off
 			if(
 			(wm.up + wm.down + wm.left + wm.right) == -3 &&
-			wm.up == off && hover == up_hover ||
-			wm.down == off && hover == down_hover ||
-			wm.left == off && hover == left_hover ||
-			wm.right == off && hover == right_hover
+			wm.up == off && hover == UP ||
+			wm.down == off && hover == DOWN ||
+			wm.left == off && hover == LEFT ||
+			wm.right == off && hover == RIGHT
 			)
 				Gfx.imagealpha = hover_opacity_on;
 			Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.center_off);
@@ -155,7 +131,7 @@ class Wire {
 		// UP
 		switch(wm.up) {
 			case disabled: 	{
-				if(hover == up_hover) {
+				if(hover == UP) {
 					Gfx.imagealpha = hover_opacity_off;
 					Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.up_off);
 					Gfx.imagealpha = 1;
@@ -163,7 +139,7 @@ class Wire {
 				else if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.up_shadow);
 			}
 			case off: 		{ 
-				if(hover == up_hover)
+				if(hover == UP)
 					Gfx.imagealpha = hover_opacity_on;
 				Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.up_off);
 				Gfx.imagealpha = 1;
@@ -175,7 +151,7 @@ class Wire {
 		// DOWN
 		switch(wm.down) {
 			case disabled: 	{
-				if(hover == down_hover) {
+				if(hover == DOWN) {
 					Gfx.imagealpha = hover_opacity_off;
 					Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.down_off);
 					Gfx.imagealpha = 1;
@@ -183,7 +159,7 @@ class Wire {
 				else if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.down_shadow);
 			}
 			case off: 		{ 
-				if(hover == down_hover)
+				if(hover == DOWN)
 					Gfx.imagealpha = hover_opacity_on;
 				Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.down_off);
 				Gfx.imagealpha = 1;
@@ -195,7 +171,7 @@ class Wire {
 		// LEFT
 		switch(wm.left) {
 			case disabled: 	{
-				if(hover == left_hover) {
+				if(hover == LEFT) {
 					Gfx.imagealpha = hover_opacity_off;
 					Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.left_off);
 					Gfx.imagealpha = 1;
@@ -203,7 +179,7 @@ class Wire {
 				else if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.left_shadow);
 			}
 			case off: 		{ 
-				if(hover == left_hover)
+				if(hover == LEFT)
 					Gfx.imagealpha = hover_opacity_on;
 				Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.left_off);
 				Gfx.imagealpha = 1;
@@ -215,7 +191,7 @@ class Wire {
 		// RIGHT
 		switch(wm.right) {
 			case disabled: 	{
-				if(hover == right_hover) {
+				if(hover == RIGHT) {
 					Gfx.imagealpha = hover_opacity_off;
 					Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.right_off);
 					Gfx.imagealpha = 1;
@@ -223,7 +199,7 @@ class Wire {
 				else if(!simulating) Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.right_shadow);
 			}
 			case off: 		{ 
-				if(hover == right_hover)
+				if(hover == RIGHT)
 					Gfx.imagealpha = hover_opacity_on;
 				Gfx.drawtile(x, y, wire_sheet_name, Wire_Sheet.right_off);
 				Gfx.imagealpha = 1;
