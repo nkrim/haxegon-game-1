@@ -1,3 +1,5 @@
+/* DEPRECATED NON-OOP VERSION OF WIRE MODULE FOR PROTOTYPING */
+
 import haxegon.*;
 import Main.*;
 import Main.Direction;

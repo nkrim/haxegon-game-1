@@ -1,6 +1,7 @@
 import haxegon.*;
-import Wire.*;
-import Wire.Wire_Status.*;
+import Wire_Module.*;
+import Wire_Module.Wire_Status.*;
+import Power_Module;
 
 
 /* ENUM CLASSES */
@@ -32,31 +33,88 @@ class Main {
 	  	Text.size = 32;
 	  	Gfx.clearcolor = 0x222222;
 
-	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) Wire.init_wire_module()]];
+	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+	  	wire_grid[0][0] = new Power_Module({r:0,c:0});
+	  	wire_grid[2][0] = new Power_Module({r:2,c:0});
 
 	  	// Init sheet loading
-	  	Wire.load_wire_spritesheet();
+	  	Wire_Module.load_wire_spritesheet();
 	}
   
 	function update() {
 	  	Text.display(0, 0, "Hello, Sailor!");
 
-	  	handle_wire_drawing();
+	  	Gui.window();
+	  	if(!simulating) {
+	  		if(Gui.button("Start")) {
+	  			simulating = true;
+	  			resolution_tick = true;
+	  		}
+	  	}
+	  	else {
+	  		if(Gui.button("Stop")) {
+	  			simulating = false;
+	  			restart_modules();
+	  		}
+	  		if(Gui.button("Tick")) {
+	  			tick();
+	  		}
+	  	}
+
+	  	if(!simulating) {
+	  		handle_wire_drawing();
+	  	}
+
 	  	draw_wire_grid();
 	}
 
-	var wire_grid : Array<Array<Wire.Wire_Module>>;
+	var wire_grid : Array<Array<Wire_Module>>;
 
 	var grid_width = 8;
   	var grid_height = 8;
   	var grid_x = 100;
   	var grid_y = 100;
 
+  	var simulating = false;
+  	var resolution_tick = true; // Whether or not this is a resolution_tick or a power_tick
+
   	public static var module_side_length = 64;
   	public static var half_module_length = 32;
 
   	var outline_color = 0x52515c;
 
+
+  	/* MECHANICS
+  	============ */
+  	function tick() {
+  		// Resolution tick, just perform augmentation actions based on channel inputs
+  		if(resolution_tick) {
+  			for(row in wire_grid) {
+  				for(wm in row) {
+  					wm.resolve_tick();
+  				}
+  			}
+  		}
+  		// Power tick, spread power and do module evalutions
+  		else {
+  			for(row in wire_grid) {
+  				for(wm in row) {
+  					wm.start_power_tick(this);
+  				}
+  			}
+  		}
+
+  		// Toggle resolution_tick
+  		resolution_tick = !resolution_tick;
+  	}
+
+  	function restart_modules() {
+  		for(row in wire_grid) {
+			for(wm in row) {
+				wm.restart_module();
+			}
+		}
+  	}
 
 
   	/* INTERACTION
@@ -125,6 +183,12 @@ class Main {
 		- ^^^^ IMPLEMENT THIS LAST
 	*/
 
+	/* OTHER POTENTIAL WIRE DRAWING RULES
+	-------------------------------------
+	- Most likely alternative, is to just decide whether or not creation mode or delete mode based on starting wire
+	  and then axis-locking it. Pros: more accurate and intentional; Cons: more clicks
+	*/
+
 	var drawing_wires_initial_click = false;
   	var drawing_wires = false;
   	var drawing_backwards = false;
@@ -138,16 +202,15 @@ class Main {
 		// Reset when exiting grid
 		if(hover_cell == null) {
 			// Handle when intial click position never changed, but dragged off grid
-			if(drawing_wires_initial_click) {
+			if(drawing_wires) {
 				var wm = get_wire_from_cell(drawing_last_cell);
 				// If it was disabled, enable it
-				if(get_wire_status(wm, drawing_last_dir) == disabled)
-					set_wire_status(wm, drawing_last_dir, off);
+				if(wm.get_wire_status(drawing_last_dir) == disabled)
+					wm.set_wire_status(drawing_last_dir, off);
 				// Otherwise, if backwards, disable
 				else if(drawing_backwards)
-					set_wire_status(wm, drawing_last_dir, disabled);
-			}
-			if(drawing_wires) {
+					wm.set_wire_status(drawing_last_dir, disabled);
+				// Reset drawing_wires and initial_click vars
 				drawing_wires_initial_click = false;
 				drawing_wires = false;
 			}
@@ -169,7 +232,7 @@ class Main {
 		  	drawing_last_cell = hover_cell; 	
 		  	// If the selected wire is enabled, start by going backwards w/ no entry dir
 		  	var wm = get_wire_from_cell(hover_cell);
-		  	if(get_wire_status(wm, hover_dir) != disabled) {
+		  	if(wm.get_wire_status(hover_dir) != disabled) {
 		  		drawing_backwards = true;
 		  		drawing_entry_dir = NODIR;
 		  	}
@@ -228,13 +291,13 @@ class Main {
 							new_dir = opposite_dir(drawing_last_dir);
 						}
 						// Grab more useful vars
-						var last_dir_status = get_wire_status(last_wm, drawing_last_dir);
-						var new_dir_status = get_wire_status(new_wm, new_dir);
+						var last_dir_status = last_wm.get_wire_status(drawing_last_dir);
+						var new_dir_status = new_wm.get_wire_status(new_dir);
 						var last_enabled = last_dir_status != disabled;
 						var new_enabled = new_dir_status != disabled;
 						// If backwards, disable last dir
 						if(drawing_backwards) {
-							set_wire_status(last_wm, drawing_last_dir, disabled);
+							last_wm.set_wire_status(drawing_last_dir, disabled);
 							// If new is enabled, set entry_dir to NODIR
 							if(new_enabled)
 								drawing_entry_dir = NODIR;
@@ -248,7 +311,7 @@ class Main {
 						else if(new_enabled && drawing_last_dir == drawing_entry_dir) {
 							drawing_backwards = true;
 							if(last_enabled)
-								set_wire_status(last_wm, drawing_last_dir, disabled);
+								last_wm.set_wire_status(drawing_last_dir, disabled);
 							// Set entry_dir to NODIR
 							drawing_entry_dir = NODIR;
 						}
@@ -256,7 +319,7 @@ class Main {
 						else {
 							// If last dir was disabled, enable it
 							if(!last_enabled) {
-								set_wire_status(last_wm, drawing_last_dir, off);
+								last_wm.set_wire_status(drawing_last_dir, off);
 							}
 							// Set new entry_dir
 							drawing_entry_dir = new_dir;
@@ -278,16 +341,15 @@ class Main {
 
 		// HANDLE MOUSE RELEASE
 		if(drawing_wires && !Mouse.leftheld()) {
-			trace("Mouse release");
 			var wm = get_wire_from_cell(drawing_last_cell);
 			// If still intial click position, toggle current wire
 			if(drawing_wires_initial_click) {
-				set_wire_status(wm, drawing_last_dir, get_wire_status(wm, drawing_last_dir) == disabled ? off : disabled);
+				wm.set_wire_status(drawing_last_dir, wm.get_wire_status(drawing_last_dir) == disabled ? off : disabled);
 				drawing_wires_initial_click = false;
 			}
 			// Otherwise, if hovered wire is disabled and there is an entry dir, enable it
-			else if(drawing_entry_dir != NODIR &&  get_wire_status(wm, drawing_last_dir) == disabled) {
-				set_wire_status(wm, drawing_last_dir, off);
+			else if(drawing_entry_dir != NODIR &&  wm.get_wire_status(drawing_last_dir) == disabled) {
+				wm.set_wire_status(drawing_last_dir, off);
 			}
 			drawing_wires = false;
 		}
@@ -304,14 +366,14 @@ class Main {
 		}
 	}
 
-	function handle_in_cell_wire_drawing_change(wm:Wire.Wire_Module, last_dir:Direction, new_dir:Direction) {
+	function handle_in_cell_wire_drawing_change(wm:Wire_Module, last_dir:Direction, new_dir:Direction) {
 		// Handle dir change
 		if(new_dir != last_dir) {
 			// Reset initial click var if set
 			if(drawing_wires_initial_click) drawing_wires_initial_click = false;
 			// Grab useful vars
-			var last_dir_status = get_wire_status(wm, last_dir);
-			var new_dir_status = get_wire_status(wm, new_dir);
+			var last_dir_status = wm.get_wire_status(last_dir);
+			var new_dir_status = wm.get_wire_status(new_dir);
 			var last_enabled = last_dir_status != disabled;
 			var new_enabled = new_dir_status != disabled;
 			// Handle leaving entry_dir
@@ -322,19 +384,19 @@ class Main {
 				}
 				// If forward and last_dir was disabled, enable it
 				else if(!last_enabled) {
-					set_wire_status(wm, last_dir, off);
+					wm.set_wire_status(last_dir, off);
 				}
 			}
 			// If moving from non-entry dir to entry dir and both are enabled, enter backwards mode and delete
 			else if(new_dir == drawing_entry_dir && last_enabled) {
 				drawing_backwards = true;
-				set_wire_status(wm, last_dir, disabled);
+				wm.set_wire_status(last_dir, disabled);
 				// Set new_dir to entry_dir
 				drawing_entry_dir = new_dir;
 			}
 			// If going backwards with no entry dir, disable last_dir
 			else if(drawing_backwards && drawing_entry_dir == NODIR) {
-				set_wire_status(wm, last_dir, disabled);
+				wm.set_wire_status(last_dir, disabled);
 				// If new_dir is disabled, change to forward mode
 				if(!new_enabled)
 					drawing_backwards = false;
@@ -367,7 +429,7 @@ class Main {
   			var c = grid_width;
   			while((--c) >= 0) {
   				var wm = wire_grid[r][c];
-	  			Wire.draw_wire_module(grid_x + c*module_side_length, grid_y + r*module_side_length, wm, false);
+	  			wm.draw_module(grid_x + c*module_side_length, grid_y + r*module_side_length, simulating);
   			}
   		}
   	}
@@ -377,8 +439,15 @@ class Main {
   	/* CELL HELPERS
  	=============== */
  	public function get_wire_from_cell(c:Cell) {
- 		return wire_grid[c.r][c.c];
+ 		if(c.r >= 0 && c.r < grid_height && c.c >= 0 && c.c < grid_width)
+ 			return wire_grid[c.r][c.c];
+ 		return null;
  	}
+
+ 	public function get_up_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r-1, c:c.c }); }
+ 	public function get_down_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r+1, c:c.c }); }
+ 	public function get_left_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r, c:c.c-1 }); }
+ 	public function get_right_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r, c:c.c+1 }); }
 
  	public function get_cell_point(c:Cell) {
  		return { x: grid_x + c.c*module_side_length, y: grid_y + c.r*module_side_length };
