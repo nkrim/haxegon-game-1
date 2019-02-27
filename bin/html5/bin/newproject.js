@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","7");
+		_this.setReserved("build","8");
 	} else {
-		_this.h["build"] = "7";
+		_this.h["build"] = "8";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4340,6 +4340,1262 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
+var _$Gui_GuiPrintCache = function() {
+	this["volatile"] = false;
+	this.imagecache = null;
+	this.imagetexure = null;
+	this.width = 0;
+	this.halfwidth = 0;
+	this.height = 0;
+};
+$hxClasses["_Gui.GuiPrintCache"] = _$Gui_GuiPrintCache;
+_$Gui_GuiPrintCache.__name__ = ["_Gui","GuiPrintCache"];
+_$Gui_GuiPrintCache.prototype = {
+	imagecache: null
+	,imagetexure: null
+	,text: null
+	,'volatile': null
+	,width: null
+	,height: null
+	,halfwidth: null
+	,__class__: _$Gui_GuiPrintCache
+};
+var _$Gui_GuiCache = function() {
+	this["volatile"] = false;
+};
+$hxClasses["_Gui.GuiCache"] = _$Gui_GuiCache;
+_$Gui_GuiCache.__name__ = ["_Gui","GuiCache"];
+_$Gui_GuiCache.prototype = {
+	width: null
+	,text: null
+	,'volatile': null
+	,__class__: _$Gui_GuiCache
+};
+var _$Gui_GuiStyle = function(_style) {
+	if(_style == null) {
+		_style = "dark";
+	}
+	this.setstyle(_style);
+};
+$hxClasses["_Gui.GuiStyle"] = _$Gui_GuiStyle;
+_$Gui_GuiStyle.__name__ = ["_Gui","GuiStyle"];
+_$Gui_GuiStyle.prototype = {
+	setstyle: function(_style) {
+		switch(_style) {
+		case "dark":
+			this.shadow = 1447446;
+			this.border = 5855577;
+			this.button = 8224125;
+			this.highlight = 11711154;
+			this.activehighlight = 14145495;
+			this.windowheader = 9737364;
+			this.textcol = 16777215;
+			break;
+		case "darkblue":
+			this.shadow = 464427;
+			this.border = 3623007;
+			this.button = 5533327;
+			this.highlight = 9873857;
+			this.activehighlight = 12964578;
+			this.windowheader = 11057356;
+			this.textcol = 16777215;
+			break;
+		case "light":
+			this.shadow = 4210752;
+			this.border = 9474192;
+			this.button = 12632256;
+			this.highlight = 13684944;
+			this.activehighlight = 14737632;
+			this.windowheader = 16777215;
+			this.textcol = 0;
+			break;
+		}
+	}
+	,button: null
+	,shadow: null
+	,border: null
+	,highlight: null
+	,activehighlight: null
+	,windowheader: null
+	,textcol: null
+	,__class__: _$Gui_GuiStyle
+};
+var _$Gui_Rendercommandclass = function() {
+};
+$hxClasses["_Gui.Rendercommandclass"] = _$Gui_Rendercommandclass;
+_$Gui_Rendercommandclass.__name__ = ["_Gui","Rendercommandclass"];
+_$Gui_Rendercommandclass.prototype = {
+	setto: function(_type,_x,_y,_width,_height,_col,_alpha,_text,_font,_size,_align) {
+		this.type = _type;
+		this.x = _x;
+		this.y = _y;
+		this.width = _width;
+		this.height = _height;
+		this.col = _col;
+		this.alpha = _alpha;
+		this.text = _text;
+		this.font = _font;
+		this.size = _size;
+		this.align = _align;
+		this.active = true;
+	}
+	,draw: function() {
+		if(this.active) {
+			var _g = this.type;
+			switch(_g) {
+			case 0:
+				haxegon_Gfx.fillbox(this.x,this.y,this.width,this.height,this.col,this.alpha);
+				break;
+			case 1:
+				haxegon_Gfx.drawbox(this.x,this.y,this.width,this.height,this.col,this.alpha);
+				break;
+			case 2:
+				if(!Gui.guiprintcache.exists(this.text)) {
+					haxegon_Text.set_font(this.font);
+					haxegon_Text.set_size(this.size);
+					haxegon_Text.align = haxegon_Text.LEFT;
+					Gui.tempprintcache = new _$Gui_GuiPrintCache();
+					Gui.guiprintcache.set(this.text,Gui.tempprintcache);
+					Gui.tempprintcache.text = this.text;
+					var tmp = haxegon_Text.width(this.text) | 0;
+					Gui.tempprintcache.width = tmp + 4;
+					Gui.tempprintcache.halfwidth = Gui.tempprintcache.width / 2 | 0;
+					Gui.tempprintcache.height = (Gui.guisettings.textheight | 0) + 4;
+					Gui.tempprintcache.imagetexure = new starling_textures_RenderTexture(Gui.tempprintcache.width,Gui.tempprintcache.height,true);
+					Gui.tempprintcache.imagecache = new starling_display_Image(Gui.tempprintcache.imagetexure);
+					haxegon_Gfx.screenshotdirty = true;
+					haxegon_Gfx.endmeshbatch();
+					if(haxegon_Gfx.drawto != null) {
+						haxegon_Gfx.drawto.bundleunlock();
+					}
+					var olddrawto = haxegon_Gfx.drawto;
+					haxegon_Gfx.drawto = Gui.tempprintcache.imagetexure;
+					if(haxegon_Gfx.drawto != null) {
+						haxegon_Gfx.drawto.bundlelock();
+					}
+					haxegon_Text.display(2,2,this.text,this.col,this.alpha);
+					haxegon_Gfx.endmeshbatch();
+					if(haxegon_Gfx.drawto != null) {
+						haxegon_Gfx.drawto.bundleunlock();
+					}
+					haxegon_Gfx.drawto = olddrawto;
+					if(haxegon_Gfx.drawto != null) {
+						haxegon_Gfx.drawto.bundlelock();
+					}
+				}
+				Gui.tempprintcache = Gui.guiprintcache.get(this.text);
+				if(Gui.tempprintcache != null) {
+					haxegon_Gfx.shapematrix.identity();
+					haxegon_Gfx.shapematrix.translate(this.x - 2 | 0,this.y - 2 | 0);
+					if(this.align == haxegon_Text.CENTER) {
+						haxegon_Gfx.shapematrix.translate(-(Gui.tempprintcache.halfwidth | 0),0);
+					} else if(this.align == haxegon_Text.RIGHT) {
+						haxegon_Gfx.shapematrix.translate(-(Gui.tempprintcache.width | 0),0);
+					}
+					haxegon_Gfx.addmeshtobatch(Gui.tempprintcache.imagecache,haxegon_Gfx.shapematrix);
+				}
+				break;
+			case 3:
+				break;
+			}
+		}
+	}
+	,type: null
+	,x: null
+	,y: null
+	,width: null
+	,height: null
+	,text: null
+	,col: null
+	,alpha: null
+	,font: null
+	,align: null
+	,size: null
+	,textfont: null
+	,textalign: null
+	,textsize: null
+	,active: null
+	,__class__: _$Gui_Rendercommandclass
+};
+var _$Gui_GuiSettings = function(_font,_size) {
+	this.font = _font;
+	this.size = _size;
+	var textfont = haxegon_Text.get_font();
+	var textalign = haxegon_Text.align;
+	var textsize = haxegon_Text.get_size();
+	haxegon_Text.setfont(this.font,this.size);
+	this.textheight = haxegon_Text.height("16LETTERS^@gyj_!");
+	var textwidth = haxegon_Text.width("16LETTERSoftext!");
+	this.buttonheight = this.textheight * 1.8 | 0;
+	this.buttonwidth = textwidth | 0;
+	this.buttonspacing = this.textheight * 0.75 | 0;
+	this.scrollbarwidth = this.textheight | 0;
+	this.checkboxsize = this.textheight | 0;
+	this.inputboxsize = this.textheight * 1.2 | 0;
+	haxegon_Text.set_font(textfont);
+	haxegon_Text.align = textalign;
+	haxegon_Text.set_size(textsize);
+	this.buttontextyoffset = this.buttonheight / 2 - this.textheight / 2 | 0;
+	this.inboxboxtextyoffset = this.inputboxsize / 2 - this.textheight / 2 | 0;
+};
+$hxClasses["_Gui.GuiSettings"] = _$Gui_GuiSettings;
+_$Gui_GuiSettings.__name__ = ["_Gui","GuiSettings"];
+_$Gui_GuiSettings.prototype = {
+	buttonwidth: null
+	,buttonheight: null
+	,buttonspacing: null
+	,scrollbarwidth: null
+	,checkboxsize: null
+	,inputboxsize: null
+	,font: null
+	,size: null
+	,textheight: null
+	,buttontextyoffset: null
+	,inboxboxtextyoffset: null
+	,__class__: _$Gui_GuiSettings
+};
+var _$Gui_GuiWindow = function() {
+	this.skipboundarycheck = false;
+	this.lastrendercommand = 0;
+	this.rendercommand = [];
+};
+$hxClasses["_Gui.GuiWindow"] = _$Gui_GuiWindow;
+_$Gui_GuiWindow.__name__ = ["_Gui","GuiWindow"];
+_$Gui_GuiWindow.prototype = {
+	init: function(_x,_y,_id) {
+		this.id = _id;
+		var key = this.id;
+		var _this = Gui.guiwindowmemory;
+		if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+			var key1 = this.id;
+			var _this1 = Gui.guiwindowmemory;
+			this.windowmemory = __map_reserved[key1] != null ? _this1.getReserved(key1) : _this1.h[key1];
+			this.windowmemory.layoutpass = false;
+		} else {
+			this.windowmemory = { windowxoff : 0, windowyoff : 0, boundaryx : 0, boundaryy : 0, boundaryw : 0, boundaryh : 0, newboundaryx : 0, newboundaryy : 0, newboundaryw : 0, newboundaryh : 0, layoutpass : true};
+			var key2 = this.id;
+			var _this2 = Gui.guiwindowmemory;
+			var value = this.windowmemory;
+			if(__map_reserved[key2] != null) {
+				_this2.setReserved(key2,value);
+			} else {
+				_this2.h[key2] = value;
+			}
+		}
+		this.x = this.windowmemory.boundaryx = _x;
+		this.y = this.windowmemory.boundaryy = _y;
+		this.windowmemory.newboundaryx = _x;
+		this.windowmemory.newboundaryy = _y;
+		this.windowmemory.newboundaryw = 0;
+		this.windowmemory.newboundaryh = 0;
+		this.boundaryspacing = Gui.guisettings.buttonspacing;
+		this.active = true;
+	}
+	,verticalmove: function(_xoff,_yoff) {
+		this.lastoffsetx = _xoff + Gui.guisettings.buttonspacing;
+		this.lastoffsety = _yoff + Gui.guisettings.buttonspacing;
+		this.y += this.lastoffsety;
+	}
+	,horizontalmove: function() {
+		this.y -= this.lastoffsety;
+		this.x += this.lastoffsetx;
+	}
+	,nextrow: function() {
+		this.x = this.windowmemory.boundaryx + this.boundaryspacing;
+	}
+	,fillbox: function(x,y,width,height,col,alpha) {
+		if(alpha == null) {
+			alpha = 1.0;
+		}
+		if(this.lastrendercommand >= this.rendercommand.length) {
+			this.rendercommand.push(new _$Gui_Rendercommandclass());
+		}
+		this.rendercommand[this.lastrendercommand].setto(0,x,y,width,height,col,alpha,"","",1,0);
+		this.lastrendercommand++;
+		if(this.windowmemory.layoutpass) {
+			if(this.skipboundarycheck) {
+				this.skipboundarycheck = false;
+			} else {
+				this.updateboundary(x,y,width,height);
+			}
+		}
+	}
+	,drawbox: function(x,y,width,height,col,alpha) {
+		if(alpha == null) {
+			alpha = 1.0;
+		}
+		if(this.lastrendercommand >= this.rendercommand.length) {
+			this.rendercommand.push(new _$Gui_Rendercommandclass());
+		}
+		this.rendercommand[this.lastrendercommand].setto(1,x,y,width,height,col,alpha,"","",1,0);
+		this.lastrendercommand++;
+		if(this.windowmemory.layoutpass) {
+			if(this.skipboundarycheck) {
+				this.skipboundarycheck = false;
+			} else {
+				this.updateboundary(x,y,width,height);
+			}
+		}
+	}
+	,textwidth: function(text,font,size) {
+		var returnval;
+		var textfont = haxegon_Text.get_font();
+		var textalign = haxegon_Text.align;
+		var textsize = haxegon_Text.get_size();
+		haxegon_Text.set_font(font == null ? Gui.guisettings.font : font);
+		haxegon_Text.set_size(size == null ? Gui.guisettings.size : size);
+		haxegon_Text.align = haxegon_Text.LEFT;
+		returnval = haxegon_Text.width(text);
+		haxegon_Text.set_font(textfont);
+		haxegon_Text.align = textalign;
+		haxegon_Text.set_size(textsize);
+		return returnval;
+	}
+	,print: function(x,y,text,col,alpha,font,size,align) {
+		if(this.lastrendercommand >= this.rendercommand.length) {
+			this.rendercommand.push(new _$Gui_Rendercommandclass());
+		}
+		this.rendercommand[this.lastrendercommand].setto(2,x,y,0,0,col == null ? 16777215 : col,alpha == null ? 1.0 : alpha,text,font == null ? Gui.guisettings.font : font,size == null ? Gui.guisettings.size : size,align == null ? haxegon_Text.LEFT : align);
+		this.lastrendercommand++;
+		if(this.windowmemory.layoutpass) {
+			if(this.skipboundarycheck) {
+				this.skipboundarycheck = false;
+			} else {
+				this.updateboundary(x,y,this.textwidth(text,font,size),Gui.guisettings.textheight);
+			}
+		}
+	}
+	,updateboundary: function(_x,_y,_width,_height) {
+		if(_x < this.windowmemory.newboundaryx) {
+			this.windowmemory.newboundaryx = _x;
+		}
+		if(_y < this.windowmemory.newboundaryy) {
+			this.windowmemory.newboundaryy = _y;
+		}
+		if(_x + _width + this.boundaryspacing > this.windowmemory.newboundaryx + this.windowmemory.newboundaryw) {
+			this.windowmemory.newboundaryw = _x + _width + this.boundaryspacing - this.windowmemory.newboundaryx;
+		}
+		if(_y + _height + this.boundaryspacing > this.windowmemory.newboundaryy + this.windowmemory.newboundaryh) {
+			this.windowmemory.newboundaryh = _y + _height + this.boundaryspacing - this.windowmemory.newboundaryy;
+		}
+	}
+	,finishboundary: function() {
+		this.windowmemory.boundaryx = this.windowmemory.newboundaryx;
+		this.windowmemory.boundaryy = this.windowmemory.newboundaryy;
+		this.windowmemory.boundaryw = this.windowmemory.newboundaryw;
+		this.windowmemory.boundaryh = this.windowmemory.newboundaryh;
+	}
+	,rendercommand: null
+	,lastrendercommand: null
+	,boundaryspacing: null
+	,skipboundarycheck: null
+	,x: null
+	,y: null
+	,type: null
+	,lastoffsetx: null
+	,lastoffsety: null
+	,active: null
+	,id: null
+	,windowmemory: null
+	,__class__: _$Gui_GuiWindow
+};
+var Gui = function() { };
+$hxClasses["Gui"] = Gui;
+Gui.__name__ = ["Gui"];
+Gui.__properties__ = {set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"};
+Gui.hasfocus = function() {
+	if(!(Gui.haskeyboardfocus != "" || Gui.requestingkeyboardfocus != "" || Gui.activeitem != "" && Gui.activeitem != "-")) {
+		return Gui.mouseoverwindow();
+	} else {
+		return true;
+	}
+};
+Gui.updateid = function(_elementtype,pos) {
+	if(!Gui.enabled) {
+		Gui.enable();
+	}
+	Gui.id = Gui.windowlist[Gui.currentwindow].id + "|" + Gui.posid(pos);
+	Gui.elementtype = _elementtype;
+	Gui._changed = false;
+};
+Gui.checkactive = function(w,h) {
+	if(Gui.alignment == haxegon_Text.LEFT) {
+		Gui.internalx = Gui.windowlist[Gui.currentwindow].x;
+	} else if(Gui.alignment == haxegon_Text.CENTER) {
+		Gui.internalx = Gui.windowlist[Gui.currentwindow].x - (w / 2 | 0);
+	} else if(Gui.alignment == haxegon_Text.RIGHT) {
+		Gui.internalx = Gui.windowlist[Gui.currentwindow].x - (w | 0);
+	}
+	Gui.internaly = Gui.windowlist[Gui.currentwindow].y;
+	Gui.windowlist[Gui.currentwindow].verticalmove(w,h);
+	if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),Gui.internalx,Gui.internaly,w,h)) {
+		Gui.hotitem = Gui.id;
+		if(Gui.activeitem == "" && haxegon_Mouse.leftheld()) {
+			Gui.activeitem = Gui.id;
+		}
+	}
+};
+Gui.changed = function() {
+	return Gui._changed;
+};
+Gui.scrollbar = function(height,topvalue,bottomvalue,currentvalue,pos) {
+	Gui.updateid("scrollbar",pos);
+	var cursorsize = Gui.guisettings.scrollbarwidth;
+	Gui.checkactive(cursorsize,height);
+	var ypos = 1 + (height - 2 - cursorsize) * Math.abs(topvalue - currentvalue) / (bottomvalue - topvalue);
+	var returnvalue = bottomvalue + (topvalue - bottomvalue) * ((height - (haxegon_Mouse.get_y() - Gui.internaly)) / height);
+	var barwidth = Gui.guisettings.scrollbarwidth / 10;
+	Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + Gui.guisettings.scrollbarwidth / 2 - barwidth,Gui.internaly,barwidth * 2,height,Gui.style.shadow);
+	if(Gui.activeitem == Gui.id || Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 1,Gui.internaly + ypos,Gui.guisettings.scrollbarwidth - 2,cursorsize,Gui.style.activehighlight);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 1,Gui.internaly + ypos,Gui.guisettings.scrollbarwidth - 2,cursorsize,Gui.style.highlight);
+	}
+	if(Gui.activeitem == Gui.id) {
+		Gui.value = Math.min(bottomvalue,Math.max(returnvalue,topvalue));
+		Gui._changed = true;
+		return Gui.value;
+	}
+	return currentvalue;
+};
+Gui.slider = function(width,leftvalue,rightvalue,currentvalue,pos) {
+	Gui.updateid("slider",pos);
+	var cursorsize = Gui.guisettings.scrollbarwidth;
+	Gui.checkactive(width,cursorsize);
+	var xpos = 1 + (width - 2 - cursorsize) * Math.abs(leftvalue - currentvalue) / (rightvalue - leftvalue);
+	var returnvalue = rightvalue + (leftvalue - rightvalue) * ((width - (haxegon_Mouse.get_x() - Gui.internalx)) / width);
+	var barheight = Gui.guisettings.scrollbarwidth / 10;
+	Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly + Gui.guisettings.scrollbarwidth / 2 - barheight,width,barheight * 2,Gui.style.shadow);
+	if(Gui.activeitem == Gui.id || Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + xpos,Gui.internaly + 1,cursorsize,Gui.guisettings.scrollbarwidth - 2,Gui.style.activehighlight);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + xpos,Gui.internaly + 1,cursorsize,Gui.guisettings.scrollbarwidth - 2,Gui.style.highlight);
+	}
+	if(Gui.activeitem == Gui.id) {
+		Gui._changed = true;
+		Gui.value = Math.min(rightvalue,Math.max(returnvalue,leftvalue));
+		return Gui.value;
+	}
+	return currentvalue;
+};
+Gui.indent = function(distance,pos) {
+	if(!Gui.enabled) {
+		Gui.enable();
+	}
+	Gui.id = Gui.posid(pos);
+	Gui.windowlist[Gui.currentwindow].x += distance == null ? Gui.guisettings.buttonspacing : distance;
+};
+Gui.unindent = function(distance,pos) {
+	if(!Gui.enabled) {
+		Gui.enable();
+	}
+	Gui.id = Gui.posid(pos);
+	Gui.windowlist[Gui.currentwindow].x -= distance == null ? Gui.guisettings.buttonspacing : distance;
+};
+Gui.text = function(label,pos) {
+	if(Gui.elementtype == "text") {
+		Gui.windowlist[Gui.currentwindow].y -= Gui.guisettings.buttonspacing;
+	}
+	Gui.updateid("text",pos);
+	Gui.internalx = Gui.windowlist[Gui.currentwindow].x;
+	Gui.internaly = Gui.windowlist[Gui.currentwindow].y;
+	haxegon_Text.setfont(Gui.guisettings.font,Gui.guisettings.size);
+	var textwidth = -1;
+	var key = Gui.id;
+	var _this = Gui.guitextlabelcache;
+	if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+		var key1 = Gui.id;
+		var _this1 = Gui.guitextlabelcache;
+		var temp = __map_reserved[key1] != null ? _this1.getReserved(key1) : _this1.h[key1];
+		if(label == temp.text) {
+			textwidth = temp.width;
+		} else {
+			temp["volatile"] = true;
+			textwidth = haxegon_Text.width(label);
+		}
+	}
+	if(textwidth == -1) {
+		textwidth = haxegon_Text.width(label);
+		var temp1 = new _$Gui_GuiCache();
+		temp1.text = label;
+		temp1.width = textwidth | 0;
+		var key2 = Gui.id;
+		var _this2 = Gui.guitextlabelcache;
+		if(__map_reserved[key2] != null) {
+			_this2.setReserved(key2,temp1);
+		} else {
+			_this2.h[key2] = temp1;
+		}
+	}
+	Gui.windowlist[Gui.currentwindow].verticalmove(textwidth,Gui.guisettings.textheight);
+	Gui.windowlist[Gui.currentwindow].print(Gui.internalx,Gui.internaly,label,Gui.style.textcol);
+};
+Gui.menulist = function(options,pos) {
+	var optionwidth = 0;
+	var _g1 = 0;
+	var _g = options.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var textwidth = Gui.windowlist[Gui.currentwindow].textwidth(options[i]);
+		if(textwidth >= optionwidth) {
+			optionwidth = textwidth;
+		}
+	}
+	optionwidth *= 1.5;
+	Gui.window("",Gui.lastmenuxposition,Gui.windowlist[Gui.currentwindow].y - Gui.guisettings.buttonspacing,0,pos);
+	Gui.windowlist[Gui.currentwindow].type = 2;
+	Gui.adjustposition(-Gui.guisettings.buttonspacing,-Gui.guisettings.buttonspacing);
+	var returnval = "";
+	var _g11 = 0;
+	var _g2 = options.length;
+	while(_g11 < _g2) {
+		var i1 = _g11++;
+		if(options[i1] == "") {
+			Gui.windowlist[Gui.currentwindow].fillbox(Gui.windowlist[Gui.currentwindow].x + Gui.guisettings.buttonspacing / 4,Gui.windowlist[Gui.currentwindow].y + Gui.guisettings.buttonspacing / 4,optionwidth - Gui.guisettings.buttonspacing / 2,2,Gui.style.button);
+			Gui.adjustposition(0,Gui.guisettings.buttonspacing / 2);
+		} else if(Gui.menuitem(options[i1],optionwidth,pos)) {
+			returnval = options[i1];
+			if(Gui.lastmenubar != null) {
+				Gui.lastmenubar.currentlyselected = -1;
+			}
+		}
+	}
+	Gui.end();
+	return returnval;
+};
+Gui.menubar = function(options,pos) {
+	Gui.updateid("button",pos);
+	var w = Gui.windowlist[Gui.currentwindow].type == 0 ? haxegon_Gfx.screenwidth - Gui.windowlist[Gui.currentwindow].x + Gui.guisettings.buttonspacing : Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw;
+	var h = Gui.guisettings.textheight;
+	var menubarstate;
+	var key = Gui.id;
+	var _this = Gui.guiwindowmemory;
+	if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+		var key1 = Gui.id;
+		var _this1 = Gui.guiwindowmemory;
+		if(__map_reserved[key1] != null) {
+			menubarstate = _this1.getReserved(key1);
+		} else {
+			menubarstate = _this1.h[key1];
+		}
+	} else {
+		menubarstate = { currentlyselected : -1};
+		var key2 = Gui.id;
+		var _this2 = Gui.guiwindowmemory;
+		var value = menubarstate;
+		if(__map_reserved[key2] != null) {
+			_this2.setReserved(key2,value);
+		} else {
+			_this2.h[key2] = value;
+		}
+	}
+	Gui.lastmenubar = menubarstate;
+	Gui.internalx = Gui.windowlist[Gui.currentwindow].x - Gui.guisettings.buttonspacing;
+	Gui.internaly = Gui.windowlist[Gui.currentwindow].y - Gui.guisettings.buttonspacing;
+	if(Gui.windowlist[Gui.currentwindow].type != 0) {
+		Gui.internaly -= Gui.guisettings.buttonspacing;
+		Gui.windowlist[Gui.currentwindow].verticalmove(w,h - Gui.guisettings.buttonspacing * 2);
+	} else {
+		Gui.windowlist[Gui.currentwindow].verticalmove(w,h - Gui.guisettings.buttonspacing);
+	}
+	if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),Gui.internalx,Gui.internaly,w,h)) {
+		Gui.hotitem = Gui.id;
+		if(Gui.activeitem == "" && haxegon_Mouse.leftheld()) {
+			Gui.activeitem = Gui.id;
+		}
+	}
+	var optionwidth = 0;
+	var key3 = Gui.id;
+	var _this3 = Gui.guimenubarcache;
+	if(__map_reserved[key3] != null ? _this3.existsReserved(key3) : _this3.h.hasOwnProperty(key3)) {
+		var key4 = Gui.id;
+		var _this4 = Gui.guimenubarcache;
+		optionwidth = (__map_reserved[key4] != null ? _this4.getReserved(key4) : _this4.h[key4]).width;
+	} else {
+		var _g1 = 0;
+		var _g = options.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var textwidth = Gui.windowlist[Gui.currentwindow].textwidth(options[i]);
+			if(textwidth >= optionwidth) {
+				optionwidth = textwidth;
+			}
+		}
+		optionwidth *= 2;
+		var temp = new _$Gui_GuiCache();
+		temp.width = optionwidth | 0;
+		var key5 = Gui.id;
+		var _this5 = Gui.guimenubarcache;
+		if(__map_reserved[key5] != null) {
+			_this5.setReserved(key5,temp);
+		} else {
+			_this5.h[key5] = temp;
+		}
+	}
+	var activeoption = -1;
+	Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+	if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,w,h,Gui.style.button);
+		Gui.internalx += Gui.guisettings.buttonspacing / 2 | 0;
+		var _g11 = 0;
+		var _g2 = options.length;
+		while(_g11 < _g2) {
+			var i1 = _g11++;
+			var xp = Gui.internalx + i1 * optionwidth;
+			if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),xp,Gui.internaly,optionwidth,h)) {
+				Gui.windowlist[Gui.currentwindow].fillbox(xp,Gui.internaly,optionwidth,h,Gui.style.activehighlight);
+				activeoption = i1;
+				Gui.lastmenuxposition = xp;
+			}
+			Gui.windowlist[Gui.currentwindow].print(xp + optionwidth / 2,Gui.internaly,options[i1],Gui.style.textcol,1.0,Gui.guisettings.font,Gui.guisettings.size,haxegon_Text.CENTER);
+		}
+	} else if(Gui.hotitem == Gui.id || menubarstate.currentlyselected > -1) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,w,h,Gui.style.button);
+		Gui.internalx += Gui.guisettings.buttonspacing / 2 | 0;
+		var _g12 = 0;
+		var _g3 = options.length;
+		while(_g12 < _g3) {
+			var i2 = _g12++;
+			var xp1 = Gui.internalx + i2 * optionwidth;
+			if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),xp1,Gui.internaly,optionwidth,h) || menubarstate.currentlyselected == i2) {
+				Gui.windowlist[Gui.currentwindow].fillbox(xp1,Gui.internaly,optionwidth,h,Gui.style.highlight);
+				activeoption = i2;
+			}
+			Gui.windowlist[Gui.currentwindow].print(xp1 + optionwidth / 2,Gui.internaly,options[i2],Gui.style.textcol,1.0,Gui.guisettings.font,Gui.guisettings.size,haxegon_Text.CENTER);
+		}
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,w,h,Gui.style.button);
+		Gui.internalx += Gui.guisettings.buttonspacing / 2 | 0;
+		var _g13 = 0;
+		var _g4 = options.length;
+		while(_g13 < _g4) {
+			var i3 = _g13++;
+			Gui.windowlist[Gui.currentwindow].print(Gui.internalx + i3 * optionwidth + optionwidth / 2,Gui.internaly,options[i3],Gui.style.textcol,1.0,Gui.guisettings.font,Gui.guisettings.size,haxegon_Text.CENTER);
+		}
+	}
+	if(options.length == 0) {
+		return "";
+	}
+	if(haxegon_Mouse.leftclick()) {
+		if(Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+			if(activeoption == -1) {
+				menubarstate.currentlyselected = -1;
+				return "";
+			}
+			menubarstate.currentlyselected = activeoption;
+			Gui.lastmenuxposition = Gui.windowlist[Gui.currentwindow].x - Gui.guisettings.buttonspacing + menubarstate.currentlyselected * optionwidth + (Gui.guisettings.buttonspacing / 2 | 0);
+			return options[activeoption];
+		} else {
+			if(Gui.hotitem == "" && Gui.previoushotitem == "") {
+				menubarstate.currentlyselected = -1;
+				return "";
+			}
+			return options[menubarstate.currentlyselected];
+		}
+	} else if(menubarstate.currentlyselected > -1) {
+		Gui.lastmenuxposition = Gui.windowlist[Gui.currentwindow].x - Gui.guisettings.buttonspacing + menubarstate.currentlyselected * optionwidth + (Gui.guisettings.buttonspacing / 2 | 0);
+		return options[menubarstate.currentlyselected];
+	}
+	return "";
+};
+Gui.button = function(label,pos) {
+	Gui.updateid("button",pos);
+	Gui.checkactive(Gui.guisettings.buttonwidth,Gui.guisettings.buttonheight);
+	if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly + 1,Gui.guisettings.buttonwidth,Gui.guisettings.buttonheight - 2,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 1,Gui.internaly + 2,Gui.guisettings.buttonwidth - 2,Gui.guisettings.buttonheight - 4,Gui.style.activehighlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.buttonwidth / 2,Gui.internaly + Gui.guisettings.buttontextyoffset,label,Gui.style.textcol,null,null,null,haxegon_Text.CENTER);
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly + Gui.guisettings.buttonheight - 2,Gui.guisettings.buttonwidth,2,Gui.style.border);
+	} else if(Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,Gui.guisettings.buttonwidth,Gui.guisettings.buttonheight,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 1,Gui.internaly + 1,Gui.guisettings.buttonwidth - 2,Gui.guisettings.buttonheight - 4,Gui.style.highlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.buttonwidth / 2,Gui.internaly + Gui.guisettings.buttontextyoffset - 1,label,Gui.style.textcol,null,null,null,haxegon_Text.CENTER);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,Gui.guisettings.buttonwidth,Gui.guisettings.buttonheight,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 1,Gui.internaly + 1,Gui.guisettings.buttonwidth - 2,Gui.guisettings.buttonheight - 4,Gui.style.button);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.buttonwidth / 2,Gui.internaly + Gui.guisettings.buttontextyoffset - 1,label,Gui.style.textcol,null,null,null,haxegon_Text.CENTER);
+	}
+	if(Gui.debugmode) {
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,Gui.guisettings.buttonwidth,Gui.guisettings.buttonheight,haxegon_Col.BLACK,0.5);
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx,Gui.internaly,Gui.id,haxegon_Col.WHITE,1,Gui.guisettings.font,Gui.guisettings.size / 2 | 0);
+	}
+	if(haxegon_Mouse.leftclick() && Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+		return true;
+	}
+	return false;
+};
+Gui.password = function(inputlabel,customwidth,pos) {
+	Gui.passwordmode = true;
+	var result = Gui.input(inputlabel,customwidth,{ fileName : "Gui.hx", lineNumber : 700, className : "Gui", methodName : "password"});
+	Gui.passwordmode = false;
+	return result;
+};
+Gui.input = function(inputlabel,customwidth,pos) {
+	Gui.updateid("inputbox",pos);
+	if(customwidth == null) {
+		customwidth = Gui.guisettings.buttonwidth * 1.5 | 0;
+	}
+	Gui.checkactive(customwidth,Gui.guisettings.inputboxsize);
+	var labeldisplay = inputlabel;
+	if(Gui.passwordmode) {
+		labeldisplay = "";
+		var _g1 = 0;
+		var _g = inputlabel.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			labeldisplay += "*";
+		}
+	}
+	if(Gui.haskeyboardfocus == Gui.id) {
+		labeldisplay = Gui.inputbuffer;
+		if(Gui.passwordmode) {
+			labeldisplay = "";
+			var _g11 = 0;
+			var _g2 = Gui.inputbuffer.length;
+			while(_g11 < _g2) {
+				var i1 = _g11++;
+				labeldisplay += "*";
+			}
+		}
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.activehighlight);
+		if(openfl_Lib.getTimer() % 400 > 200) {
+			Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay + "_",Gui.style.textcol);
+		} else {
+			Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+		}
+	} else if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.activehighlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	} else if(Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.highlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize,Gui.style.button);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	}
+	if(haxegon_Input.justpressed(haxegon_Key.TAB)) {
+		Gui.requestingkeyboardfocus = "-";
+		haxegon_Input.forcerelease(haxegon_Key.TAB);
+	}
+	if((Gui.requestingkeyboardfocus == Gui.id || Gui.requestingkeyboardfocus == "-") && Gui.haskeyboardfocus == "") {
+		Gui.requestingkeyboardfocus = "";
+		Gui.haskeyboardfocus = Gui.id;
+		haxegon_Text.inputbuffer = inputlabel;
+		Gui.inputbuffer = haxegon_Text.inputbuffer;
+	}
+	if(haxegon_Mouse.leftclick() && Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+		if(Gui.haskeyboardfocus == "") {
+			Gui.haskeyboardfocus = Gui.id;
+			haxegon_Text.inputbuffer = inputlabel;
+			Gui.inputbuffer = haxegon_Text.inputbuffer;
+		} else {
+			Gui.requestingkeyboardfocus = Gui.id;
+		}
+	}
+	if(Gui.haskeyboardfocus == Gui.id) {
+		if(Gui.requestingkeyboardfocus == Gui.id) {
+			Gui.requestingkeyboardfocus = "";
+		}
+		Gui.inputbuffer = haxegon_Text.inputbuffer;
+		if(haxegon_Input.justpressed(haxegon_Key.ENTER) || haxegon_Input.justpressed(haxegon_Key.ESCAPE) || haxegon_Mouse.leftclick() && Gui.hotitem != Gui.id || Gui.requestingkeyboardfocus != "") {
+			Gui.value = Gui.inputbuffer;
+			Gui.inputbuffer = "";
+			haxegon_Text.inputbuffer = "";
+			Gui.haskeyboardfocus = "";
+			Gui._changed = true;
+			return Gui.value;
+		}
+	}
+	return inputlabel;
+};
+Gui.texteditor = function(lines,inputlabel,customwidth,pos) {
+	if(lines == null) {
+		lines = 4;
+	}
+	Gui.updateid("texteditor",pos);
+	if(customwidth == null) {
+		customwidth = Gui.guisettings.buttonwidth * 1.5 | 0;
+	}
+	Gui.checkactive(customwidth,Gui.guisettings.inputboxsize * lines);
+	var labeldisplay = inputlabel;
+	if(Gui.passwordmode) {
+		labeldisplay = "";
+		var _g1 = 0;
+		var _g = inputlabel.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			labeldisplay += "*";
+		}
+	}
+	if(Gui.haskeyboardfocus == Gui.id) {
+		labeldisplay = Gui.inputbuffer;
+		if(Gui.passwordmode) {
+			labeldisplay = "";
+			var _g11 = 0;
+			var _g2 = Gui.inputbuffer.length;
+			while(_g11 < _g2) {
+				var i1 = _g11++;
+				labeldisplay += "*";
+			}
+		}
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.activehighlight);
+		if(openfl_Lib.getTimer() % 400 > 200) {
+			Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay + "_",Gui.style.textcol);
+		} else {
+			Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+		}
+	} else if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.activehighlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	} else if(Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.highlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,customwidth,Gui.guisettings.inputboxsize * lines,Gui.style.button);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 3,Gui.internaly + Gui.guisettings.inboxboxtextyoffset,labeldisplay,Gui.style.textcol);
+	}
+	if(haxegon_Input.justpressed(haxegon_Key.TAB)) {
+		Gui.requestingkeyboardfocus = "-";
+		haxegon_Input.forcerelease(haxegon_Key.TAB);
+	}
+	if((Gui.requestingkeyboardfocus == Gui.id || Gui.requestingkeyboardfocus == "-") && Gui.haskeyboardfocus == "") {
+		Gui.requestingkeyboardfocus = "";
+		Gui.haskeyboardfocus = Gui.id;
+		haxegon_Text.inputbuffer = inputlabel;
+		Gui.inputbuffer = haxegon_Text.inputbuffer;
+	}
+	if(haxegon_Mouse.leftclick() && Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+		if(Gui.haskeyboardfocus == "") {
+			Gui.haskeyboardfocus = Gui.id;
+			haxegon_Text.inputbuffer = inputlabel;
+			Gui.inputbuffer = haxegon_Text.inputbuffer;
+		} else {
+			Gui.requestingkeyboardfocus = Gui.id;
+		}
+	}
+	if(Gui.haskeyboardfocus == Gui.id) {
+		if(Gui.requestingkeyboardfocus == Gui.id) {
+			Gui.requestingkeyboardfocus = "";
+		}
+		Gui.inputbuffer = haxegon_Text.inputbuffer;
+		if(haxegon_Input.justpressed(haxegon_Key.ENTER)) {
+			haxegon_Text.inputbuffer += "\n";
+		}
+		if(haxegon_Input.justpressed(haxegon_Key.ESCAPE) || haxegon_Mouse.leftclick() && Gui.hotitem != Gui.id || Gui.requestingkeyboardfocus != "") {
+			Gui.value = Gui.inputbuffer;
+			Gui.inputbuffer = "";
+			haxegon_Text.inputbuffer = "";
+			Gui.haskeyboardfocus = "";
+			Gui._changed = true;
+			return Gui.value;
+		}
+	}
+	return inputlabel;
+};
+Gui.menuitem = function(label,minwidth,pos) {
+	if(minwidth == null) {
+		minwidth = 0;
+	}
+	if(Gui.elementtype == "menuitem") {
+		Gui.windowlist[Gui.currentwindow].y -= Gui.guisettings.buttonspacing;
+	}
+	Gui.updateid("menuitem",pos);
+	var shadowwidth = -1;
+	var key = Gui.id;
+	var _this = Gui.guimenuitemcache;
+	if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+		var key1 = Gui.id;
+		var _this1 = Gui.guimenuitemcache;
+		var temp = __map_reserved[key1] != null ? _this1.getReserved(key1) : _this1.h[key1];
+		if(label == temp.text) {
+			shadowwidth = temp.width;
+		} else {
+			temp["volatile"] = true;
+			shadowwidth = haxegon_Text.width(label) + (Gui.guisettings.scrollbarwidth * 1.5 | 0) + 5 | 0;
+			if(shadowwidth < minwidth) {
+				shadowwidth = minwidth;
+			}
+		}
+	}
+	if(shadowwidth == -1) {
+		shadowwidth = haxegon_Text.width(label) + (Gui.guisettings.scrollbarwidth * 1.5 | 0) + 5 | 0;
+		if(shadowwidth < minwidth) {
+			shadowwidth = minwidth;
+		}
+		var temp1 = new _$Gui_GuiCache();
+		temp1.text = label;
+		temp1.width = shadowwidth | 0;
+		var key2 = Gui.id;
+		var _this2 = Gui.guimenuitemcache;
+		if(__map_reserved[key2] != null) {
+			_this2.setReserved(key2,temp1);
+		} else {
+			_this2.h[key2] = temp1;
+		}
+	}
+	Gui.checkactive(shadowwidth,Gui.guisettings.checkboxsize);
+	if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,Gui.style.highlight);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 5,Gui.internaly,label,Gui.style.textcol);
+	} else if(Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,Gui.style.button);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 5,Gui.internaly,label,Gui.style.textcol);
+	} else {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,Gui.style.border);
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + 5,Gui.internaly,label,Gui.style.textcol);
+	}
+	if(Gui.debugmode) {
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,haxegon_Col.BLACK,0.5);
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx,Gui.internaly,Gui.id,haxegon_Col.WHITE,1,Gui.guisettings.font,Gui.guisettings.size / 2 | 0);
+	}
+	if(haxegon_Mouse.leftclick() && Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+		return true;
+	}
+	return false;
+};
+Gui.radio = function(label,currentstate,pos) {
+	Gui.updateid("radio",pos);
+	var shadowwidth = -1;
+	var key = Gui.id;
+	var _this = Gui.guiradiocache;
+	if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
+		var key1 = Gui.id;
+		var _this1 = Gui.guiradiocache;
+		var temp = __map_reserved[key1] != null ? _this1.getReserved(key1) : _this1.h[key1];
+		if(temp.text == label) {
+			shadowwidth = temp.width;
+		} else {
+			temp["volatile"] = true;
+			shadowwidth = haxegon_Text.width(label) + (Gui.guisettings.scrollbarwidth * 1.5 | 0) + 5 | 0;
+		}
+	}
+	if(shadowwidth == -1) {
+		shadowwidth = haxegon_Text.width(label) + (Gui.guisettings.scrollbarwidth * 1.5 | 0) + 5 | 0;
+		var temp1 = new _$Gui_GuiCache();
+		temp1.text = label;
+		temp1.width = shadowwidth | 0;
+		var key2 = Gui.id;
+		var _this2 = Gui.guiradiocache;
+		if(__map_reserved[key2] != null) {
+			_this2.setReserved(key2,temp1);
+		} else {
+			_this2.h[key2] = temp1;
+		}
+	}
+	Gui.checkactive(shadowwidth,Gui.guisettings.checkboxsize);
+	Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,Gui.guisettings.scrollbarwidth,Gui.guisettings.checkboxsize,Gui.style.border);
+	if(Gui.activeitem == Gui.id && Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,Gui.style.border,0.3);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,Gui.guisettings.scrollbarwidth,Gui.guisettings.checkboxsize,Gui.style.activehighlight);
+		if(currentstate) {
+			Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 2,Gui.internaly + 2,Gui.guisettings.scrollbarwidth - 4,Gui.guisettings.checkboxsize - 4,Gui.style.activehighlight);
+		}
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.scrollbarwidth + 5,Gui.internaly,label,Gui.style.textcol);
+	} else if(Gui.hotitem == Gui.id) {
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,shadowwidth,Gui.guisettings.checkboxsize,Gui.style.border,0.2);
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,Gui.guisettings.scrollbarwidth,Gui.guisettings.checkboxsize,Gui.style.activehighlight);
+		if(currentstate) {
+			Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 2,Gui.internaly + 2,Gui.guisettings.scrollbarwidth - 4,Gui.guisettings.checkboxsize - 4,Gui.style.activehighlight);
+		}
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.scrollbarwidth + 5,Gui.internaly,label,Gui.style.textcol);
+	} else {
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.internalx,Gui.internaly,Gui.guisettings.scrollbarwidth,Gui.guisettings.checkboxsize,Gui.style.highlight);
+		if(currentstate) {
+			Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx + 2,Gui.internaly + 2,Gui.guisettings.scrollbarwidth - 4,Gui.guisettings.checkboxsize - 4,Gui.style.highlight);
+		}
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx + Gui.guisettings.scrollbarwidth + 5,Gui.internaly,label,Gui.style.textcol);
+	}
+	if(haxegon_Mouse.leftclick() && Gui.hotitem == Gui.id && Gui.activeitem == Gui.id) {
+		Gui.value = !currentstate;
+		Gui._changed = true;
+		return Gui.value;
+	}
+	return currentstate;
+};
+Gui.window = function(label,_x,_y,_spacing,pos) {
+	if(_spacing == null) {
+		_spacing = -1;
+	}
+	if(_y == null) {
+		_y = -1;
+	}
+	if(_x == null) {
+		_x = -1;
+	}
+	Gui.updateid("window",pos);
+	var w = Gui.getwindow();
+	Gui.windowhierarchy.push(w);
+	Gui.windowlist[w].init(_x == -1 ? haxegon_Text.CENTER : _x,_y == -1 ? haxegon_Text.CENTER : _y,Gui.posid(pos));
+	Gui.windowlist[w].type = 1;
+	Gui.currentwindow = w;
+	if(_spacing == -1) {
+		Gui.windowlist[w].boundaryspacing = Gui.guisettings.buttonspacing;
+	} else {
+		Gui.windowlist[w].boundaryspacing = _spacing;
+	}
+	if(Gui.windowlist[Gui.currentwindow].x == haxegon_Text.RIGHT) {
+		Gui.windowlist[Gui.currentwindow].x = haxegon_Gfx.screenwidth - (Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw | 0);
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryx = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx = Gui.windowlist[Gui.currentwindow].x + Gui.windowlist[Gui.currentwindow].windowmemory.windowxoff;
+	} else if(Gui.windowlist[Gui.currentwindow].x == haxegon_Text.CENTER) {
+		Gui.windowlist[Gui.currentwindow].x = haxegon_Gfx.screenwidthmid - (Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw / 2 | 0);
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryx = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx = Gui.windowlist[Gui.currentwindow].x + Gui.windowlist[Gui.currentwindow].windowmemory.windowxoff;
+	} else {
+		Gui.internalx = Gui.windowlist[Gui.currentwindow].x;
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryx = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx = Gui.windowlist[Gui.currentwindow].x + Gui.windowlist[Gui.currentwindow].windowmemory.windowxoff;
+	}
+	Gui.windowlist[Gui.currentwindow].x += Gui.guisettings.buttonspacing;
+	if(Gui.windowlist[Gui.currentwindow].y == haxegon_Text.BOTTOM) {
+		Gui.windowlist[Gui.currentwindow].y = haxegon_Gfx.screenheight - (Gui.windowlist[Gui.currentwindow].windowmemory.boundaryh | 0);
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryy = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy = Gui.windowlist[Gui.currentwindow].y + Gui.windowlist[Gui.currentwindow].windowmemory.windowyoff;
+	} else if(Gui.windowlist[Gui.currentwindow].y == haxegon_Text.CENTER) {
+		Gui.windowlist[Gui.currentwindow].y = haxegon_Gfx.screenheightmid - (Gui.windowlist[Gui.currentwindow].windowmemory.boundaryh / 2 | 0);
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryy = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy = Gui.windowlist[Gui.currentwindow].y + Gui.windowlist[Gui.currentwindow].windowmemory.windowyoff;
+	} else {
+		Gui.internaly = Gui.windowlist[Gui.currentwindow].y;
+		Gui.windowlist[Gui.currentwindow].windowmemory.newboundaryy = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy = Gui.windowlist[Gui.currentwindow].y + Gui.windowlist[Gui.currentwindow].windowmemory.windowyoff;
+	}
+	Gui.windowlist[Gui.currentwindow].y += Gui.guisettings.buttonspacing;
+	var w1 = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw;
+	var h = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryh;
+	haxegon_Text.setfont(Gui.guisettings.font,Gui.guisettings.size);
+	Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+	Gui.windowlist[Gui.currentwindow].fillbox(Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy,w1,h,Gui.style.border);
+	if(Gui.windowlist[Gui.currentwindow].boundaryspacing == 0) {
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].drawbox(Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx - 1,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy - 1,w1 + 2,h + 2,Gui.style.button);
+	}
+	Gui.adjustposition(Gui.windowlist[Gui.currentwindow].windowmemory.windowxoff,Gui.windowlist[Gui.currentwindow].windowmemory.windowyoff);
+	if(label != null) {
+		if(label != "") {
+			var windowid = Gui.id;
+			Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+			Gui.windowlist[Gui.currentwindow].fillbox(Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw,Gui.guisettings.textheight,Gui.style.windowheader);
+			Gui.adjustposition(0,-Gui.guisettings.buttonspacing);
+			Gui.text(label,{ fileName : "Gui.hx", lineNumber : 1048, className : "Gui", methodName : "window"});
+			Gui.adjustposition(0,Gui.guisettings.buttonspacing);
+			Gui.id = windowid;
+		}
+	}
+	if(Gui.debugmode) {
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].fillbox(Gui.internalx,Gui.internaly,w1,h,haxegon_Col.BLACK,0.5);
+		Gui.windowlist[Gui.currentwindow].skipboundarycheck = true;
+		Gui.windowlist[Gui.currentwindow].print(Gui.internalx,Gui.internaly,Gui.id,haxegon_Col.WHITE,1,Gui.guisettings.font,Gui.guisettings.size / 2 | 0);
+	}
+};
+Gui.end = function() {
+	if(Gui.windowlist[Gui.currentwindow].windowmemory.layoutpass) {
+		Gui.windowlist[Gui.currentwindow].finishboundary();
+	}
+	if(Gui.windowlist[Gui.currentwindow].type == 1) {
+		if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryw,Gui.windowlist[Gui.currentwindow].windowmemory.boundaryh)) {
+			Gui.hotitem = Gui.windowlist[Gui.currentwindow].id;
+			if(Gui.activeitem == "" && haxegon_Mouse.leftheld()) {
+				Gui.activeitem = Gui.windowlist[Gui.currentwindow].id;
+			}
+		}
+		if(Gui.activeitem == Gui.windowlist[Gui.currentwindow].id) {
+			Gui.windowlist[Gui.currentwindow].windowmemory.windowxoff += haxegon_Mouse.deltax;
+			Gui.windowlist[Gui.currentwindow].windowmemory.windowyoff += haxegon_Mouse.deltay;
+		}
+	}
+	Gui.windowhierarchy.pop();
+	if(Gui.windowhierarchy.length == 0) {
+		Gui.currentwindow = 0;
+	} else {
+		Gui.currentwindow = Gui.windowhierarchy[Gui.windowhierarchy.length - 1];
+	}
+};
+Gui.shift = function() {
+	Gui.windowlist[Gui.currentwindow].horizontalmove();
+};
+Gui.nextrow = function() {
+	Gui.windowlist[Gui.currentwindow].nextrow();
+};
+Gui.space = function() {
+	Gui.windowlist[Gui.currentwindow].y += Gui.guisettings.buttonspacing;
+};
+Gui.adjustposition = function(_x,_y) {
+	Gui.windowlist[Gui.currentwindow].x += _x;
+	Gui.windowlist[Gui.currentwindow].y += _y;
+};
+Gui.moveto = function(_x,_y) {
+	if(Gui.windowlist[Gui.currentwindow].type == 1) {
+		Gui.windowlist[Gui.currentwindow].x = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx + _x;
+		Gui.windowlist[Gui.currentwindow].y = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy + _y;
+	} else {
+		Gui.windowlist[Gui.currentwindow].x = _x;
+		Gui.windowlist[Gui.currentwindow].y = _y;
+	}
+};
+Gui.align = function(newalignment) {
+	Gui.alignment = newalignment;
+};
+Gui.setfont = function(_font,_size) {
+	if(!Gui.enabled) {
+		Gui.enable();
+	}
+	Gui.guisettings = new _$Gui_GuiSettings(_font,_size == null ? 1 : _size);
+};
+Gui.idinuse = function(id) {
+	var _g1 = 0;
+	var _g = Gui.previousid_pos;
+	while(_g1 < _g) {
+		var i = _g1++;
+		if(Gui.previousid[i] == id) {
+			return true;
+		}
+	}
+	return false;
+};
+Gui.posid = function(pos) {
+	Gui.newid = pos.fileName + "_" + pos.lineNumber;
+	while(Gui.idinuse(Gui.newid)) Gui.newid = Gui.newid + "_";
+	if(Gui.previousid_pos < Gui.previousid.length) {
+		Gui.previousid[Gui.previousid_pos] = Gui.newid;
+	} else {
+		Gui.previousid.push(Gui.newid);
+	}
+	Gui.previousid_pos++;
+	return Gui.newid;
+};
+Gui.enable = function() {
+	if(!Gui.enabled) {
+		haxegon_Core.registerplugin("gui","0.1.0");
+		haxegon_Core.checkrequirement("gui","haxegon","0.12.0");
+		haxegon_Core.extend_startframe(Gui.prepare);
+		haxegon_Core.extend_endframe(Gui.finish);
+		Gui.guisettings = new _$Gui_GuiSettings("default",1);
+		Gui.style = new _$Gui_GuiStyle();
+		Gui.enabled = true;
+		Gui.hotitem = "";
+		Gui.activeitem = "";
+		Gui.id = "";
+		Gui.idcount = 0;
+		Gui.haskeyboardfocus = "";
+		Gui.requestingkeyboardfocus = "";
+		Gui.previoushotitem = "";
+		Gui.previousid = [];
+		Gui.previousid_pos = 0;
+		Gui.windowlist = [];
+		Gui.windowhierarchy = [];
+		Gui.guiwindowmemory = new haxe_ds_StringMap();
+		Gui.guimenuitemcache = new haxe_ds_StringMap();
+		Gui.guimenubarcache = new haxe_ds_StringMap();
+		Gui.guiradiocache = new haxe_ds_StringMap();
+		Gui.guitextlabelcache = new haxe_ds_StringMap();
+		Gui.guiprintcache = new haxe_ds_StringMap();
+		Gui.prepare();
+	}
+};
+Gui.prepare = function() {
+	Gui.id = "";
+	Gui.previousid_pos = 0;
+	Gui.idcount = 0;
+	Gui.hotitem = "";
+	var _g1 = 0;
+	var _g = Gui.windowlist.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		Gui.windowlist[i].active = false;
+		var _g3 = 0;
+		var _g2 = Gui.windowlist[i].rendercommand.length;
+		while(_g3 < _g2) {
+			var j = _g3++;
+			Gui.windowlist[i].rendercommand[j].active = false;
+		}
+		Gui.windowlist[i].lastrendercommand = 0;
+	}
+	var w = Gui.getwindow();
+	Gui.windowlist[w].init(Gui.guisettings.buttonspacing,Gui.guisettings.buttonspacing,"frame");
+	Gui.windowlist[w].type = 0;
+	Gui.currentwindow = w;
+	Gui.windowhierarchy = [w];
+	Gui.alignment = haxegon_Text.LEFT;
+};
+Gui.getwindow = function() {
+	var _g1 = 0;
+	var _g = Gui.windowlist.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		if(Gui.windowlist[i].active == false) {
+			return i;
+		}
+	}
+	Gui.windowlist.push(new _$Gui_GuiWindow());
+	return Gui.windowlist.length - 1;
+};
+Gui.finish = function() {
+	Gui.textfont = haxegon_Text.get_font();
+	Gui.textalign = haxegon_Text.align;
+	Gui.textsize = haxegon_Text.get_size();
+	var _g1 = 0;
+	var _g = Gui.windowlist.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		if(!Gui.windowlist[i].windowmemory.layoutpass) {
+			var _g3 = 0;
+			var _g2 = Gui.windowlist[i].rendercommand.length;
+			while(_g3 < _g2) {
+				var j = _g3++;
+				if(!Gui.windowlist[i].rendercommand[j].active) {
+					break;
+				}
+				Gui.windowlist[i].rendercommand[j].draw();
+			}
+		}
+	}
+	haxegon_Text.set_font(Gui.textfont);
+	haxegon_Text.align = Gui.textalign;
+	haxegon_Text.set_size(Gui.textsize);
+	Gui.previoushotitem = Gui.hotitem;
+	if(!haxegon_Mouse.leftheld()) {
+		Gui.activeitem = "";
+	} else if(Gui.activeitem == "") {
+		Gui.activeitem = "-";
+	}
+};
+Gui.mouseoverwindow = function() {
+	var _g1 = 0;
+	var _g = Gui.windowlist.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		if(Gui.windowlist[i].type != 0) {
+			if(!Gui.windowlist[i].windowmemory.layoutpass) {
+				if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),Gui.windowlist[i].windowmemory.newboundaryx,Gui.windowlist[i].windowmemory.newboundaryy,Gui.windowlist[i].windowmemory.newboundaryw,Gui.windowlist[i].windowmemory.newboundaryh)) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+};
+Gui.get_x = function() {
+	return Gui.windowlist[Gui.currentwindow].x;
+};
+Gui.get_y = function() {
+	return Gui.windowlist[Gui.currentwindow].y;
+};
+Gui.set_x = function(newx) {
+	Gui.windowlist[Gui.currentwindow].x = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryx + newx;
+	return Gui.windowlist[Gui.currentwindow].x;
+};
+Gui.set_y = function(newy) {
+	Gui.windowlist[Gui.currentwindow].y = Gui.windowlist[Gui.currentwindow].windowmemory.boundaryy + newy;
+	return Gui.windowlist[Gui.currentwindow].y;
+};
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
 HxOverrides.__name__ = ["HxOverrides"];
@@ -4456,6 +5712,8 @@ var Main = function() {
 	this.drawing_wires = false;
 	this.drawing_wires_initial_click = false;
 	this.outline_color = 5394780;
+	this.resolution_tick = true;
+	this.simulating = false;
 	this.grid_y = 100;
 	this.grid_x = 100;
 	this.grid_height = 8;
@@ -4551,16 +5809,35 @@ Main.prototype = {
 			var _g4 = this.grid_width;
 			while(_g5 < _g4) {
 				var c = _g5++;
-				_g3.push({ up : -1, down : -1, right : -1, left : -1, hovering : 0});
+				_g3.push(new Wire_$Module({ r : r, c : c}));
 			}
 			_g.push(_g3);
 		}
 		this.wire_grid = _g;
-		Wire.load_wire_spritesheet();
+		this.wire_grid[0][0] = new Power_$Module({ r : 0, c : 0});
+		this.wire_grid[2][0] = new Power_$Module({ r : 2, c : 0});
+		Wire_$Module.load_wire_spritesheet();
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		this.handle_wire_drawing();
+		Gui.window(null,null,null,null,{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "update"});
+		if(!this.simulating) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 49, className : "Main", methodName : "update"})) {
+				this.simulating = true;
+				this.resolution_tick = true;
+			}
+		} else {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 55, className : "Main", methodName : "update"})) {
+				this.simulating = false;
+				this.restart_modules();
+			}
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 59, className : "Main", methodName : "update"})) {
+				this.tick();
+			}
+		}
+		if(!this.simulating) {
+			this.handle_wire_drawing();
+		}
 		this.draw_wire_grid();
 	}
 	,wire_grid: null
@@ -4568,7 +5845,53 @@ Main.prototype = {
 	,grid_height: null
 	,grid_x: null
 	,grid_y: null
+	,simulating: null
+	,resolution_tick: null
 	,outline_color: null
+	,tick: function() {
+		if(this.resolution_tick) {
+			var _g = 0;
+			var _g1 = this.wire_grid;
+			while(_g < _g1.length) {
+				var row = _g1[_g];
+				++_g;
+				var _g2 = 0;
+				while(_g2 < row.length) {
+					var wm = row[_g2];
+					++_g2;
+					wm.resolve_tick();
+				}
+			}
+		} else {
+			var _g3 = 0;
+			var _g11 = this.wire_grid;
+			while(_g3 < _g11.length) {
+				var row1 = _g11[_g3];
+				++_g3;
+				var _g21 = 0;
+				while(_g21 < row1.length) {
+					var wm1 = row1[_g21];
+					++_g21;
+					wm1.start_power_tick(this);
+				}
+			}
+		}
+		this.resolution_tick = !this.resolution_tick;
+	}
+	,restart_modules: function() {
+		var _g = 0;
+		var _g1 = this.wire_grid;
+		while(_g < _g1.length) {
+			var row = _g1[_g];
+			++_g;
+			var _g2 = 0;
+			while(_g2 < row.length) {
+				var wm = row[_g2];
+				++_g2;
+				wm.restart_module();
+			}
+		}
+	}
 	,get_hover_cell: function() {
 		var mx = haxegon_Mouse.get_x() - this.grid_x;
 		var my = haxegon_Mouse.get_y() - this.grid_y;
@@ -4591,15 +5914,13 @@ Main.prototype = {
 	,handle_wire_drawing: function() {
 		var hover_cell = this.get_hover_cell();
 		if(hover_cell == null) {
-			if(this.drawing_wires_initial_click) {
-				var wm = this.get_wire_from_cell(this.drawing_last_cell);
-				if(Wire.get_wire_status(wm,this.drawing_last_dir) == -1) {
-					Wire.set_wire_status(wm,this.drawing_last_dir,0);
-				} else if(this.drawing_backwards) {
-					Wire.set_wire_status(wm,this.drawing_last_dir,-1);
-				}
-			}
 			if(this.drawing_wires) {
+				var wm = this.get_wire_from_cell(this.drawing_last_cell);
+				if(wm.get_wire_status(this.drawing_last_dir) == -1) {
+					wm.set_wire_status(this.drawing_last_dir,0);
+				} else if(this.drawing_backwards) {
+					wm.set_wire_status(this.drawing_last_dir,-1);
+				}
 				this.drawing_wires_initial_click = false;
 				this.drawing_wires = false;
 			}
@@ -4615,7 +5936,7 @@ Main.prototype = {
 			this.drawing_wires = true;
 			this.drawing_last_cell = hover_cell;
 			var wm2 = this.get_wire_from_cell(hover_cell);
-			if(Wire.get_wire_status(wm2,hover_dir) != -1) {
+			if(wm2.get_wire_status(hover_dir) != -1) {
 				this.drawing_backwards = true;
 				this.drawing_entry_dir = 0;
 			} else {
@@ -4658,12 +5979,12 @@ Main.prototype = {
 							final_dir = new_dir1;
 							new_dir1 = Main.opposite_dir(this.drawing_last_dir);
 						}
-						var last_dir_status = Wire.get_wire_status(last_wm,this.drawing_last_dir);
-						var new_dir_status = Wire.get_wire_status(new_wm,new_dir1);
+						var last_dir_status = last_wm.get_wire_status(this.drawing_last_dir);
+						var new_dir_status = new_wm.get_wire_status(new_dir1);
 						var last_enabled = last_dir_status != -1;
 						var new_enabled = new_dir_status != -1;
 						if(this.drawing_backwards) {
-							Wire.set_wire_status(last_wm,this.drawing_last_dir,-1);
+							last_wm.set_wire_status(this.drawing_last_dir,-1);
 							if(new_enabled) {
 								this.drawing_entry_dir = 0;
 							} else {
@@ -4673,12 +5994,12 @@ Main.prototype = {
 						} else if(new_enabled && this.drawing_last_dir == this.drawing_entry_dir) {
 							this.drawing_backwards = true;
 							if(last_enabled) {
-								Wire.set_wire_status(last_wm,this.drawing_last_dir,-1);
+								last_wm.set_wire_status(this.drawing_last_dir,-1);
 							}
 							this.drawing_entry_dir = 0;
 						} else {
 							if(!last_enabled) {
-								Wire.set_wire_status(last_wm,this.drawing_last_dir,0);
+								last_wm.set_wire_status(this.drawing_last_dir,0);
 							}
 							this.drawing_entry_dir = new_dir1;
 							this.drawing_last_dir = new_dir1;
@@ -4694,13 +6015,12 @@ Main.prototype = {
 			}
 		}
 		if(this.drawing_wires && !haxegon_Mouse.leftheld()) {
-			haxe_Log.trace("Mouse release",{ fileName : "Main.hx", lineNumber : 281, className : "Main", methodName : "handle_wire_drawing"});
 			var wm4 = this.get_wire_from_cell(this.drawing_last_cell);
 			if(this.drawing_wires_initial_click) {
-				Wire.set_wire_status(wm4,this.drawing_last_dir,Wire.get_wire_status(wm4,this.drawing_last_dir) == -1 ? 0 : -1);
+				wm4.set_wire_status(this.drawing_last_dir,wm4.get_wire_status(this.drawing_last_dir) == -1 ? 0 : -1);
 				this.drawing_wires_initial_click = false;
-			} else if(this.drawing_entry_dir != 0 && Wire.get_wire_status(wm4,this.drawing_last_dir) == -1) {
-				Wire.set_wire_status(wm4,this.drawing_last_dir,0);
+			} else if(this.drawing_entry_dir != 0 && wm4.get_wire_status(this.drawing_last_dir) == -1) {
+				wm4.set_wire_status(this.drawing_last_dir,0);
 			}
 			this.drawing_wires = false;
 		}
@@ -4718,22 +6038,22 @@ Main.prototype = {
 			if(this.drawing_wires_initial_click) {
 				this.drawing_wires_initial_click = false;
 			}
-			var last_dir_status = Wire.get_wire_status(wm,last_dir);
-			var new_dir_status = Wire.get_wire_status(wm,new_dir);
+			var last_dir_status = wm.get_wire_status(last_dir);
+			var new_dir_status = wm.get_wire_status(new_dir);
 			var last_enabled = last_dir_status != -1;
 			var new_enabled = new_dir_status != -1;
 			if(last_dir == this.drawing_entry_dir) {
 				if(this.drawing_backwards) {
 					this.drawing_backwards = false;
 				} else if(!last_enabled) {
-					Wire.set_wire_status(wm,last_dir,0);
+					wm.set_wire_status(last_dir,0);
 				}
 			} else if(new_dir == this.drawing_entry_dir && last_enabled) {
 				this.drawing_backwards = true;
-				Wire.set_wire_status(wm,last_dir,-1);
+				wm.set_wire_status(last_dir,-1);
 				this.drawing_entry_dir = new_dir;
 			} else if(this.drawing_backwards && this.drawing_entry_dir == 0) {
-				Wire.set_wire_status(wm,last_dir,-1);
+				wm.set_wire_status(last_dir,-1);
 				if(!new_enabled) {
 					this.drawing_backwards = false;
 				} else {
@@ -4751,12 +6071,27 @@ Main.prototype = {
 			var c = this.grid_width;
 			while(--c >= 0) {
 				var wm = this.wire_grid[r][c];
-				Wire.draw_wire_module(this.grid_x + c * Main.module_side_length,this.grid_y + r * Main.module_side_length,wm,false);
+				wm.draw_module(this.grid_x + c * Main.module_side_length,this.grid_y + r * Main.module_side_length,this.simulating);
 			}
 		}
 	}
 	,get_wire_from_cell: function(c) {
-		return this.wire_grid[c.r][c.c];
+		if(c.r >= 0 && c.r < this.grid_height && c.c >= 0 && c.c < this.grid_width) {
+			return this.wire_grid[c.r][c.c];
+		}
+		return null;
+	}
+	,get_up_neighbor: function(c) {
+		return this.get_wire_from_cell({ r : c.r - 1, c : c.c});
+	}
+	,get_down_neighbor: function(c) {
+		return this.get_wire_from_cell({ r : c.r + 1, c : c.c});
+	}
+	,get_left_neighbor: function(c) {
+		return this.get_wire_from_cell({ r : c.r, c : c.c - 1});
+	}
+	,get_right_neighbor: function(c) {
+		return this.get_wire_from_cell({ r : c.r, c : c.c + 1});
 	}
 	,get_cell_point: function(c) {
 		return { x : this.grid_x + c.c * Main.module_side_length, y : this.grid_y + c.r * Main.module_side_length};
@@ -4781,7 +6116,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy32:data%2Fgraphics%2Fwire_sheet.pngR0i5000R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i3413R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -5105,6 +6440,308 @@ _$_$ASSET_$_$OPENFL_$_$data_$fonts_$kankin_$ttf.prototype = $extend(openfl_text_
 	__class__: _$_$ASSET_$_$OPENFL_$_$data_$fonts_$kankin_$ttf
 });
 Math.__name__ = ["Math"];
+var Wire_$Module = function(cell) {
+	this.cell = cell;
+	this.up = -1;
+	this.down = -1;
+	this.right = -1;
+	this.left = -1;
+	this.hovering = 0;
+};
+$hxClasses["Wire_Module"] = Wire_$Module;
+Wire_$Module.__name__ = ["Wire_Module"];
+Wire_$Module.load_wire_spritesheet = function() {
+	haxegon_Gfx.loadtiles(Wire_$Module.module_sheet_name,65,65);
+};
+Wire_$Module.prototype = {
+	cell: null
+	,up: null
+	,down: null
+	,right: null
+	,left: null
+	,hovering: null
+	,get_wire_status: function(dir) {
+		switch(dir) {
+		case 1:
+			return this.up;
+		case 2:
+			return this.down;
+		case 3:
+			return this.left;
+		case 4:
+			return this.right;
+		default:
+			return -1;
+		}
+	}
+	,set_wire_status: function(dir,status) {
+		switch(dir) {
+		case 1:
+			this.up = status;
+			break;
+		case 2:
+			this.down = status;
+			break;
+		case 3:
+			this.left = status;
+			break;
+		case 4:
+			this.right = status;
+			break;
+		default:
+		}
+	}
+	,start_power_tick: function(game) {
+	}
+	,handle_power_input: function(game,dir) {
+		var input_status = this.get_wire_status(dir);
+		if(input_status != 0) {
+			return;
+		}
+		this.set_wire_status(dir,2);
+		var up_neighbor = null;
+		if(this.up == 0) {
+			this.up = 2;
+			up_neighbor = game.get_up_neighbor(this.cell);
+		}
+		var down_neighbor = null;
+		if(this.down == 0) {
+			this.down = 2;
+			down_neighbor = game.get_down_neighbor(this.cell);
+		}
+		var right_neighbor = null;
+		if(this.right == 0) {
+			this.right = 2;
+			right_neighbor = game.get_right_neighbor(this.cell);
+		}
+		var left_neighbor = null;
+		if(this.left == 0) {
+			this.left = 2;
+			left_neighbor = game.get_left_neighbor(this.cell);
+		}
+		if(up_neighbor != null) {
+			up_neighbor.handle_power_input(game,2);
+		}
+		if(down_neighbor != null) {
+			down_neighbor.handle_power_input(game,1);
+		}
+		if(right_neighbor != null) {
+			right_neighbor.handle_power_input(game,3);
+		}
+		if(left_neighbor != null) {
+			left_neighbor.handle_power_input(game,4);
+		}
+	}
+	,resolve_tick: function() {
+		this.restart_module();
+	}
+	,restart_module: function() {
+		var _g = this.up;
+		switch(_g) {
+		case 2:
+			this.up = 0;
+			break;
+		case 3:
+			this.up = 1;
+			break;
+		default:
+		}
+		var _g1 = this.down;
+		switch(_g1) {
+		case 2:
+			this.down = 0;
+			break;
+		case 3:
+			this.down = 1;
+			break;
+		default:
+		}
+		var _g2 = this.right;
+		switch(_g2) {
+		case 2:
+			this.right = 0;
+			break;
+		case 3:
+			this.right = 1;
+			break;
+		default:
+		}
+		var _g3 = this.left;
+		switch(_g3) {
+		case 2:
+			this.left = 0;
+			break;
+		case 3:
+			this.left = 1;
+			break;
+		default:
+		}
+	}
+	,draw_module: function(x,y,simulating) {
+		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,0);
+		var hover = this.hovering;
+		this.hovering = 0;
+		if(this.up == -1 && this.down == -1 && this.left == -1 && this.right == -1) {
+			if(hover != 0) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_off);
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,2);
+				haxegon_Gfx.set_imagealpha(1);
+			} else if(!simulating) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,1);
+			}
+		} else if(this.up == 2 || this.down == 2 || this.left == 2 || this.right == 2) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,3);
+		} else {
+			if(_$Wire_$Module_Wire_$Status_$Impl_$.add(this.up,this.down) + this.left + this.right == -3 && this.up == 0 && hover == 1 || this.down == 0 && hover == 2 || this.left == 0 && hover == 3 || this.right == 0 && hover == 4) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_on);
+			}
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,2);
+			haxegon_Gfx.set_imagealpha(1);
+		}
+		var _g = this.up;
+		switch(_g) {
+		case -1:
+			if(hover == 1) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_off);
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,5);
+				haxegon_Gfx.set_imagealpha(1);
+			} else if(!simulating) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,4);
+			}
+			break;
+		case 0:
+			if(hover == 1) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_on);
+			}
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,5);
+			haxegon_Gfx.set_imagealpha(1);
+			break;
+		case 2:
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,6);
+			break;
+		default:
+		}
+		var _g1 = this.down;
+		switch(_g1) {
+		case -1:
+			if(hover == 2) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_off);
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,8);
+				haxegon_Gfx.set_imagealpha(1);
+			} else if(!simulating) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,7);
+			}
+			break;
+		case 0:
+			if(hover == 2) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_on);
+			}
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,8);
+			haxegon_Gfx.set_imagealpha(1);
+			break;
+		case 2:
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,9);
+			break;
+		default:
+		}
+		var _g2 = this.left;
+		switch(_g2) {
+		case -1:
+			if(hover == 3) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_off);
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,11);
+				haxegon_Gfx.set_imagealpha(1);
+			} else if(!simulating) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,10);
+			}
+			break;
+		case 0:
+			if(hover == 3) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_on);
+			}
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,11);
+			haxegon_Gfx.set_imagealpha(1);
+			break;
+		case 2:
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,12);
+			break;
+		default:
+		}
+		var _g3 = this.right;
+		switch(_g3) {
+		case -1:
+			if(hover == 4) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_off);
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,14);
+				haxegon_Gfx.set_imagealpha(1);
+			} else if(!simulating) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,13);
+			}
+			break;
+		case 0:
+			if(hover == 4) {
+				haxegon_Gfx.set_imagealpha(Wire_$Module.hover_opacity_on);
+			}
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,14);
+			haxegon_Gfx.set_imagealpha(1);
+			break;
+		case 2:
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,15);
+			break;
+		default:
+		}
+	}
+	,__class__: Wire_$Module
+};
+var Power_$Module = function(cell) {
+	Wire_$Module.call(this,cell);
+};
+$hxClasses["Power_Module"] = Power_$Module;
+Power_$Module.__name__ = ["Power_Module"];
+Power_$Module.__super__ = Wire_$Module;
+Power_$Module.prototype = $extend(Wire_$Module.prototype,{
+	start_power_tick: function(game) {
+		var up_neighbor = null;
+		if(this.up != -1) {
+			this.up = 2;
+			up_neighbor = game.get_up_neighbor(this.cell);
+		}
+		var down_neighbor = null;
+		if(this.down != -1) {
+			this.down = 2;
+			down_neighbor = game.get_down_neighbor(this.cell);
+		}
+		var right_neighbor = null;
+		if(this.right != -1) {
+			this.right = 2;
+			right_neighbor = game.get_right_neighbor(this.cell);
+		}
+		var left_neighbor = null;
+		if(this.left != -1) {
+			this.left = 2;
+			left_neighbor = game.get_left_neighbor(this.cell);
+		}
+		if(up_neighbor != null) {
+			up_neighbor.handle_power_input(game,2);
+		}
+		if(down_neighbor != null) {
+			down_neighbor.handle_power_input(game,1);
+		}
+		if(right_neighbor != null) {
+			right_neighbor.handle_power_input(game,3);
+		}
+		if(left_neighbor != null) {
+			left_neighbor.handle_power_input(game,4);
+		}
+	}
+	,handle_power_input: function(game,dir) {
+	}
+	,draw_module: function(x,y,simulating) {
+		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
+		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,simulating ? 17 : 16);
+	}
+	,__class__: Power_$Module
+});
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
 Reflect.__name__ = ["Reflect"];
@@ -5487,186 +7124,14 @@ _$UInt_UInt_$Impl_$.toFloat = function(this1) {
 		return $int + 0.0;
 	}
 };
-var _$Wire_Wire_$Status_$Impl_$ = {};
-$hxClasses["_Wire.Wire_Status_Impl_"] = _$Wire_Wire_$Status_$Impl_$;
-_$Wire_Wire_$Status_$Impl_$.__name__ = ["_Wire","Wire_Status_Impl_"];
-_$Wire_Wire_$Status_$Impl_$.add = function(this1,b) {
+var _$Wire_$Module_Wire_$Status_$Impl_$ = {};
+$hxClasses["_Wire_Module.Wire_Status_Impl_"] = _$Wire_$Module_Wire_$Status_$Impl_$;
+_$Wire_$Module_Wire_$Status_$Impl_$.__name__ = ["_Wire_Module","Wire_Status_Impl_"];
+_$Wire_$Module_Wire_$Status_$Impl_$.add = function(this1,b) {
 	return this1 + b;
 };
-var Wire = function() { };
-$hxClasses["Wire"] = Wire;
-Wire.__name__ = ["Wire"];
-Wire.init_wire_module = function() {
-	return { up : -1, down : -1, right : -1, left : -1, hovering : 0};
-};
-Wire.get_wire_status = function(wm,dir) {
-	switch(dir) {
-	case 1:
-		return wm.up;
-	case 2:
-		return wm.down;
-	case 3:
-		return wm.left;
-	case 4:
-		return wm.right;
-	default:
-		return -1;
-	}
-};
-Wire.set_wire_status = function(wm,dir,status) {
-	switch(dir) {
-	case 1:
-		wm.up = status;
-		break;
-	case 2:
-		wm.down = status;
-		break;
-	case 3:
-		wm.left = status;
-		break;
-	case 4:
-		wm.right = status;
-		break;
-	default:
-		return;
-	}
-};
-Wire.load_wire_spritesheet = function() {
-	haxegon_Gfx.loadtiles(Wire.wire_sheet_name,65,65);
-};
-Wire.draw_wire_module = function(x,y,wm,simulating) {
-	haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,0);
-	var hover = wm.hovering;
-	wm.hovering = 0;
-	if(wm.up == -1 && wm.down == -1 && wm.left == -1 && wm.right == -1) {
-		if(hover != 0) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_off);
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,2);
-			haxegon_Gfx.set_imagealpha(1);
-		} else if(!simulating) {
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,1);
-		}
-	} else if(wm.up == 1 || wm.down == 1 || wm.left == 1 || wm.right == 1) {
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,3);
-	} else {
-		if(_$Wire_Wire_$Status_$Impl_$.add(wm.up,wm.down) + wm.left + wm.right == -3 && wm.up == 0 && hover == 1 || wm.down == 0 && hover == 2 || wm.left == 0 && hover == 3 || wm.right == 0 && hover == 4) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_on);
-		}
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,2);
-		haxegon_Gfx.set_imagealpha(1);
-	}
-	var _g = wm.up;
-	switch(_g) {
-	case -1:
-		if(hover == 1) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_off);
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,5);
-			haxegon_Gfx.set_imagealpha(1);
-		} else if(!simulating) {
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,4);
-		}
-		break;
-	case 0:
-		if(hover == 1) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_on);
-		}
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,5);
-		haxegon_Gfx.set_imagealpha(1);
-		break;
-	case 1:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,6);
-		break;
-	case 2:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,8);
-		break;
-	case 3:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,7);
-		break;
-	}
-	var _g1 = wm.down;
-	switch(_g1) {
-	case -1:
-		if(hover == 2) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_off);
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,10);
-			haxegon_Gfx.set_imagealpha(1);
-		} else if(!simulating) {
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,9);
-		}
-		break;
-	case 0:
-		if(hover == 2) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_on);
-		}
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,10);
-		haxegon_Gfx.set_imagealpha(1);
-		break;
-	case 1:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,11);
-		break;
-	case 2:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,13);
-		break;
-	case 3:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,12);
-		break;
-	}
-	var _g2 = wm.left;
-	switch(_g2) {
-	case -1:
-		if(hover == 3) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_off);
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,15);
-			haxegon_Gfx.set_imagealpha(1);
-		} else if(!simulating) {
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,14);
-		}
-		break;
-	case 0:
-		if(hover == 3) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_on);
-		}
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,15);
-		haxegon_Gfx.set_imagealpha(1);
-		break;
-	case 1:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,16);
-		break;
-	case 2:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,18);
-		break;
-	case 3:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,17);
-		break;
-	}
-	var _g3 = wm.right;
-	switch(_g3) {
-	case -1:
-		if(hover == 4) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_off);
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,20);
-			haxegon_Gfx.set_imagealpha(1);
-		} else if(!simulating) {
-			haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,19);
-		}
-		break;
-	case 0:
-		if(hover == 4) {
-			haxegon_Gfx.set_imagealpha(Wire.hover_opacity_on);
-		}
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,20);
-		haxegon_Gfx.set_imagealpha(1);
-		break;
-	case 1:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,21);
-		break;
-	case 2:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,23);
-		break;
-	case 3:
-		haxegon_Gfx.drawtile(x,y,Wire.wire_sheet_name,22);
-		break;
-	}
+_$Wire_$Module_Wire_$Status_$Impl_$.gte = function(this1,b) {
+	return this1 >= b;
 };
 var Xml = function(nodeType) {
 	this.nodeType = nodeType;
@@ -46667,7 +48132,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 456584;
+	this.version = 941791;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -96129,18 +97594,25 @@ openfl_display_DisplayObject.__tempStack = new lime_utils_ObjectPool(function() 
 },function(stack) {
 	stack.set_length(0);
 });
+Gui._changed = false;
+Gui.enabled = false;
+Gui.passwordmode = false;
+Gui.id = "";
+Gui.idcount = 0;
+Gui.newid = "";
+Gui.debugmode = false;
 Main.module_side_length = 64;
 Main.half_module_length = 32;
 openfl_text_Font.__fontByName = new haxe_ds_StringMap();
 openfl_text_Font.__registeredFonts = [];
-_$Wire_Wire_$Status_$Impl_$.disabled = -1;
-_$Wire_Wire_$Status_$Impl_$.off = 0;
-_$Wire_Wire_$Status_$Impl_$.pow_in = 1;
-_$Wire_Wire_$Status_$Impl_$.pow_out = 2;
-_$Wire_Wire_$Status_$Impl_$.pow_both = 3;
-Wire.wire_sheet_name = "wire_sheet";
-Wire.hover_opacity_off = 0.35;
-Wire.hover_opacity_on = 0.75;
+Wire_$Module.module_sheet_name = "module_sheet";
+Wire_$Module.hover_opacity_off = 0.35;
+Wire_$Module.hover_opacity_on = 0.75;
+_$Wire_$Module_Wire_$Status_$Impl_$.disabled = -1;
+_$Wire_$Module_Wire_$Status_$Impl_$.off = 0;
+_$Wire_$Module_Wire_$Status_$Impl_$.off_output = 1;
+_$Wire_$Module_Wire_$Status_$Impl_$.on = 2;
+_$Wire_$Module_Wire_$Status_$Impl_$.on_output = 3;
 Xml.Element = 0;
 Xml.PCData = 1;
 Xml.CData = 2;
