@@ -60,13 +60,23 @@ class Wire_Module {
 	// Augmentations on the module
 	//public var augs : Augmentations;
 
-	public function new(cell:Cell) {
+	public function new(cell:Cell, ?wm:Wire_Module) {
 		this.cell = cell;
-		this.up = disabled;
-		this.down = disabled;
-		this.right = disabled;
-		this.left = disabled;
-		this.hovering = NODIR;
+		if(wm != null) {
+			this.cell = wm.cell;
+			this.up = wm.up;
+			this.down = wm.down;
+			this.right = wm.right;
+			this.left = wm.left;
+			this.hovering = wm.hovering;
+		}
+		else {
+			this.up = disabled;
+			this.down = disabled;
+			this.right = disabled;
+			this.left = disabled;
+			this.hovering = NODIR;
+		}
 	}
 
 

@@ -1,5 +1,6 @@
 import haxegon.*;
 import Wire_Module.*;
+import Wire_Module.Module_Sheet;
 import Wire_Module.Wire_Status.*;
 import Power_Module;
 
@@ -12,6 +13,11 @@ abstract Direction(Int) from Int to Int {
 	var DOWN 	= 2;
 	var LEFT	= 3;
 	var RIGHT	= 4;
+}
+@:enum
+abstract Tool(Int) from Int to Int {
+	var wire 	= Module_Sheet.center_shadow;
+	var power 	= Module_Sheet.power_off;
 }
 
 
@@ -44,20 +50,21 @@ class Main {
 	function update() {
 	  	Text.display(0, 0, "Hello, Sailor!");
 
-	  	Gui.window();
+	  	Gui.window("Simulation controls", grid_x, grid_y - 64);
 	  	if(!simulating) {
 	  		if(Gui.button("Start")) {
 	  			simulating = true;
 	  			resolution_tick = true;
+	  			tick(); // Perform resolution tick on start
 	  		}
 	  	}
 	  	else {
+	  		if(Gui.button("Tick")) {
+	  			tick();
+	  		}
 	  		if(Gui.button("Stop")) {
 	  			simulating = false;
 	  			restart_modules();
-	  		}
-	  		if(Gui.button("Tick")) {
-	  			tick();
 	  		}
 	  	}
 
@@ -66,14 +73,23 @@ class Main {
 	  	}
 
 	  	draw_wire_grid();
+	  	draw_toolbar();
 	}
 
+	/* GAME PROPERTIES
+	================== */
 	var wire_grid : Array<Array<Wire_Module>>;
 
 	var grid_width = 8;
   	var grid_height = 8;
-  	var grid_x = 100;
+  	var grid_x = 200;
   	var grid_y = 100;
+
+  	var tool_x = 50;
+  	var tool_y = 100;
+  	var tool_cols = 2;
+  	var tool_side_length = 41;
+  	var tools = [ Tool.wire, Tool.power ];
 
   	var simulating = false;
   	var resolution_tick = true; // Whether or not this is a resolution_tick or a power_tick
@@ -81,6 +97,8 @@ class Main {
   	public static var module_side_length = 64;
   	public static var half_module_length = 32;
 
+  	var tile_background_color = 0x6d6b7a;
+  	var tile_focus_color = 0x878499;
   	var outline_color = 0x52515c;
 
 
@@ -355,14 +373,16 @@ class Main {
 		}
 
 		// HANDLE HOVERING
-		if(drawing_wires && drawing_last_cell != null && drawing_last_dir != NODIR) {
-			var wm = get_wire_from_cell(drawing_last_cell);
-			wm.hovering = drawing_last_dir;
-		}
-		else if(hover_cell != null) {
-			var wm = get_wire_from_cell(hover_cell);
-			var cell_point = get_cell_point(hover_cell);
-			wm.hovering = general_wire_hover_status(cell_point.x, cell_point.y);
+		if(!holding_tool) {
+			if(drawing_wires && drawing_last_cell != null && drawing_last_dir != NODIR) {
+				var wm = get_wire_from_cell(drawing_last_cell);
+				wm.hovering = drawing_last_dir;
+			}
+			else if(hover_cell != null) {
+				var wm = get_wire_from_cell(hover_cell);
+				var cell_point = get_cell_point(hover_cell);
+				wm.hovering = general_wire_hover_status(cell_point.x, cell_point.y);
+			}
 		}
 	}
 
@@ -434,11 +454,56 @@ class Main {
   		}
   	}
 
+  	var holding_tool = false;
+  	var held_tool : Tool;
+
+  	function draw_toolbar() {
+  		// Handle tool dropping
+  		if(holding_tool && Mouse.leftreleased()) {
+  			var target_cell = { r: Std.int((Mouse.y - grid_y)/module_side_length), c: Std.int((Mouse.x - grid_x)/module_side_length) };
+  			var target_wm = get_wire_from_cell(target_cell);
+  			if(target_wm != null) {
+  				wire_grid[target_cell.r][target_cell.c] = new_module_from_tool(held_tool, target_cell, target_wm);
+  			}
+  		}
+  		// Backup tool_holding stop
+  		if(holding_tool && !Mouse.leftheld()) {
+  			holding_tool = false;
+  		}
+
+  		// Draw toolbar
+  		var sprite_offset = Math.round((module_side_length - tool_side_length)/2);
+  		for(i in 0...tools.length) {
+  			var x = tool_x + 1 + (i%tool_cols)*(tool_side_length+1);
+  			var y = tool_y + 1 + Std.int(i/tool_cols)*(tool_side_length+1);
+  			var sprite_x = x - sprite_offset;
+  			var sprite_y = y - sprite_offset;
+  			Gfx.drawbox(x-1, y-1, tool_side_length+2, tool_side_length+2, outline_color);
+  			var tile_fill_color = tile_background_color;
+  			// Respond to hover and TEMPORARILY HERE RESPOND TO DRAG
+  			if(!holding_tool && Geom.inbox(Mouse.x, Mouse.y, x, y, tool_side_length, tool_side_length)) {
+  				tile_fill_color = tile_focus_color;
+  				if(Mouse.leftclick()) {
+  					holding_tool = true;
+  					held_tool = tools[i];
+  				}
+  			}
+  			Gfx.fillbox(x, y, tool_side_length, tool_side_length, tile_fill_color);
+  			Gfx.drawtile(sprite_x, sprite_y, module_sheet_name, tools[i]);
+  		}
+
+  		// Draw ghost when holding
+  		if(holding_tool) {
+  			var drag_sprite_offset = Std.int(module_side_length/2);
+  			Gfx.drawtile(Mouse.x-drag_sprite_offset, Mouse.y-drag_sprite_offset, module_sheet_name, held_tool);
+  		}
+  	}
+
 
 
   	/* CELL HELPERS
  	=============== */
- 	public function get_wire_from_cell(c:Cell) {
+ 	public function get_wire_from_cell(c:Cell):Wire_Module {
  		if(c.r >= 0 && c.r < grid_height && c.c >= 0 && c.c < grid_width)
  			return wire_grid[c.r][c.c];
  		return null;
@@ -480,6 +545,14 @@ class Main {
  			case LEFT: RIGHT;
  			case RIGHT: LEFT;
  			default: NODIR;
+ 		}
+ 	}
+
+ 	public static function new_module_from_tool(tool:Tool, cell:Cell, ?wm:Wire_Module) {
+ 		return switch(tool) {
+ 			case wire: new Wire_Module(cell, wm);
+ 			case power: new Power_Module(cell, wm);
+ 			default: null;
  		}
  	}
 }
