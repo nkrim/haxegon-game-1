@@ -35,4 +35,9 @@ $ase --batch \
 --ignore-layer "Right" \
 --layer "Power/BG" $sprite \
 --layer "Power/On" $sprite \
+--ignore-layer "Power" \
+--layer "Bridge/BG" $sprite \
+--layer "Bridge/On_Horiz" $sprite \
+--layer "Bridge/On_Vert" $sprite \
+--ignore-layer "Bridge/On_Horiz" $sprite \
 --sheet $out --sheet-pack
