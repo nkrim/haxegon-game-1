@@ -2,7 +2,9 @@ import haxegon.*;
 import Wire_Module.*;
 import Wire_Module.Module_Sheet;
 import Wire_Module.Wire_Status.*;
-import Power_Module;
+// Modules
+import Modules.Power_Module;
+import Modules.Bridge_Module;
 
 
 /* ENUM CLASSES */
@@ -18,6 +20,7 @@ abstract Direction(Int) from Int to Int {
 abstract Tool(Int) from Int to Int {
 	var wire 	= Module_Sheet.center_shadow;
 	var power 	= Module_Sheet.power_off;
+	var bridge 	= Module_Sheet.bridge_off;
 }
 
 
@@ -40,8 +43,8 @@ class Main {
 	  	Gfx.clearcolor = 0x222222;
 
 	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
-	  	wire_grid[0][0] = new Power_Module({r:0,c:0});
-	  	wire_grid[2][0] = new Power_Module({r:2,c:0});
+	  	// wire_grid[0][0] = new Power_Module({r:0,c:0});
+	  	// wire_grid[2][0] = new Power_Module({r:2,c:0});
 
 	  	// Init sheet loading
 	  	Wire_Module.load_wire_spritesheet();
@@ -89,7 +92,7 @@ class Main {
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;
-  	var tools = [ Tool.wire, Tool.power ];
+  	var tools = [ Tool.wire, Tool.power, Tool.bridge ];
 
   	var simulating = false;
   	var resolution_tick = true; // Whether or not this is a resolution_tick or a power_tick
@@ -552,6 +555,7 @@ class Main {
  		return switch(tool) {
  			case wire: new Wire_Module(cell, wm);
  			case power: new Power_Module(cell, wm);
+ 			case bridge: new Bridge_Module(cell, wm);
  			default: null;
  		}
  	}

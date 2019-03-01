@@ -24,6 +24,10 @@ abstract Module_Sheet(Int) from Int to Int {
 	var right_on		= 15;
 	var power_off 		= 16;
 	var power_on 		= 17;
+	var bridge_off 		= 18;
+	var bridge_on_horiz	= 19;
+	var bridge_on_both  = 20;
+	var bridge_on_vert  = 21;
 }
 
 /* ENUM CLASSES */

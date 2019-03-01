@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","12");
+		_this.setReserved("build","15");
 	} else {
-		_this.h["build"] = "12";
+		_this.h["build"] = "15";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5717,7 +5717,7 @@ var Main = function() {
 	this.tile_background_color = 7170938;
 	this.resolution_tick = true;
 	this.simulating = false;
-	this.tools = [1,16];
+	this.tools = [1,16,18];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
@@ -5808,6 +5808,8 @@ Main.new_module_from_tool = function(tool,cell,wm) {
 		return new Wire_$Module(cell,wm);
 	case 16:
 		return new Power_$Module(cell,wm);
+	case 18:
+		return new Bridge_$Module(cell,wm);
 	default:
 		return null;
 	}
@@ -5832,24 +5834,22 @@ Main.prototype = {
 			_g.push(_g3);
 		}
 		this.wire_grid = _g;
-		this.wire_grid[0][0] = new Power_$Module({ r : 0, c : 0});
-		this.wire_grid[2][0] = new Power_$Module({ r : 2, c : 0});
 		Wire_$Module.load_wire_spritesheet();
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 53, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 56, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 55, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 58, className : "Main", methodName : "update"})) {
 				this.simulating = true;
 				this.resolution_tick = true;
 				this.tick();
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 62, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 65, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 65, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 68, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
 			}
@@ -6184,7 +6184,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i3413R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i4470R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -6818,6 +6818,62 @@ Power_$Module.prototype = $extend(Wire_$Module.prototype,{
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,simulating ? 17 : 16);
 	}
 	,__class__: Power_$Module
+});
+var Bridge_$Module = function(cell,wm) {
+	Wire_$Module.call(this,cell,wm);
+};
+$hxClasses["Bridge_Module"] = Bridge_$Module;
+Bridge_$Module.__name__ = ["Bridge_Module"];
+Bridge_$Module.__super__ = Wire_$Module;
+Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
+	handle_power_input: function(game,dir) {
+		var input_status = this.get_wire_status(dir);
+		if(input_status != 0) {
+			return;
+		}
+		if(dir == 1 || dir == 2) {
+			this.up = 2;
+			this.down = 2;
+		} else {
+			this.left = 2;
+			this.right = 2;
+		}
+		var bridge_to_neighbor;
+		switch(dir) {
+		case 1:
+			bridge_to_neighbor = game.get_down_neighbor(this.cell);
+			break;
+		case 2:
+			bridge_to_neighbor = game.get_up_neighbor(this.cell);
+			break;
+		case 3:
+			bridge_to_neighbor = game.get_right_neighbor(this.cell);
+			break;
+		case 4:
+			bridge_to_neighbor = game.get_left_neighbor(this.cell);
+			break;
+		default:
+			bridge_to_neighbor = null;
+		}
+		if(bridge_to_neighbor != null) {
+			bridge_to_neighbor.handle_power_input(game,dir);
+		}
+	}
+	,draw_module: function(x,y,simulating) {
+		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
+		var vert_powered = this.up == 2 && this.down == 2;
+		var horiz_powered = this.left == 2 && this.right == 2;
+		var sprite = 18;
+		if(vert_powered && horiz_powered) {
+			sprite = 20;
+		} else if(horiz_powered) {
+			sprite = 19;
+		} else if(vert_powered) {
+			sprite = 21;
+		}
+		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,sprite);
+	}
+	,__class__: Bridge_$Module
 });
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
@@ -48209,7 +48265,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 917039;
+	this.version = 83748;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
