@@ -50,12 +50,12 @@ class Bridge_Module extends Wire_Module {
 		if(input_status != off)
 			return;
 		if(dir == UP || dir == DOWN) {
-			this.up = on;
-			this.down = on;
+			if(this.up != disabled) this.up = on;
+			if(this.down != disabled) this.down = on;
 		}
 		else {
-			this.left = on;
-			this.right = on;
+			if(this.left != disabled) this.left = on;
+			if(this.right != disabled) this.right = on;
 		}
 		var bridge_to_neighbor = switch(dir) {
 			case UP: game.get_down_neighbor(this.cell);
@@ -71,8 +71,8 @@ class Bridge_Module extends Wire_Module {
 
 	public override function draw_module(x:Int, y:Int, simulating:Bool) {
 		super.draw_module(x, y, simulating);
-		var vert_powered = this.up == on && this.down == on;
-		var horiz_powered = this.left == on && this.right == on;
+		var vert_powered = this.up == on || this.down == on;
+		var horiz_powered = this.left == on || this.right == on;
 		var sprite = Module_Sheet.bridge_off;
 		if(vert_powered && horiz_powered)
 			sprite = Module_Sheet.bridge_on_both;

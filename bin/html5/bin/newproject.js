@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","15");
+		_this.setReserved("build","16");
 	} else {
-		_this.h["build"] = "15";
+		_this.h["build"] = "16";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6832,11 +6832,19 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 			return;
 		}
 		if(dir == 1 || dir == 2) {
-			this.up = 2;
-			this.down = 2;
+			if(this.up != -1) {
+				this.up = 2;
+			}
+			if(this.down != -1) {
+				this.down = 2;
+			}
 		} else {
-			this.left = 2;
-			this.right = 2;
+			if(this.left != -1) {
+				this.left = 2;
+			}
+			if(this.right != -1) {
+				this.right = 2;
+			}
 		}
 		var bridge_to_neighbor;
 		switch(dir) {
@@ -6861,8 +6869,8 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 	}
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
-		var vert_powered = this.up == 2 && this.down == 2;
-		var horiz_powered = this.left == 2 && this.right == 2;
+		var vert_powered = this.up == 2 || this.down == 2;
+		var horiz_powered = this.left == 2 || this.right == 2;
 		var sprite = 18;
 		if(vert_powered && horiz_powered) {
 			sprite = 20;
@@ -48265,7 +48273,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 83748;
+	this.version = 491165;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
