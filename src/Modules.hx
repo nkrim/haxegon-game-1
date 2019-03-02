@@ -103,8 +103,17 @@ class Diode_Module extends Wire_Module {
 
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
-		if(wm != null && Std.is(wm, Diode_Module)) {
-			var dwm = cast (wm, Diode_Module);
+		// Attempt to cast wm to a Diode_Module
+		var valid_cast = true;
+		var dwm : Diode_Module = null;
+		try {
+			dwm = cast (wm, Diode_Module);
+		}
+		catch ( cannot_cast_msg : String ) {
+			valid_cast = false;
+		}
+		// If a valid_cast and dwm exists, use it's values to fill this module's
+		if(valid_cast && dwm != null) {
 			this.and_diode = dwm.and_diode;
 			this.up_output = dwm.up_output;
 			this.down_output = dwm.down_output;

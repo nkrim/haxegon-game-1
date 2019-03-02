@@ -50,6 +50,9 @@ class Main {
 
 	  	// Init sheet loading
 	  	Wire_Module.load_wire_spritesheet();
+
+	  	// DEBUG VALUES
+	  	Core.showstats = true;
 	}
   
 	function update() {
@@ -90,7 +93,7 @@ class Main {
   	var grid_x = 200;
   	var grid_y = 100;
 
-  	var tool_x = 50;
+  	var tool_x = 100;
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;

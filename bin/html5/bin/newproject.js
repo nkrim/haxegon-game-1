@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","19");
+		_this.setReserved("build","20");
 	} else {
-		_this.h["build"] = "19";
+		_this.h["build"] = "20";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5721,7 +5721,7 @@ var Main = function() {
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
-	this.tool_x = 50;
+	this.tool_x = 100;
 	this.grid_y = 100;
 	this.grid_x = 200;
 	this.grid_height = 8;
@@ -5837,21 +5837,22 @@ Main.prototype = {
 		}
 		this.wire_grid = _g;
 		Wire_$Module.load_wire_spritesheet();
+		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 58, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 61, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 60, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 63, className : "Main", methodName : "update"})) {
 				this.simulating = true;
 				this.resolution_tick = true;
 				this.tick();
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 67, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 73, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
 			}
@@ -6859,18 +6860,28 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 });
 var Diode_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	if(wm != null && js_Boot.__instanceof(wm,Diode_$Module)) {
-		var dwm = js_Boot.__cast(wm , Diode_$Module);
+	var valid_cast = true;
+	var dwm = null;
+	try {
+		dwm = js_Boot.__cast(wm , Diode_$Module);
+	} catch( cannot_cast_msg ) {
+		haxe_CallStack.lastException = cannot_cast_msg;
+		if (cannot_cast_msg instanceof js__$Boot_HaxeError) cannot_cast_msg = cannot_cast_msg.val;
+		if( js_Boot.__instanceof(cannot_cast_msg,String) ) {
+			valid_cast = false;
+		} else throw(cannot_cast_msg);
+	}
+	if(valid_cast && dwm != null) {
 		this.and_diode = dwm.and_diode;
 		this.up_output = dwm.up_output;
 		this.down_output = dwm.down_output;
 		this.right_output = dwm.right_output;
 		this.left_output = dwm.left_output;
 	} else {
-		this.and_diode = true;
+		this.and_diode = false;
 		this.up_output = false;
-		this.down_output = true;
-		this.right_output = true;
+		this.down_output = false;
+		this.right_output = false;
 		this.left_output = false;
 	}
 };
@@ -48387,7 +48398,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 562689;
+	this.version = 61357;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
