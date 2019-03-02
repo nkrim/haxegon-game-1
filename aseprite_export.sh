@@ -40,4 +40,32 @@ $ase --batch \
 --layer "Bridge/On_Horiz" $sprite \
 --layer "Bridge/On_Vert" $sprite \
 --ignore-layer "Bridge/On_Horiz" $sprite \
+--ignore-layer "Bridge" \
+--layer "Diode/BG" $sprite \
+--layer "Diode/On" $sprite \
+--ignore-layer "Diode/BG" --ignore-layer "Diode/On" \
+--layer "Diode/Outputs/Up/BG" $sprite \
+--layer "Diode/Outputs/Up/On" $sprite \
+--ignore-layer "Diode/Outputs/Up" \
+--layer "Diode/Outputs/Down/BG" $sprite \
+--layer "Diode/Outputs/Down/On" $sprite \
+--ignore-layer "Diode/Outputs/Down" \
+--layer "Diode/Outputs/Left/BG" $sprite \
+--layer "Diode/Outputs/Left/On" $sprite \
+--ignore-layer "Diode/Outputs/Left" \
+--layer "Diode/Outputs/Right/BG" $sprite \
+--layer "Diode/Outputs/Right/On" $sprite \
+--ignore-layer "Diode/Outputs/Right" \
+--layer "Diode/Inputs/Up/BG" $sprite \
+--layer "Diode/Inputs/Up/On" $sprite \
+--ignore-layer "Diode/Inputs/Up" \
+--layer "Diode/Inputs/Down/BG" $sprite \
+--layer "Diode/Inputs/Down/On" $sprite \
+--ignore-layer "Diode/Inputs/Down" \
+--layer "Diode/Inputs/Left/BG" $sprite \
+--layer "Diode/Inputs/Left/On" $sprite \
+--ignore-layer "Diode/Inputs/Left" \
+--layer "Diode/Inputs/Right/BG" $sprite \
+--layer "Diode/Inputs/Right/On" $sprite \
+--ignore-layer "Diode" \
 --sheet $out --sheet-pack
