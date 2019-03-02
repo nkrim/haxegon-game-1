@@ -6,28 +6,46 @@ import Main.Direction;
 /* WIRE SPRITE SHEET MAPPINGS */
 @:enum
 abstract Module_Sheet(Int) from Int to Int {
-  	var base 			= 0;
-  	var center_shadow   = 1;
-	var center_off 		= 2;
-	var center_on		= 3;
-	var up_shadow		= 4;
-	var up_off			= 5;
-	var up_on			= 6;
-	var down_shadow     = 7;
-	var down_off		= 8;
-	var down_on			= 9;
-	var left_shadow     = 10;
-	var left_off		= 11;
-	var left_on			= 12;
-	var right_shadow    = 13;
-	var right_off		= 14;
-	var right_on		= 15;
-	var power_off 		= 16;
-	var power_on 		= 17;
-	var bridge_off 		= 18;
-	var bridge_on_horiz	= 19;
-	var bridge_on_both  = 20;
-	var bridge_on_vert  = 21;
+  	var base 					= 0;
+  	var center_shadow   		= 1;
+	var center_off 				= 2;
+	var center_on				= 3;
+	var up_shadow				= 4;
+	var up_off					= 5;
+	var up_on					= 6;
+	var down_shadow     		= 7;
+	var down_off				= 8;
+	var down_on					= 9;
+	var left_shadow     		= 10;
+	var left_off				= 11;
+	var left_on					= 12;
+	var right_shadow    		= 13;
+	var right_off				= 14;
+	var right_on				= 15;
+	var power_off 				= 16;
+	var power_on 				= 17;
+	var bridge_off 				= 18;
+	var bridge_on_horiz			= 19;
+	var bridge_on_both  		= 20;
+	var bridge_on_vert  		= 21;
+	var diode_off 				= 22;
+	var diode_on 				= 23;
+	var diode_out_up_off 		= 24;
+	var diode_out_up_on 		= 25;
+	var diode_out_down_off 		= 26;
+	var diode_out_down_on 		= 27;
+	var diode_out_left_off 		= 28;
+	var diode_out_left_on 		= 29;
+	var diode_out_right_off 	= 30;
+	var diode_out_right_on 		= 31;
+	var diode_in_up_off 		= 32;
+	var diode_in_up_on 			= 33;
+	var diode_in_down_off 		= 34;
+	var diode_in_down_on 		= 35;
+	var diode_in_left_off 		= 36;
+	var diode_in_left_on 		= 37;
+	var diode_in_right_off 		= 38;
+	var diode_in_right_on 		= 39;
 }
 
 /* ENUM CLASSES */
@@ -35,9 +53,7 @@ abstract Module_Sheet(Int) from Int to Int {
 abstract Wire_Status(Int) from Int to Int {
 	var disabled	= -1;
 	var off 		= 0;
-	var off_output  = 1;
-	var on 			= 2;
-	var on_output   = 3;
+	var on 			= 1;
 
 	@:op(A + B)
 	public function add(b:Int):Int {
@@ -152,26 +168,14 @@ class Wire_Module {
 	}
 
 	public function restart_module() {
-		switch(this.up) {
-			case on: this.up = off;
-			case on_output: this.up = off_output;
-			default: null;
-		}
-		switch(this.down) {
-			case on: this.down = off;
-			case on_output: this.down = off_output;
-			default: null;
-		}
-		switch(this.right) {
-			case on: this.right = off;
-			case on_output: this.right = off_output;
-			default: null;
-		}
-		switch(this.left) {
-			case on: this.left = off;
-			case on_output: this.left = off_output;
-			default: null;
-		}
+		if(this.up == on)
+			this.up = off;
+		if(this.down == on)
+			this.down = off;
+		if(this.right == on)
+			this.right = off;
+		if(this.left == on)
+			this.left = off;
 	}
 
 

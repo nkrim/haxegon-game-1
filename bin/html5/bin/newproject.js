@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","16");
+		_this.setReserved("build","19");
 	} else {
-		_this.h["build"] = "16";
+		_this.h["build"] = "19";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5717,7 +5717,7 @@ var Main = function() {
 	this.tile_background_color = 7170938;
 	this.resolution_tick = true;
 	this.simulating = false;
-	this.tools = [1,16,18];
+	this.tools = [1,16,18,22];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
@@ -5810,6 +5810,8 @@ Main.new_module_from_tool = function(tool,cell,wm) {
 		return new Power_$Module(cell,wm);
 	case 18:
 		return new Bridge_$Module(cell,wm);
+	case 22:
+		return new Diode_$Module(cell,wm);
 	default:
 		return null;
 	}
@@ -5838,18 +5840,18 @@ Main.prototype = {
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 56, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 58, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 58, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 60, className : "Main", methodName : "update"})) {
 				this.simulating = true;
 				this.resolution_tick = true;
 				this.tick();
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 65, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 67, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 68, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
 			}
@@ -6184,7 +6186,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i4470R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i5615R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -6575,25 +6577,25 @@ Wire_$Module.prototype = {
 		if(input_status != 0) {
 			return;
 		}
-		this.set_wire_status(dir,2);
+		this.set_wire_status(dir,1);
 		var up_neighbor = null;
 		if(this.up == 0) {
-			this.up = 2;
+			this.up = 1;
 			up_neighbor = game.get_up_neighbor(this.cell);
 		}
 		var down_neighbor = null;
 		if(this.down == 0) {
-			this.down = 2;
+			this.down = 1;
 			down_neighbor = game.get_down_neighbor(this.cell);
 		}
 		var right_neighbor = null;
 		if(this.right == 0) {
-			this.right = 2;
+			this.right = 1;
 			right_neighbor = game.get_right_neighbor(this.cell);
 		}
 		var left_neighbor = null;
 		if(this.left == 0) {
-			this.left = 2;
+			this.left = 1;
 			left_neighbor = game.get_left_neighbor(this.cell);
 		}
 		if(up_neighbor != null) {
@@ -6613,45 +6615,17 @@ Wire_$Module.prototype = {
 		this.restart_module();
 	}
 	,restart_module: function() {
-		var _g = this.up;
-		switch(_g) {
-		case 2:
+		if(this.up == 1) {
 			this.up = 0;
-			break;
-		case 3:
-			this.up = 1;
-			break;
-		default:
 		}
-		var _g1 = this.down;
-		switch(_g1) {
-		case 2:
+		if(this.down == 1) {
 			this.down = 0;
-			break;
-		case 3:
-			this.down = 1;
-			break;
-		default:
 		}
-		var _g2 = this.right;
-		switch(_g2) {
-		case 2:
+		if(this.right == 1) {
 			this.right = 0;
-			break;
-		case 3:
-			this.right = 1;
-			break;
-		default:
 		}
-		var _g3 = this.left;
-		switch(_g3) {
-		case 2:
+		if(this.left == 1) {
 			this.left = 0;
-			break;
-		case 3:
-			this.left = 1;
-			break;
-		default:
 		}
 	}
 	,draw_module: function(x,y,simulating) {
@@ -6666,7 +6640,7 @@ Wire_$Module.prototype = {
 			} else if(!simulating) {
 				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,1);
 			}
-		} else if(this.up == 2 || this.down == 2 || this.left == 2 || this.right == 2) {
+		} else if(this.up == 1 || this.down == 1 || this.left == 1 || this.right == 1) {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,3);
 		} else {
 			if(_$Wire_$Module_Wire_$Status_$Impl_$.add(this.up,this.down) + this.left + this.right == -3 && this.up == 0 && hover == 1 || this.down == 0 && hover == 2 || this.left == 0 && hover == 3 || this.right == 0 && hover == 4) {
@@ -6693,7 +6667,7 @@ Wire_$Module.prototype = {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,5);
 			haxegon_Gfx.set_imagealpha(1);
 			break;
-		case 2:
+		case 1:
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,6);
 			break;
 		default:
@@ -6716,7 +6690,7 @@ Wire_$Module.prototype = {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,8);
 			haxegon_Gfx.set_imagealpha(1);
 			break;
-		case 2:
+		case 1:
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,9);
 			break;
 		default:
@@ -6739,7 +6713,7 @@ Wire_$Module.prototype = {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,11);
 			haxegon_Gfx.set_imagealpha(1);
 			break;
-		case 2:
+		case 1:
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,12);
 			break;
 		default:
@@ -6762,7 +6736,7 @@ Wire_$Module.prototype = {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,14);
 			haxegon_Gfx.set_imagealpha(1);
 			break;
-		case 2:
+		case 1:
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,15);
 			break;
 		default:
@@ -6780,22 +6754,22 @@ Power_$Module.prototype = $extend(Wire_$Module.prototype,{
 	start_power_tick: function(game) {
 		var up_neighbor = null;
 		if(this.up != -1) {
-			this.up = 2;
+			this.up = 1;
 			up_neighbor = game.get_up_neighbor(this.cell);
 		}
 		var down_neighbor = null;
 		if(this.down != -1) {
-			this.down = 2;
+			this.down = 1;
 			down_neighbor = game.get_down_neighbor(this.cell);
 		}
 		var right_neighbor = null;
 		if(this.right != -1) {
-			this.right = 2;
+			this.right = 1;
 			right_neighbor = game.get_right_neighbor(this.cell);
 		}
 		var left_neighbor = null;
 		if(this.left != -1) {
-			this.left = 2;
+			this.left = 1;
 			left_neighbor = game.get_left_neighbor(this.cell);
 		}
 		if(up_neighbor != null) {
@@ -6833,17 +6807,17 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 		}
 		if(dir == 1 || dir == 2) {
 			if(this.up != -1) {
-				this.up = 2;
+				this.up = 1;
 			}
 			if(this.down != -1) {
-				this.down = 2;
+				this.down = 1;
 			}
 		} else {
 			if(this.left != -1) {
-				this.left = 2;
+				this.left = 1;
 			}
 			if(this.right != -1) {
-				this.right = 2;
+				this.right = 1;
 			}
 		}
 		var bridge_to_neighbor;
@@ -6869,8 +6843,8 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 	}
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
-		var vert_powered = this.up == 2 || this.down == 2;
-		var horiz_powered = this.left == 2 || this.right == 2;
+		var vert_powered = this.up == 1 || this.down == 1;
+		var horiz_powered = this.left == 1 || this.right == 1;
 		var sprite = 18;
 		if(vert_powered && horiz_powered) {
 			sprite = 20;
@@ -6882,6 +6856,146 @@ Bridge_$Module.prototype = $extend(Wire_$Module.prototype,{
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,sprite);
 	}
 	,__class__: Bridge_$Module
+});
+var Diode_$Module = function(cell,wm) {
+	Wire_$Module.call(this,cell,wm);
+	if(wm != null && js_Boot.__instanceof(wm,Diode_$Module)) {
+		var dwm = js_Boot.__cast(wm , Diode_$Module);
+		this.and_diode = dwm.and_diode;
+		this.up_output = dwm.up_output;
+		this.down_output = dwm.down_output;
+		this.right_output = dwm.right_output;
+		this.left_output = dwm.left_output;
+	} else {
+		this.and_diode = true;
+		this.up_output = false;
+		this.down_output = true;
+		this.right_output = true;
+		this.left_output = false;
+	}
+};
+$hxClasses["Diode_Module"] = Diode_$Module;
+Diode_$Module.__name__ = ["Diode_Module"];
+Diode_$Module.__super__ = Wire_$Module;
+Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
+	and_diode: null
+	,up_output: null
+	,down_output: null
+	,right_output: null
+	,left_output: null
+	,handle_power_input: function(game,dir) {
+		var input_status = this.get_wire_status(dir);
+		if(input_status != 0) {
+			return;
+		}
+		this.set_wire_status(dir,1);
+		if(this.is_output(dir)) {
+			return;
+		}
+		if(this.should_send_power(true)) {
+			var up_neighbor = null;
+			if(this.up_output && this.up == 0) {
+				this.up = 1;
+				up_neighbor = game.get_up_neighbor(this.cell);
+			}
+			var down_neighbor = null;
+			if(this.down_output && this.down == 0) {
+				this.down = 1;
+				down_neighbor = game.get_down_neighbor(this.cell);
+			}
+			var right_neighbor = null;
+			if(this.right_output && this.right == 0) {
+				this.right = 1;
+				right_neighbor = game.get_right_neighbor(this.cell);
+			}
+			var left_neighbor = null;
+			if(this.left_output && this.left == 0) {
+				this.left = 1;
+				left_neighbor = game.get_left_neighbor(this.cell);
+			}
+			if(up_neighbor != null) {
+				up_neighbor.handle_power_input(game,2);
+			}
+			if(down_neighbor != null) {
+				down_neighbor.handle_power_input(game,1);
+			}
+			if(right_neighbor != null) {
+				right_neighbor.handle_power_input(game,3);
+			}
+			if(left_neighbor != null) {
+				left_neighbor.handle_power_input(game,4);
+			}
+		}
+	}
+	,draw_module: function(x,y,simulating) {
+		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
+		var powered = this.should_send_power();
+		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 23 : 22);
+		if(this.and_diode) {
+			if(!this.up_output && this.up != -1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.up == 1 ? 33 : 32);
+			}
+			if(!this.down_output && this.down != -1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.down == 1 ? 35 : 34);
+			}
+			if(!this.right_output && this.right != -1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.right == 1 ? 39 : 38);
+			}
+			if(!this.left_output && this.left != -1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.left == 1 ? 37 : 36);
+			}
+		}
+		if(this.up_output) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 25 : 24);
+		}
+		if(this.down_output) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 27 : 26);
+		}
+		if(this.right_output) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 31 : 30);
+		}
+		if(this.left_output) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 29 : 28);
+		}
+	}
+	,is_output: function(dir) {
+		switch(dir) {
+		case 1:
+			return this.up_output;
+		case 2:
+			return this.down_output;
+		case 3:
+			return this.left_output;
+		case 4:
+			return this.right_output;
+		default:
+			return false;
+		}
+	}
+	,should_send_power: function(any_input_powered) {
+		if(!(any_input_powered || !this.up_output && this.up == 1 || !this.down_output && this.down == 1 || !this.left_output && this.left == 1)) {
+			if(!this.right_output) {
+				any_input_powered = this.right == 1;
+			} else {
+				any_input_powered = false;
+			}
+		} else {
+			any_input_powered = true;
+		}
+		if(!this.and_diode) {
+			return any_input_powered;
+		}
+		if(any_input_powered && (this.up_output || this.up != 0) && (this.down_output || this.down != 0) && (this.left_output || this.left != 0)) {
+			if(!this.right_output) {
+				return this.right != 0;
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+	,__class__: Diode_$Module
 });
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
@@ -48273,7 +48387,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 491165;
+	this.version = 562689;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -97751,9 +97865,7 @@ Wire_$Module.hover_opacity_off = 0.35;
 Wire_$Module.hover_opacity_on = 0.75;
 _$Wire_$Module_Wire_$Status_$Impl_$.disabled = -1;
 _$Wire_$Module_Wire_$Status_$Impl_$.off = 0;
-_$Wire_$Module_Wire_$Status_$Impl_$.off_output = 1;
-_$Wire_$Module_Wire_$Status_$Impl_$.on = 2;
-_$Wire_$Module_Wire_$Status_$Impl_$.on_output = 3;
+_$Wire_$Module_Wire_$Status_$Impl_$.on = 1;
 Xml.Element = 0;
 Xml.PCData = 1;
 Xml.CData = 2;

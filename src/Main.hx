@@ -5,6 +5,7 @@ import Wire_Module.Wire_Status.*;
 // Modules
 import Modules.Power_Module;
 import Modules.Bridge_Module;
+import Modules.Diode_Module;
 
 
 /* ENUM CLASSES */
@@ -21,6 +22,7 @@ abstract Tool(Int) from Int to Int {
 	var wire 	= Module_Sheet.center_shadow;
 	var power 	= Module_Sheet.power_off;
 	var bridge 	= Module_Sheet.bridge_off;
+	var diode 	= Module_Sheet.diode_off;
 }
 
 
@@ -92,7 +94,7 @@ class Main {
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;
-  	var tools = [ Tool.wire, Tool.power, Tool.bridge ];
+  	var tools = [ Tool.wire, Tool.power, Tool.bridge, Tool.diode ];
 
   	var simulating = false;
   	var resolution_tick = true; // Whether or not this is a resolution_tick or a power_tick
@@ -556,6 +558,7 @@ class Main {
  			case wire: new Wire_Module(cell, wm);
  			case power: new Power_Module(cell, wm);
  			case bridge: new Bridge_Module(cell, wm);
+ 			case diode: new Diode_Module(cell, wm);
  			default: null;
  		}
  	}
