@@ -69,3 +69,34 @@ $ase --batch \
 --layer "Diode/Inputs/Right/On" $sprite \
 --ignore-layer "Diode" \
 --sheet $out --sheet-pack
+
+# tooltip_sprite_64x64.aseprite
+sprite=$sprite_dir/tooltip_sprite_64x64.aseprite
+out=$out_dir/tooltip_sheet.png
+$ase --batch \
+--layer "Tabs/Dirs/Disabled" $sprite \
+--layer "Tabs/Dirs/Enabled" $sprite \
+--ignore-layer "Tabs/Dirs" \
+--layer "Tabs/Toggle/Disabled" $sprite \
+--layer "Tabs/Toggle/Enabled" $sprite \
+--ignore-layer "Tabs/Toggle" \
+--layer "Tabs/Rotation/Disabled" $sprite \
+--layer "Tabs/Rotation/Enabled" $sprite \
+--ignore-layer "Tabs/Rotation" \
+--layer "Main/BG_Disabled" $sprite \
+--ignore-layer "Main/BG_Disabled" --layer "Main/BG" $sprite \
+--ignore-layer "Main/BG" \
+--layer "Settings/Dirs/BG" --layer "Settings/Dirs/Outline" $sprite \
+--ignore-layer "Settings/Dirs/BG" --ignore-layer "Settings/Dirs/Outline" \
+--layer "Settings/Dirs/Disabled/Up" $sprite --ignore-layer "Settings/Dirs/Disabled/Up" \
+--layer "Settings/Dirs/Disabled/Down" $sprite --ignore-layer "Settings/Dirs/Disabled/Down" \
+--layer "Settings/Dirs/Disabled/Left" $sprite --ignore-layer "Settings/Dirs/Disabled/Left" \
+--layer "Settings/Dirs/Disabled/Right" $sprite --ignore-layer "Settings/Dirs/Disabled/Right" \
+--ignore-layer "Settings/Dirs" \
+--sheet $out --sheet-pack
+
+
+
+
+
+
