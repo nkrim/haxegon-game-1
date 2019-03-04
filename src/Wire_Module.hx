@@ -30,22 +30,20 @@ abstract Module_Sheet(Int) from Int to Int {
 	var bridge_on_vert  		= 21;
 	var diode_off 				= 22;
 	var diode_on 				= 23;
-	var diode_out_up_off 		= 24;
-	var diode_out_up_on 		= 25;
-	var diode_out_down_off 		= 26;
-	var diode_out_down_on 		= 27;
-	var diode_out_left_off 		= 28;
-	var diode_out_left_on 		= 29;
-	var diode_out_right_off 	= 30;
-	var diode_out_right_on 		= 31;
-	var diode_in_up_off 		= 32;
-	var diode_in_up_on 			= 33;
-	var diode_in_down_off 		= 34;
+	var diode_and_off 			= 24;
+	var diode_and_on 			= 25;
+	var diode_out_up_off 		= 26;
+	var diode_out_up_on 		= 27;
+	var diode_out_down_off 		= 28;
+	var diode_out_down_on 		= 29;
+	var diode_out_left_off 		= 30;
+	var diode_out_left_on 		= 31;
+	var diode_out_right_off 	= 32;
+	var diode_out_right_on 		= 33;
+	var diode_in_up_on 			= 34;
 	var diode_in_down_on 		= 35;
-	var diode_in_left_off 		= 36;
-	var diode_in_left_on 		= 37;
-	var diode_in_right_off 		= 38;
-	var diode_in_right_on 		= 39;
+	var diode_in_left_on 		= 36;
+	var diode_in_right_on 		= 37;
 }
 
 /* ENUM CLASSES */
@@ -178,6 +176,14 @@ class Wire_Module {
 			this.left = off;
 	}
 
+	public function get_dir_setting_status(dir:Direction) {
+		return false;
+	}
+	public function set_dir_setting_status(dir:Direction, val:Bool) { }
+	public function toggle_dir_setting_status(dir:Direction) {
+		set_dir_setting_status(dir, !get_dir_setting_status(dir));
+	}
+
 
 	/* RENDERING 
 	============ */
@@ -186,7 +192,7 @@ class Wire_Module {
 	public static var hover_opacity_off = 0.35;
 	public static var hover_opacity_on = 0.75;
 
-	public static function load_wire_spritesheet() {
+	public static function load_module_spritesheet() {
 		Gfx.loadtiles(module_sheet_name, 65, 65);
 	}
 

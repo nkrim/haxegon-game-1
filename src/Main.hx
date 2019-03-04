@@ -2,6 +2,7 @@ import haxegon.*;
 import Wire_Module.*;
 import Wire_Module.Module_Sheet;
 import Wire_Module.Wire_Status.*;
+import Tooltip;
 // Modules
 import Modules.Power_Module;
 import Modules.Bridge_Module;
@@ -19,10 +20,11 @@ abstract Direction(Int) from Int to Int {
 }
 @:enum
 abstract Tool(Int) from Int to Int {
-	var wire 	= Module_Sheet.center_shadow;
-	var power 	= Module_Sheet.power_off;
-	var bridge 	= Module_Sheet.bridge_off;
-	var diode 	= Module_Sheet.diode_off;
+	var wire 		= Module_Sheet.center_shadow;
+	var power 		= Module_Sheet.power_off;
+	var or_diode 	= Module_Sheet.diode_off;
+	var and_diode 	= Module_Sheet.diode_and_off;
+	var bridge 		= Module_Sheet.bridge_off;
 }
 
 
@@ -49,7 +51,8 @@ class Main {
 	  	// wire_grid[2][0] = new Power_Module({r:2,c:0});
 
 	  	// Init sheet loading
-	  	Wire_Module.load_wire_spritesheet();
+	  	Wire_Module.load_module_spritesheet();
+	  	Tooltip.load_tooltip_spritesheet();
 
 	  	// DEBUG VALUES
 	  	Core.showstats = true;
@@ -61,6 +64,8 @@ class Main {
 	  	Gui.window("Simulation controls", grid_x, grid_y - 64);
 	  	if(!simulating) {
 	  		if(Gui.button("Start")) {
+	  			Mouse.leftforcerelease();
+	  			Mouse.rightforcerelease();
 	  			simulating = true;
 	  			resolution_tick = true;
 	  			tick(); // Perform resolution tick on start
@@ -80,8 +85,12 @@ class Main {
 	  		handle_wire_drawing();
 	  	}
 
+	  	handle_tooltip_interaction();
+
 	  	draw_wire_grid();
-	  	draw_toolbar();
+	  	handle_and_draw_toolbar(simulating);
+
+	  	tooltip.draw_tooltip();
 	}
 
 	/* GAME PROPERTIES
@@ -97,7 +106,9 @@ class Main {
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;
-  	var tools = [ Tool.wire, Tool.power, Tool.bridge, Tool.diode ];
+  	var tools = [ Tool.wire, Tool.power, Tool.or_diode, Tool.and_diode, Tool.bridge];
+
+  	var tooltip = new Tooltip();
 
   	var simulating = false;
   	var resolution_tick = true; // Whether or not this is a resolution_tick or a power_tick
@@ -196,6 +207,28 @@ class Main {
   		return { r:r, c:c }; 
   	}
 
+  	// BASIC TOOLTIP INTERACTION
+  	function handle_tooltip_interaction() {
+  		var hover_cell = get_hover_cell();
+  		// If right-click on a valid tile, open up tooltip for that tile 
+  		if(Mouse.rightreleased()) {
+  			if(hover_cell != null) {
+  				var module = get_module_from_cell(hover_cell);
+  				tooltip.set_module(module);
+  				var cell_point = get_cell_point(hover_cell);
+  				tooltip.set_position(cell_point.x + 40, cell_point.y - 46);
+  			}
+  		}
+  		// If left click down or up outside of tooltipl, close it
+  		else if((Mouse.leftclick() || Mouse.leftreleased()) && !tooltip.hovering()) {
+  			tooltip.set_module(null);
+  		}
+
+  		if(tooltip.is_showing()) {
+  			tooltip.handle_internal_interaction();
+  		}
+  	}
+
   	/* WIRE DRAWING RULES
   	---------------------
   	- If drawing forward, follow through, despite wire status
@@ -223,13 +256,16 @@ class Main {
   	var drawing_last_dir = NODIR;
 
 	function handle_wire_drawing() {
+		if(tooltip.is_showing())
+			return;
+
 		var hover_cell = get_hover_cell();
 
 		// Reset when exiting grid
 		if(hover_cell == null) {
 			// Handle when intial click position never changed, but dragged off grid
 			if(drawing_wires) {
-				var wm = get_wire_from_cell(drawing_last_cell);
+				var wm = get_module_from_cell(drawing_last_cell);
 				// If it was disabled, enable it
 				if(wm.get_wire_status(drawing_last_dir) == disabled)
 					wm.set_wire_status(drawing_last_dir, off);
@@ -250,14 +286,14 @@ class Main {
 		  	if(hover_dir == NODIR)
 		  		return;
 		  	// If the selected wire is enabled, don't use hover_dir as entry_dir
-		  	var wm = get_wire_from_cell(hover_cell);
+		  	var wm = get_module_from_cell(hover_cell);
 		  	drawing_last_dir = hover_dir;	
 
 			drawing_wires_initial_click = true;
 		  	drawing_wires = true;
 		  	drawing_last_cell = hover_cell; 	
 		  	// If the selected wire is enabled, start by going backwards w/ no entry dir
-		  	var wm = get_wire_from_cell(hover_cell);
+		  	var wm = get_module_from_cell(hover_cell);
 		  	if(wm.get_wire_status(hover_dir) != disabled) {
 		  		drawing_backwards = true;
 		  		drawing_entry_dir = NODIR;
@@ -280,7 +316,7 @@ class Main {
 					Mouse.leftforcerelease();
 				}
 				else {
-					var wm = get_wire_from_cell(hover_cell);
+					var wm = get_module_from_cell(hover_cell);
 					handle_in_cell_wire_drawing_change(wm, drawing_last_dir, new_dir);
 				}
 			}
@@ -297,8 +333,8 @@ class Main {
 				}
 				else {
 					// Grab useful vars
-					var last_wm = get_wire_from_cell(drawing_last_cell);
-					var new_wm = get_wire_from_cell(hover_cell);
+					var last_wm = get_module_from_cell(drawing_last_cell);
+					var new_wm = get_module_from_cell(hover_cell);
 					var cell_adj_dir = cell_adjacency_dir(drawing_last_cell, hover_cell);
 					// If skipped a cell, CURRENTLY WE EXIT DRAWING MODE BY FORCE RELEASING LEFTCLICK
 					// LATER WE WILL SMART, DECIDE WHAT TO DO IF IT IS EASY ENOUGH TO EVALUATE INTENDED PATH
@@ -367,7 +403,7 @@ class Main {
 
 		// HANDLE MOUSE RELEASE
 		if(drawing_wires && !Mouse.leftheld()) {
-			var wm = get_wire_from_cell(drawing_last_cell);
+			var wm = get_module_from_cell(drawing_last_cell);
 			// If still intial click position, toggle current wire
 			if(drawing_wires_initial_click) {
 				wm.set_wire_status(drawing_last_dir, wm.get_wire_status(drawing_last_dir) == disabled ? off : disabled);
@@ -383,11 +419,11 @@ class Main {
 		// HANDLE HOVERING
 		if(!holding_tool) {
 			if(drawing_wires && drawing_last_cell != null && drawing_last_dir != NODIR) {
-				var wm = get_wire_from_cell(drawing_last_cell);
+				var wm = get_module_from_cell(drawing_last_cell);
 				wm.hovering = drawing_last_dir;
 			}
 			else if(hover_cell != null) {
-				var wm = get_wire_from_cell(hover_cell);
+				var wm = get_module_from_cell(hover_cell);
 				var cell_point = get_cell_point(hover_cell);
 				wm.hovering = general_wire_hover_status(cell_point.x, cell_point.y);
 			}
@@ -465,11 +501,11 @@ class Main {
   	var holding_tool = false;
   	var held_tool : Tool;
 
-  	function draw_toolbar() {
+  	function handle_and_draw_toolbar(simulating:Bool) {
   		// Handle tool dropping
   		if(holding_tool && Mouse.leftreleased()) {
   			var target_cell = { r: Std.int((Mouse.y - grid_y)/module_side_length), c: Std.int((Mouse.x - grid_x)/module_side_length) };
-  			var target_wm = get_wire_from_cell(target_cell);
+  			var target_wm = get_module_from_cell(target_cell);
   			if(target_wm != null) {
   				wire_grid[target_cell.r][target_cell.c] = new_module_from_tool(held_tool, target_cell, target_wm);
   			}
@@ -489,9 +525,9 @@ class Main {
   			Gfx.drawbox(x-1, y-1, tool_side_length+2, tool_side_length+2, outline_color);
   			var tile_fill_color = tile_background_color;
   			// Respond to hover and TEMPORARILY HERE RESPOND TO DRAG
-  			if(!holding_tool && Geom.inbox(Mouse.x, Mouse.y, x, y, tool_side_length, tool_side_length)) {
+  			if(!simulating && !holding_tool && Geom.inbox(Mouse.x, Mouse.y, x, y, tool_side_length, tool_side_length)) {
   				tile_fill_color = tile_focus_color;
-  				if(Mouse.leftclick()) {
+  				if(!simulating && Mouse.leftclick()) {
   					holding_tool = true;
   					held_tool = tools[i];
   				}
@@ -511,16 +547,16 @@ class Main {
 
   	/* CELL HELPERS
  	=============== */
- 	public function get_wire_from_cell(c:Cell):Wire_Module {
+ 	public function get_module_from_cell(c:Cell):Wire_Module {
  		if(c.r >= 0 && c.r < grid_height && c.c >= 0 && c.c < grid_width)
  			return wire_grid[c.r][c.c];
  		return null;
  	}
 
- 	public function get_up_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r-1, c:c.c }); }
- 	public function get_down_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r+1, c:c.c }); }
- 	public function get_left_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r, c:c.c-1 }); }
- 	public function get_right_neighbor(c:Cell) { return get_wire_from_cell({ r:c.r, c:c.c+1 }); }
+ 	public function get_up_neighbor(c:Cell) { return get_module_from_cell({ r:c.r-1, c:c.c }); }
+ 	public function get_down_neighbor(c:Cell) { return get_module_from_cell({ r:c.r+1, c:c.c }); }
+ 	public function get_left_neighbor(c:Cell) { return get_module_from_cell({ r:c.r, c:c.c-1 }); }
+ 	public function get_right_neighbor(c:Cell) { return get_module_from_cell({ r:c.r, c:c.c+1 }); }
 
  	public function get_cell_point(c:Cell) {
  		return { x: grid_x + c.c*module_side_length, y: grid_y + c.r*module_side_length };
@@ -560,8 +596,9 @@ class Main {
  		return switch(tool) {
  			case wire: new Wire_Module(cell, wm);
  			case power: new Power_Module(cell, wm);
+ 			case or_diode: new Diode_Module(cell, wm);
+ 			case and_diode: Diode_Module.new_and_diode(cell, wm);
  			case bridge: new Bridge_Module(cell, wm);
- 			case diode: new Diode_Module(cell, wm);
  			default: null;
  		}
  	}

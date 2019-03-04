@@ -114,7 +114,7 @@ class Diode_Module extends Wire_Module {
 		}
 		// If a valid_cast and dwm exists, use it's values to fill this module's
 		if(valid_cast && dwm != null) {
-			this.and_diode = dwm.and_diode;
+			this.and_diode = false;//dwm.and_diode; // Taken out because tools are now separate
 			this.up_output = dwm.up_output;
 			this.down_output = dwm.down_output;
 			this.right_output = dwm.right_output;
@@ -127,6 +127,11 @@ class Diode_Module extends Wire_Module {
 			this.right_output = false;
 			this.left_output = false;
 		}
+	}
+	public static function new_and_diode(cell:Cell, ?wm:Wire_Module) {
+		var diode = new Diode_Module(cell, wm);
+		diode.and_diode = true;
+		return diode;
 	}
 
 	public override function handle_power_input(game : Main, dir : Direction) { 
@@ -172,18 +177,21 @@ class Diode_Module extends Wire_Module {
 	public override function draw_module(x:Int, y:Int, simulating:Bool) {
 		super.draw_module(x, y, simulating);
 		var powered = should_send_power();
-		// Draw base
-		Gfx.drawtile(x, y, module_sheet_name, powered ? Module_Sheet.diode_on : Module_Sheet.diode_off);
-		// Draw inputs, if and_diode
+		// Draw and_base and inputs, if and_diode
 		if(and_diode) {
-			if(!this.up_output && this.up != disabled)
-				Gfx.drawtile(x, y, module_sheet_name, this.up == on ? Module_Sheet.diode_in_up_on : Module_Sheet.diode_in_up_off);
-			if(!this.down_output && this.down != disabled)
-				Gfx.drawtile(x, y, module_sheet_name, this.down == on ? Module_Sheet.diode_in_down_on : Module_Sheet.diode_in_down_off);
-			if(!this.right_output && this.right != disabled)
-				Gfx.drawtile(x, y, module_sheet_name, this.right == on ? Module_Sheet.diode_in_right_on : Module_Sheet.diode_in_right_off);
-			if(!this.left_output && this.left != disabled)
-				Gfx.drawtile(x, y, module_sheet_name, this.left == on ? Module_Sheet.diode_in_left_on : Module_Sheet.diode_in_left_off);
+			Gfx.drawtile(x, y, module_sheet_name, powered ? Module_Sheet.diode_and_on : Module_Sheet.diode_and_off);
+			if(!this.up_output && this.up == on)
+				Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.diode_in_up_on);
+			if(!this.down_output && this.down == on)
+				Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.diode_in_down_on);
+			if(!this.right_output && this.right == on)
+				Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.diode_in_right_on);
+			if(!this.left_output && this.left == on)
+				Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.diode_in_left_on);
+		}
+		// Else draw or_base
+		else {
+			Gfx.drawtile(x, y, module_sheet_name, powered ? Module_Sheet.diode_on : Module_Sheet.diode_off);
 		}
 		// Draw outputs
 		if(this.up_output)
@@ -196,6 +204,26 @@ class Diode_Module extends Wire_Module {
 			Gfx.drawtile(x, y, module_sheet_name, powered ? Module_Sheet.diode_out_left_on : Module_Sheet.diode_out_left_off);
 	}
 
+	public override function get_dir_setting_status(dir:Direction) {
+		return switch(dir) {
+			case UP: this.up_output;
+			case DOWN: this.down_output;
+			case RIGHT: this.right_output;
+			case LEFT: this.left_output;
+			default: false;
+		}
+	}
+	public override function set_dir_setting_status(dir:Direction, val:Bool) {
+		switch(dir) {
+			case UP: this.up_output = val;
+			case DOWN: this.down_output = val;
+			case RIGHT: this.right_output = val;
+			case LEFT: this.left_output = val;
+			default: null;
+		}
+	}
+
+	// Helpers
 	public function is_output(dir:Direction) {
 		return switch(dir) {
 			case UP: up_output;
@@ -214,7 +242,7 @@ class Diode_Module extends Wire_Module {
 			return any_input_powered;
 		// If and_diode
 		return any_input_powered
-				&& (this.up_output || this.up != off) && (this.down_output || this.down != off) 
-				&& (this.left_output || this.left != off) && (this.right_output || this.right != off);
+				&& (this.up_output || this.up == on) && (this.down_output || this.down == on) 
+				&& (this.left_output || this.left == on) && (this.right_output || this.right == on);
 	}
 }

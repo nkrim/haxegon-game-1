@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","20");
+		_this.setReserved("build","23");
 	} else {
-		_this.h["build"] = "20";
+		_this.h["build"] = "23";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5717,7 +5717,8 @@ var Main = function() {
 	this.tile_background_color = 7170938;
 	this.resolution_tick = true;
 	this.simulating = false;
-	this.tools = [1,16,18,22];
+	this.tooltip = new Tooltip();
+	this.tools = [1,16,22,24,18];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
@@ -5812,6 +5813,8 @@ Main.new_module_from_tool = function(tool,cell,wm) {
 		return new Bridge_$Module(cell,wm);
 	case 22:
 		return new Diode_$Module(cell,wm);
+	case 24:
+		return Diode_$Module.new_and_diode(cell,wm);
 	default:
 		return null;
 	}
@@ -5836,23 +5839,26 @@ Main.prototype = {
 			_g.push(_g3);
 		}
 		this.wire_grid = _g;
-		Wire_$Module.load_wire_spritesheet();
+		Wire_$Module.load_module_spritesheet();
+		Tooltip.load_tooltip_spritesheet();
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 61, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 64, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 63, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 66, className : "Main", methodName : "update"})) {
+				haxegon_Mouse.leftforcerelease();
+				haxegon_Mouse.rightforcerelease();
 				this.simulating = true;
 				this.resolution_tick = true;
 				this.tick();
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 75, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 73, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 78, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
 			}
@@ -5860,8 +5866,10 @@ Main.prototype = {
 		if(!this.simulating) {
 			this.handle_wire_drawing();
 		}
+		this.handle_tooltip_interaction();
 		this.draw_wire_grid();
-		this.draw_toolbar();
+		this.handle_and_draw_toolbar(this.simulating);
+		this.tooltip.draw_tooltip();
 	}
 	,wire_grid: null
 	,grid_width: null
@@ -5873,6 +5881,7 @@ Main.prototype = {
 	,tool_cols: null
 	,tool_side_length: null
 	,tools: null
+	,tooltip: null
 	,simulating: null
 	,resolution_tick: null
 	,tile_background_color: null
@@ -5935,6 +5944,22 @@ Main.prototype = {
 		}
 		return { r : r, c : c};
 	}
+	,handle_tooltip_interaction: function() {
+		var hover_cell = this.get_hover_cell();
+		if(haxegon_Mouse.rightreleased()) {
+			if(hover_cell != null) {
+				var module = this.get_module_from_cell(hover_cell);
+				this.tooltip.set_module(module);
+				var cell_point = this.get_cell_point(hover_cell);
+				this.tooltip.set_position(cell_point.x + 40,cell_point.y - 46);
+			}
+		} else if((haxegon_Mouse.leftclick() || haxegon_Mouse.leftreleased()) && !this.tooltip.hovering()) {
+			this.tooltip.set_module(null);
+		}
+		if(this.tooltip.is_showing()) {
+			this.tooltip.handle_internal_interaction();
+		}
+	}
 	,drawing_wires_initial_click: null
 	,drawing_wires: null
 	,drawing_backwards: null
@@ -5942,10 +5967,13 @@ Main.prototype = {
 	,drawing_entry_dir: null
 	,drawing_last_dir: null
 	,handle_wire_drawing: function() {
+		if(this.tooltip.is_showing()) {
+			return;
+		}
 		var hover_cell = this.get_hover_cell();
 		if(hover_cell == null) {
 			if(this.drawing_wires) {
-				var wm = this.get_wire_from_cell(this.drawing_last_cell);
+				var wm = this.get_module_from_cell(this.drawing_last_cell);
 				if(wm.get_wire_status(this.drawing_last_dir) == -1) {
 					wm.set_wire_status(this.drawing_last_dir,0);
 				} else if(this.drawing_backwards) {
@@ -5960,12 +5988,12 @@ Main.prototype = {
 			if(hover_dir == 0) {
 				return;
 			}
-			var wm1 = this.get_wire_from_cell(hover_cell);
+			var wm1 = this.get_module_from_cell(hover_cell);
 			this.drawing_last_dir = hover_dir;
 			this.drawing_wires_initial_click = true;
 			this.drawing_wires = true;
 			this.drawing_last_cell = hover_cell;
-			var wm2 = this.get_wire_from_cell(hover_cell);
+			var wm2 = this.get_module_from_cell(hover_cell);
 			if(wm2.get_wire_status(hover_dir) != -1) {
 				this.drawing_backwards = true;
 				this.drawing_entry_dir = 0;
@@ -5983,7 +6011,7 @@ Main.prototype = {
 					}
 					haxegon_Mouse.leftforcerelease();
 				} else {
-					var wm3 = this.get_wire_from_cell(hover_cell);
+					var wm3 = this.get_module_from_cell(hover_cell);
 					this.handle_in_cell_wire_drawing_change(wm3,this.drawing_last_dir,new_dir);
 				}
 			} else {
@@ -5995,8 +6023,8 @@ Main.prototype = {
 				if(new_dir1 == 0) {
 					haxegon_Mouse.leftforcerelease();
 				} else {
-					var last_wm = this.get_wire_from_cell(this.drawing_last_cell);
-					var new_wm = this.get_wire_from_cell(hover_cell);
+					var last_wm = this.get_module_from_cell(this.drawing_last_cell);
+					var new_wm = this.get_module_from_cell(hover_cell);
 					var cell_adj_dir = Main.cell_adjacency_dir(this.drawing_last_cell,hover_cell);
 					if(cell_adj_dir == 0) {
 						haxegon_Mouse.leftforcerelease();
@@ -6045,7 +6073,7 @@ Main.prototype = {
 			}
 		}
 		if(this.drawing_wires && !haxegon_Mouse.leftheld()) {
-			var wm4 = this.get_wire_from_cell(this.drawing_last_cell);
+			var wm4 = this.get_module_from_cell(this.drawing_last_cell);
 			if(this.drawing_wires_initial_click) {
 				wm4.set_wire_status(this.drawing_last_dir,wm4.get_wire_status(this.drawing_last_dir) == -1 ? 0 : -1);
 				this.drawing_wires_initial_click = false;
@@ -6056,10 +6084,10 @@ Main.prototype = {
 		}
 		if(!this.holding_tool) {
 			if(this.drawing_wires && this.drawing_last_cell != null && this.drawing_last_dir != 0) {
-				var wm5 = this.get_wire_from_cell(this.drawing_last_cell);
+				var wm5 = this.get_module_from_cell(this.drawing_last_cell);
 				wm5.hovering = this.drawing_last_dir;
 			} else if(hover_cell != null) {
-				var wm6 = this.get_wire_from_cell(hover_cell);
+				var wm6 = this.get_module_from_cell(hover_cell);
 				var cell_point3 = this.get_cell_point(hover_cell);
 				wm6.hovering = Main.general_wire_hover_status(cell_point3.x,cell_point3.y);
 			}
@@ -6109,10 +6137,10 @@ Main.prototype = {
 	}
 	,holding_tool: null
 	,held_tool: null
-	,draw_toolbar: function() {
+	,handle_and_draw_toolbar: function(simulating) {
 		if(this.holding_tool && haxegon_Mouse.leftreleased()) {
 			var target_cell = { r : (haxegon_Mouse.get_y() - this.grid_y) / Main.module_side_length | 0, c : (haxegon_Mouse.get_x() - this.grid_x) / Main.module_side_length | 0};
-			var target_wm = this.get_wire_from_cell(target_cell);
+			var target_wm = this.get_module_from_cell(target_cell);
 			if(target_wm != null) {
 				this.wire_grid[target_cell.r][target_cell.c] = Main.new_module_from_tool(this.held_tool,target_cell,target_wm);
 			}
@@ -6131,9 +6159,9 @@ Main.prototype = {
 			var sprite_y = y - sprite_offset;
 			haxegon_Gfx.drawbox(x - 1,y - 1,this.tool_side_length + 2,this.tool_side_length + 2,this.outline_color);
 			var tile_fill_color = this.tile_background_color;
-			if(!this.holding_tool && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),x,y,this.tool_side_length,this.tool_side_length)) {
+			if(!simulating && !this.holding_tool && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),x,y,this.tool_side_length,this.tool_side_length)) {
 				tile_fill_color = this.tile_focus_color;
-				if(haxegon_Mouse.leftclick()) {
+				if(!simulating && haxegon_Mouse.leftclick()) {
 					this.holding_tool = true;
 					this.held_tool = this.tools[i];
 				}
@@ -6146,23 +6174,23 @@ Main.prototype = {
 			haxegon_Gfx.drawtile(haxegon_Mouse.get_x() - drag_sprite_offset,haxegon_Mouse.get_y() - drag_sprite_offset,Wire_$Module.module_sheet_name,this.held_tool);
 		}
 	}
-	,get_wire_from_cell: function(c) {
+	,get_module_from_cell: function(c) {
 		if(c.r >= 0 && c.r < this.grid_height && c.c >= 0 && c.c < this.grid_width) {
 			return this.wire_grid[c.r][c.c];
 		}
 		return null;
 	}
 	,get_up_neighbor: function(c) {
-		return this.get_wire_from_cell({ r : c.r - 1, c : c.c});
+		return this.get_module_from_cell({ r : c.r - 1, c : c.c});
 	}
 	,get_down_neighbor: function(c) {
-		return this.get_wire_from_cell({ r : c.r + 1, c : c.c});
+		return this.get_module_from_cell({ r : c.r + 1, c : c.c});
 	}
 	,get_left_neighbor: function(c) {
-		return this.get_wire_from_cell({ r : c.r, c : c.c - 1});
+		return this.get_module_from_cell({ r : c.r, c : c.c - 1});
 	}
 	,get_right_neighbor: function(c) {
-		return this.get_wire_from_cell({ r : c.r, c : c.c + 1});
+		return this.get_module_from_cell({ r : c.r, c : c.c + 1});
 	}
 	,get_cell_point: function(c) {
 		return { x : this.grid_x + c.c * Main.module_side_length, y : this.grid_y + c.r * Main.module_side_length};
@@ -6187,7 +6215,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i5615R1y5:IMAGER5R9R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R11R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R13R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i5626R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i3140R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -6530,7 +6558,7 @@ var Wire_$Module = function(cell,wm) {
 };
 $hxClasses["Wire_Module"] = Wire_$Module;
 Wire_$Module.__name__ = ["Wire_Module"];
-Wire_$Module.load_wire_spritesheet = function() {
+Wire_$Module.load_module_spritesheet = function() {
 	haxegon_Gfx.loadtiles(Wire_$Module.module_sheet_name,65,65);
 };
 Wire_$Module.prototype = {
@@ -6628,6 +6656,14 @@ Wire_$Module.prototype = {
 		if(this.left == 1) {
 			this.left = 0;
 		}
+	}
+	,get_dir_setting_status: function(dir) {
+		return false;
+	}
+	,set_dir_setting_status: function(dir,val) {
+	}
+	,toggle_dir_setting_status: function(dir) {
+		this.set_dir_setting_status(dir,!this.get_dir_setting_status(dir));
 	}
 	,draw_module: function(x,y,simulating) {
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,0);
@@ -6872,7 +6908,7 @@ var Diode_$Module = function(cell,wm) {
 		} else throw(cannot_cast_msg);
 	}
 	if(valid_cast && dwm != null) {
-		this.and_diode = dwm.and_diode;
+		this.and_diode = false;
 		this.up_output = dwm.up_output;
 		this.down_output = dwm.down_output;
 		this.right_output = dwm.right_output;
@@ -6887,6 +6923,11 @@ var Diode_$Module = function(cell,wm) {
 };
 $hxClasses["Diode_Module"] = Diode_$Module;
 Diode_$Module.__name__ = ["Diode_Module"];
+Diode_$Module.new_and_diode = function(cell,wm) {
+	var diode = new Diode_$Module(cell,wm);
+	diode.and_diode = true;
+	return diode;
+};
 Diode_$Module.__super__ = Wire_$Module;
 Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 	and_diode: null
@@ -6941,32 +6982,65 @@ Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		var powered = this.should_send_power();
-		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 23 : 22);
 		if(this.and_diode) {
-			if(!this.up_output && this.up != -1) {
-				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.up == 1 ? 33 : 32);
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 25 : 24);
+			if(!this.up_output && this.up == 1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,34);
 			}
-			if(!this.down_output && this.down != -1) {
-				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.down == 1 ? 35 : 34);
+			if(!this.down_output && this.down == 1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,35);
 			}
-			if(!this.right_output && this.right != -1) {
-				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.right == 1 ? 39 : 38);
+			if(!this.right_output && this.right == 1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,37);
 			}
-			if(!this.left_output && this.left != -1) {
-				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,this.left == 1 ? 37 : 36);
+			if(!this.left_output && this.left == 1) {
+				haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,36);
 			}
+		} else {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 23 : 22);
 		}
 		if(this.up_output) {
-			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 25 : 24);
-		}
-		if(this.down_output) {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 27 : 26);
 		}
+		if(this.down_output) {
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 29 : 28);
+		}
 		if(this.right_output) {
-			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 31 : 30);
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 33 : 32);
 		}
 		if(this.left_output) {
-			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 29 : 28);
+			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,powered ? 31 : 30);
+		}
+	}
+	,get_dir_setting_status: function(dir) {
+		switch(dir) {
+		case 1:
+			return this.up_output;
+		case 2:
+			return this.down_output;
+		case 3:
+			return this.left_output;
+		case 4:
+			return this.right_output;
+		default:
+			return false;
+		}
+	}
+	,set_dir_setting_status: function(dir,val) {
+		switch(dir) {
+		case 1:
+			this.up_output = val;
+			break;
+		case 2:
+			this.down_output = val;
+			break;
+		case 3:
+			this.left_output = val;
+			break;
+		case 4:
+			this.right_output = val;
+			break;
+		default:
 		}
 	}
 	,is_output: function(dir) {
@@ -6996,9 +7070,9 @@ Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 		if(!this.and_diode) {
 			return any_input_powered;
 		}
-		if(any_input_powered && (this.up_output || this.up != 0) && (this.down_output || this.down != 0) && (this.left_output || this.left != 0)) {
+		if(any_input_powered && (this.up_output || this.up == 1) && (this.down_output || this.down == 1) && (this.left_output || this.left == 1)) {
 			if(!this.right_output) {
-				return this.right != 0;
+				return this.right == 1;
 			} else {
 				return true;
 			}
@@ -7214,6 +7288,182 @@ StringTools.hex = function(n,digits) {
 		while(s.length < digits) s = "0" + s;
 	}
 	return s;
+};
+var Tab = $hxClasses["Tab"] = { __ename__ : ["Tab"], __constructs__ : ["DIR","TOG","ROT"] };
+Tab.DIR = ["DIR",0];
+Tab.DIR.toString = $estr;
+Tab.DIR.__enum__ = Tab;
+Tab.TOG = ["TOG",1];
+Tab.TOG.toString = $estr;
+Tab.TOG.__enum__ = Tab;
+Tab.ROT = ["ROT",2];
+Tab.ROT.toString = $estr;
+Tab.ROT.__enum__ = Tab;
+var Tooltip = function() {
+	this.tab = Tab.DIR;
+	this.x = 0;
+	this.y = 0;
+	this.module = null;
+};
+$hxClasses["Tooltip"] = Tooltip;
+Tooltip.__name__ = ["Tooltip"];
+Tooltip.load_tooltip_spritesheet = function() {
+	haxegon_Gfx.loadtiles(Tooltip.tooltip_sheet_name,65,71);
+};
+Tooltip.prototype = {
+	tab: null
+	,x: null
+	,y: null
+	,module: null
+	,hovering_dir: null
+	,set_position: function(x,y) {
+		this.x = x;
+		this.y = y;
+	}
+	,get_module: function() {
+		return this.module;
+	}
+	,set_module: function(module) {
+		this.module = module;
+		if(this.uses_dirs()) {
+			this.tab = Tab.DIR;
+		} else {
+			this.tab = Tab.TOG;
+		}
+	}
+	,handle_internal_interaction: function() {
+		if(this.module == null) {
+			return;
+		}
+		if(haxegon_Mouse.leftreleased()) {
+			var hovering_dir = this.hovering_dir_button();
+			if(hovering_dir != 0) {
+				this.module.toggle_dir_setting_status(hovering_dir);
+			}
+		}
+	}
+	,hovering_dir_button: function() {
+		var mx = haxegon_Mouse.get_x() - this.x;
+		var my = haxegon_Mouse.get_y() - this.y;
+		var cx = 32;
+		var cy = 26 + Tooltip.tab_height + 1;
+		var rot_point = this.rotate_about(mx,my,cx,cy,45);
+		var button_bb_x = 14;
+		var button_bb_y = 25;
+		var button_bb_length = 36;
+		if(haxegon_Geom.inbox(rot_point.x,rot_point.y,button_bb_x,button_bb_y,button_bb_length,button_bb_length)) {
+			var left_side = rot_point.x <= cx;
+			var up_side = rot_point.y <= cy;
+			if(left_side) {
+				if(up_side) {
+					return 3;
+				}
+				return 2;
+			}
+			if(up_side) {
+				return 1;
+			}
+			return 4;
+		}
+		return 0;
+	}
+	,rotate_about: function(x,y,cx,cy,angle) {
+		var s = Math.sin(angle * Math.PI / 180);
+		var c = Math.cos(angle * Math.PI / 180);
+		x -= cx;
+		y -= cy;
+		var x_temp = Math.round(x * c - y * s);
+		var y_temp = Math.round(x * s + y * c);
+		x = x_temp + cx;
+		y = y_temp + cy;
+		return { x : x, y : y};
+	}
+	,draw_tooltip: function() {
+		if(this.module == null) {
+			return;
+		}
+		var dirs_enabled = this.uses_dirs();
+		var _g = this.tab;
+		switch(_g[1]) {
+		case 0:
+			if(dirs_enabled) {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,10);
+				var hovering_dir = this.hovering_dir_button();
+				if(!this.module.get_dir_setting_status(1)) {
+					var up_setting = this.module.get_dir_setting_status(1);
+					if(hovering_dir == 1) {
+						haxegon_Gfx.set_imagealpha(up_setting ? 0.25 : 0.5);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+						haxegon_Gfx.set_imagealpha(1);
+					} else if(!up_setting) {
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+					}
+				}
+				if(!this.module.get_dir_setting_status(2)) {
+					var down_setting = this.module.get_dir_setting_status(2);
+					if(hovering_dir == 2) {
+						haxegon_Gfx.set_imagealpha(down_setting ? 0.25 : 0.5);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+						haxegon_Gfx.set_imagealpha(1);
+					} else if(!down_setting) {
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+					}
+				}
+				if(!this.module.get_dir_setting_status(4)) {
+					var right_setting = this.module.get_dir_setting_status(4);
+					if(hovering_dir == 4) {
+						haxegon_Gfx.set_imagealpha(right_setting ? 0.25 : 0.5);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
+						haxegon_Gfx.set_imagealpha(1);
+					} else if(!right_setting) {
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
+					}
+				}
+				if(!this.module.get_dir_setting_status(3)) {
+					var left_setting = this.module.get_dir_setting_status(3);
+					if(hovering_dir == 3) {
+						haxegon_Gfx.set_imagealpha(left_setting ? 0.25 : 0.5);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+						haxegon_Gfx.set_imagealpha(1);
+					} else if(!left_setting) {
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+					}
+				}
+			} else {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,10);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+			}
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
+			break;
+		case 1:
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
+			break;
+		case 2:
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
+			break;
+		}
+	}
+	,is_showing: function() {
+		return this.module != null;
+	}
+	,uses_dirs: function(cur_module) {
+		return js_Boot.__instanceof(cur_module != null ? cur_module : this.module,Diode_$Module);
+	}
+	,hovering: function() {
+		if(this.is_showing()) {
+			return haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x,this.y,65,65);
+		} else {
+			return false;
+		}
+	}
+	,__class__: Tooltip
 };
 var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
 ValueType.TNull = ["TNull",0];
@@ -48398,7 +48648,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 61357;
+	this.version = 172784;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -97874,6 +98124,8 @@ openfl_text_Font.__registeredFonts = [];
 Wire_$Module.module_sheet_name = "module_sheet";
 Wire_$Module.hover_opacity_off = 0.35;
 Wire_$Module.hover_opacity_on = 0.75;
+Tooltip.tooltip_sheet_name = "tooltip_sheet";
+Tooltip.tab_height = 16;
 _$Wire_$Module_Wire_$Status_$Impl_$.disabled = -1;
 _$Wire_$Module_Wire_$Status_$Impl_$.off = 0;
 _$Wire_$Module_Wire_$Status_$Impl_$.on = 1;
