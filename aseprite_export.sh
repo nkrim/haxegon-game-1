@@ -44,6 +44,9 @@ $ase --batch \
 --layer "Diode/BG" $sprite \
 --layer "Diode/On" $sprite \
 --ignore-layer "Diode/BG" --ignore-layer "Diode/On" \
+--layer "Diode/And_BG" $sprite \
+--layer "Diode/And_On" $sprite \
+--ignore-layer "Diode/And_BG" --ignore-layer "Diode/And_On" \
 --layer "Diode/Outputs/Up/BG" $sprite \
 --layer "Diode/Outputs/Up/On" $sprite \
 --ignore-layer "Diode/Outputs/Up" \
@@ -56,16 +59,12 @@ $ase --batch \
 --layer "Diode/Outputs/Right/BG" $sprite \
 --layer "Diode/Outputs/Right/On" $sprite \
 --ignore-layer "Diode/Outputs/Right" \
---layer "Diode/Inputs/Up/BG" $sprite \
 --layer "Diode/Inputs/Up/On" $sprite \
 --ignore-layer "Diode/Inputs/Up" \
---layer "Diode/Inputs/Down/BG" $sprite \
 --layer "Diode/Inputs/Down/On" $sprite \
 --ignore-layer "Diode/Inputs/Down" \
---layer "Diode/Inputs/Left/BG" $sprite \
 --layer "Diode/Inputs/Left/On" $sprite \
 --ignore-layer "Diode/Inputs/Left" \
---layer "Diode/Inputs/Right/BG" $sprite \
 --layer "Diode/Inputs/Right/On" $sprite \
 --ignore-layer "Diode" \
 --sheet $out --sheet-pack
@@ -74,7 +73,9 @@ $ase --batch \
 sprite=$sprite_dir/tooltip_sprite_64x64.aseprite
 out=$out_dir/tooltip_sheet.png
 $ase --batch \
+--layer "Tabs/Dirs/Disabled_Hover" $sprite \
 --layer "Tabs/Dirs/Disabled" $sprite \
+--layer "Tabs/Dirs/Enabled_Hover" $sprite \
 --layer "Tabs/Dirs/Enabled" $sprite \
 --ignore-layer "Tabs/Dirs" \
 --layer "Tabs/Toggle/Disabled" $sprite \
