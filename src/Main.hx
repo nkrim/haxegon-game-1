@@ -7,6 +7,8 @@ import Tooltip;
 import Modules.Power_Module;
 import Modules.Bridge_Module;
 import Modules.Diode_Module;
+import Modules.Emittor_Module;
+import Modules.Reciever_Module;
 
 
 /* ENUM CLASSES */
@@ -24,6 +26,8 @@ abstract Tool(Int) from Int to Int {
 	var power 		= Module_Sheet.power_off;
 	var or_diode 	= Module_Sheet.diode_off;
 	var and_diode 	= Module_Sheet.diode_and_off;
+	var emittor 	= Module_Sheet.emittor_base_display;
+	var reciever 	= Module_Sheet.reciever_base_display;
 	var bridge 		= Module_Sheet.bridge_off;
 }
 
@@ -70,6 +74,10 @@ class Main {
 	  			resolution_tick = true;
 	  			tick(); // Perform resolution tick on start
 	  		}
+	  		Gui.shift();
+	  		if(Gui.button("Reset")) {
+	  			wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+	  		}
 	  	}
 	  	else {
 	  		if(Gui.button("Tick")) {
@@ -106,7 +114,7 @@ class Main {
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;
-  	var tools = [ Tool.wire, Tool.power, Tool.or_diode, Tool.and_diode, Tool.bridge];
+  	var tools = [ Tool.wire, Tool.power, Tool.or_diode, Tool.and_diode, Tool.emittor, Tool.reciever, Tool.bridge];
 
   	var tooltip = new Tooltip();
 
@@ -598,6 +606,8 @@ class Main {
  			case power: new Power_Module(cell, wm);
  			case or_diode: new Diode_Module(cell, wm);
  			case and_diode: Diode_Module.new_and_diode(cell, wm);
+ 			case emittor: new Emittor_Module(cell, wm);
+ 			case reciever: new Reciever_Module(cell, wm);
  			case bridge: new Bridge_Module(cell, wm);
  			default: null;
  		}

@@ -44,6 +44,16 @@ abstract Module_Sheet(Int) from Int to Int {
 	var diode_in_down_on 		= 35;
 	var diode_in_left_on 		= 36;
 	var diode_in_right_on 		= 37;
+	var emittor_base_display	= 38;
+	var reciever_base_display 	= 39;
+	var reciever_base 			= 40;
+	var emittor_base 			= 41;
+	var module_color_mask		= 42;
+	var reciever_on				= 43;
+	var emittor_up_on 			= 44;
+	var emittor_down_on 		= 45;
+	var emittor_left_on 		= 46;
+	var emittor_right_on		= 47;
 }
 
 /* ENUM CLASSES */

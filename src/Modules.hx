@@ -114,7 +114,7 @@ class Diode_Module extends Wire_Module {
 		}
 		// If a valid_cast and dwm exists, use it's values to fill this module's
 		if(valid_cast && dwm != null) {
-			this.and_diode = false;//dwm.and_diode; // Taken out because tools are now separate
+			this.and_diode = false; //dwm.and_diode; // Taken out because tools are now separate
 			this.up_output = dwm.up_output;
 			this.down_output = dwm.down_output;
 			this.right_output = dwm.right_output;
@@ -244,5 +244,136 @@ class Diode_Module extends Wire_Module {
 		return any_input_powered
 				&& (this.up_output || this.up == on) && (this.down_output || this.down == on) 
 				&& (this.left_output || this.left == on) && (this.right_output || this.right == on);
+	}
+}
+
+
+/* EMITTOR MODULE
+================= */
+class Emittor_Module extends Wire_Module implements Signal_Emittor {
+
+	// Public vars
+	public var channel : Signal;
+
+	// Constructor
+	public override function new(cell:Cell, ?wm:Wire_Module) {
+		super(cell, wm);
+
+		this.channel = Signal.green;
+	}
+
+	// Overrides
+	public override function handle_power_input(game : Main, dir : Direction) { 
+		var input_status = get_wire_status(dir);
+		if(input_status != off)
+			return;
+		// Set the input wire on
+		set_wire_status(dir, on);
+
+		// Send signal (STRUCTUE NOT YET IMPLEMENTED)
+	}
+
+	public override function draw_module(x:Int, y:Int, simulating:Bool) {
+		super.draw_module(x, y, simulating);
+		// Draw base
+		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_base);
+		// Set color and draw on mask
+		Gfx.imagecolor = this.channel.color;
+		// If there are no inputs on, reduce the alpha
+		if(this.up != on && this.down != on && this.left != on && this.left != on)
+			Gfx.imagealpha = 0.65;
+		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.module_color_mask);
+		Gfx.imagealpha = 1;
+		Gfx.resetcolor();
+		// Draw inputs, where valid
+		if(this.up == on)
+			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_up_on);
+		if(this.down == on)
+			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_down_on);
+		if(this.left == on)
+			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_left_on);
+		if(this.right == on)
+			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_right_on);
+
+	}	
+}
+
+
+/* RECIEVER MODULE
+================== */
+class Reciever_Module extends Wire_Module implements Signal_Reciever {
+
+	// Public vars
+	public var channel : Signal;
+
+	// Protected vars
+	var incoming_signal : Bool;
+
+	// Constructor
+	public override function new(cell:Cell, ?wm:Wire_Module) {
+		super(cell, wm);
+
+		this.channel = Signal.green;
+		this.incoming_signal = false;
+	}
+
+	// Overrides
+	public override function handle_power_input(game : Main, dir : Direction) { 
+		var input_status = get_wire_status(dir);
+		if(input_status != off)
+			return;
+		// Set the input wire on
+		set_wire_status(dir, on);
+	}
+
+	public override function draw_module(x:Int, y:Int, simulating:Bool) {
+		super.draw_module(x, y, simulating);
+		// Draw base
+		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.reciever_base);
+		// Set color and draw on mask
+		Gfx.imagecolor = this.channel.color;
+		// If there's no incoming_signal, reduce the alpha
+		if(!this.incoming_signal)
+			Gfx.imagealpha = 0.65;
+		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.module_color_mask);
+		Gfx.imagealpha = 1;
+		Gfx.resetcolor();
+		// Draw outputs, if there's an incoming_signal
+		if(this.incoming_signal)
+			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.reciever_on);
+
+	}
+
+	// Member functions
+	public function recieve_signal(game:Main) {
+		if(this.incoming_signal)
+			return;
+
+		this.incoming_signal = true;
+		var up_neighbor = null;
+		if(this.up == off) {
+			this.up = on;
+			up_neighbor = game.get_up_neighbor(this.cell);
+		}
+		var down_neighbor = null;
+		if(this.down == off) {
+			this.down = on;
+			down_neighbor = game.get_down_neighbor(this.cell);
+		}
+		var right_neighbor = null;
+		if(this.right == off) {
+			this.right = on;
+			right_neighbor = game.get_right_neighbor(this.cell);
+		}
+		var left_neighbor = null;
+		if(this.left == off) {
+			this.left = on;
+			left_neighbor = game.get_left_neighbor(this.cell);
+		}
+		// RESOLVE CHANGED POWER SPREADING
+		if(up_neighbor != null) { up_neighbor.handle_power_input(game, DOWN); }
+		if(down_neighbor != null) { down_neighbor.handle_power_input(game, UP); }
+		if(right_neighbor != null) { right_neighbor.handle_power_input(game, LEFT); }
+		if(left_neighbor != null) { left_neighbor.handle_power_input(game, RIGHT); }
 	}
 }
