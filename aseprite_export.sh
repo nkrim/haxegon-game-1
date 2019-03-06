@@ -67,11 +67,13 @@ $ase --batch \
 --ignore-layer "Diode/Inputs/Left" \
 --layer "Diode/Inputs/Right/On" $sprite \
 --ignore-layer "Diode" \
---layer "Reciever/BG" --layer "Reciever/Color_Mask" $sprite \
---layer "Reciever/Test_Color_Green" $sprite \
+--layer "Reciever/Tool_Display" $sprite \
 --layer "Reciever/Outputs/Up/BG" --layer "Reciever/Outputs/Down/BG" --layer "Reciever/Outputs/Left/BG" --layer "Reciever/Outputs/Right/BG" $sprite \
---ignore-layer "Reciever/Test_Color_Green" $sprite \
---ignore-layer "Reciever/BG" --ignore-layer "Reciever/Color_Mask" \
+--ignore-layer "Reciever/Tool_Display" \
+--layer "Reciever/BG" $sprite \
+--ignore-layer "Reciever/Outputs/Up/BG" --ignore-layer "Reciever/Outputs/Down/BG" --ignore-layer "Reciever/Outputs/Left/BG" --ignore-layer "Reciever/Outputs/Right/BG" $sprite \
+--ignore-layer "Reciever/BG" \
+--layer "Reciever/Color_Mask" $sprite --ignore-layer "Reciever/Color_Mask" \
 --layer "Reciever/Outputs/Up/On" --layer "Reciever/Outputs/Down/On" --layer "Reciever/Outputs/Left/On" --layer "Reciever/Outputs/Right/On" $sprite \
 --ignore-layer "Reciever/Outputs" \
 --layer "Reciever/Inputs/Up_In" $sprite --ignore-layer "Reciever/Inputs/Up_In" \
