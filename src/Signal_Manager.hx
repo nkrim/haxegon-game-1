@@ -1,30 +1,26 @@
 import haxegon.*;
 import Main;
 
-/* SIGNAL_ENUM
-============== */
-typedef Signal_Data = {
-	index : Int,
+/* CHANNEL DATA
+=============== */
+typedef Channel = {
+	name : String,
 	color : Int,
 }
 @:enum
-abstract Signal {
-	var green:Signal_Data = {
-		index: 0,
-		color: 0x75e02b,
-	}
+abstract Channel_Index(Int) from Int to Int {
+	var green = 0;
 }
-
 
 /* INTERACES
 ============ */
 interface Signal_Emittor {
-	public var channel : Signal;
-	public function send_signal(manager:Signal_Manager);
+	public var channel : Channel;
+	public function send_signal(manager:Signal_Manager):Void;
 }
 interface Signal_Reciever {
-	public var channel : Signal;
-	public function recieve_signal(game:Main);
+	public var channel : Channel;
+	public function recieve_signal(game:Main):Void;
 }
 
 
@@ -33,4 +29,11 @@ interface Signal_Reciever {
 ================= */
 class Signal_Manager {
 
+	// SIGNALS OPERATIONS
+	public static var channels = [
+		{
+			name: "green",
+			color: 0x75e02b,
+		},
+	];
 }

@@ -5,6 +5,11 @@ import Main.Direction;
 import Wire_Module.*;
 import Wire_Module.Wire_Status;
 import Wire_Module.Module_Sheet;
+import Signal_Manager;
+import Signal_Manager.Channel;
+import Signal_Manager.Channel_Index;
+import Signal_Manager.Signal_Emittor;
+import Signal_Manager.Signal_Reciever;
 
 
 /* POWER MODULE
@@ -253,13 +258,13 @@ class Diode_Module extends Wire_Module {
 class Emittor_Module extends Wire_Module implements Signal_Emittor {
 
 	// Public vars
-	public var channel : Signal;
+	public var channel : Channel;
 
 	// Constructor
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal.green;
+		this.channel = Signal_Manager.channels[Channel_Index.green];
 	}
 
 	// Overrides
@@ -294,8 +299,10 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_left_on);
 		if(this.right == on)
 			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_right_on);
-
 	}	
+
+	// Memeber functions
+	public function send_signal(manager:Signal_Manager):Void {}
 }
 
 
@@ -304,7 +311,7 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 class Reciever_Module extends Wire_Module implements Signal_Reciever {
 
 	// Public vars
-	public var channel : Signal;
+	public var channel : Channel;
 
 	// Protected vars
 	var incoming_signal : Bool;
@@ -313,7 +320,7 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal.green;
+		this.channel = Signal_Manager.channels[Channel_Index.green];
 		this.incoming_signal = false;
 	}
 
@@ -345,7 +352,7 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	}
 
 	// Member functions
-	public function recieve_signal(game:Main) {
+	public function recieve_signal(game:Main):Void {
 		if(this.incoming_signal)
 			return;
 
