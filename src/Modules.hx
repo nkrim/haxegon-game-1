@@ -6,9 +6,6 @@ import Wire_Module.*;
 import Wire_Module.Wire_Status;
 import Wire_Module.Module_Sheet;
 import Signal_Manager;
-import Signal_Manager.Channel;
-import Signal_Manager.Channel_Index;
-import Signal_Manager.Signal_Emittor;
 import Signal_Manager.Signal_Reciever;
 
 
@@ -255,16 +252,16 @@ class Diode_Module extends Wire_Module {
 
 /* EMITTOR MODULE
 ================= */
-class Emittor_Module extends Wire_Module implements Signal_Emittor {
+class Emittor_Module extends Wire_Module {
 
 	// Public vars
-	public var channel : Channel;
+	public var channel : Int;
 
 	// Constructor
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal_Manager.channels[Channel_Index.green];
+		this.channel = Signal_Manager.channels.green;
 	}
 
 	// Overrides
@@ -275,7 +272,8 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 		// Set the input wire on
 		set_wire_status(dir, on);
 
-		// Send signal (STRUCTUE NOT YET IMPLEMENTED)
+		// Send signal 
+		game.signal_manager.send_signal_to_channel(this.channel);
 	}
 
 	public override function draw_module(x:Int, y:Int, simulating:Bool) {
@@ -283,7 +281,7 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 		// Draw base
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_base);
 		// Set color and draw on mask
-		Gfx.imagecolor = this.channel.color;
+		Gfx.imagecolor = this.channel;
 		// If there are no inputs on, reduce the alpha
 		if(this.up != on && this.down != on && this.left != on && this.left != on)
 			Gfx.imagealpha = 0.65;
@@ -300,9 +298,6 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 		if(this.right == on)
 			Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_right_on);
 	}	
-
-	// Memeber functions
-	public function send_signal(manager:Signal_Manager):Void {}
 }
 
 
@@ -310,18 +305,24 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 ================== */
 class Reciever_Module extends Wire_Module implements Signal_Reciever {
 
-	// Public vars
-	public var channel : Channel;
-
 	// Protected vars
+	var channel : Int;
 	var incoming_signal : Bool;
 
 	// Constructor
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal_Manager.channels[Channel_Index.green];
+		this.channel = Signal_Manager.channels.green;
 		this.incoming_signal = false;
+	}
+	public function register_reciever(sm: Signal_Manager) {
+		sm.add_reciever(this.channel, this);
+	}
+	public static function new_registered_reciever_module(sm: Signal_Manager, cell:Cell, ?wm:Wire_Module) {
+		var rm = new Reciever_Module(cell, wm);
+		rm.register_reciever(sm);
+		return rm;
 	}
 
 	// Overrides
@@ -333,12 +334,17 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 		set_wire_status(dir, on);
 	}
 
+	public override function restart_module() {
+		super.restart_module();
+		incoming_signal = false;
+	}
+
 	public override function draw_module(x:Int, y:Int, simulating:Bool) {
 		super.draw_module(x, y, simulating);
 		// Draw base
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.reciever_base);
 		// Set color and draw on mask
-		Gfx.imagecolor = this.channel.color;
+		Gfx.imagecolor = this.channel;
 		// If there's no incoming_signal, reduce the alpha
 		if(!this.incoming_signal)
 			Gfx.imagealpha = 0.65;
@@ -352,6 +358,16 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	}
 
 	// Member functions
+	public function get_channel() {
+		return this.channel;
+	}
+
+	public function change_channel(channel: Int, sm: Signal_Manager) {
+		sm.remove_reciever(this.channel, this);
+		this.channel = channel;
+		sm.add_reciever(this.channel, this);
+	}
+
 	public function recieve_signal(game:Main):Void {
 		if(this.incoming_signal)
 			return;

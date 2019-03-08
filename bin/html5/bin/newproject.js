@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","30");
+		_this.setReserved("build","32");
 	} else {
-		_this.h["build"] = "30";
+		_this.h["build"] = "32";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5803,25 +5803,11 @@ Main.opposite_dir = function(dir) {
 		return 0;
 	}
 };
-Main.new_module_from_tool = function(tool,cell,wm) {
-	switch(tool) {
-	case 1:
-		return new Wire_$Module(cell,wm);
-	case 16:
-		return new Power_$Module(cell,wm);
-	case 18:
-		return new Bridge_$Module(cell,wm);
-	case 22:
-		return new Diode_$Module(cell,wm);
-	case 24:
-		return Diode_$Module.new_and_diode(cell,wm);
-	case 38:
-		return new Emittor_$Module(cell,wm);
-	case 39:
-		return new Reciever_$Module(cell,wm);
-	default:
-		return null;
-	}
+Main.cell_hash = function(c) {
+	return (c.r << 5) + c.c;
+};
+Main.cell_unhash = function(n) {
+	return { r : n >> 5, c : n & 31};
 };
 Main.prototype = {
 	init: function() {
@@ -5843,15 +5829,16 @@ Main.prototype = {
 			_g.push(_g3);
 		}
 		this.wire_grid = _g;
+		this.signal_manager = new Signal_$Manager();
 		Wire_$Module.load_module_spritesheet();
 		Tooltip.load_tooltip_spritesheet();
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 68, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 73, className : "Main", methodName : "update"})) {
 				haxegon_Mouse.leftforcerelease();
 				haxegon_Mouse.rightforcerelease();
 				this.simulating = true;
@@ -5859,7 +5846,7 @@ Main.prototype = {
 				this.tick();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 78, className : "Main", methodName : "update"})) {
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 81, className : "Main", methodName : "update"})) {
 				var _g = [];
 				var _g2 = 0;
 				var _g1 = this.grid_height;
@@ -5877,14 +5864,16 @@ Main.prototype = {
 				this.wire_grid = _g;
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 83, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 86, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 86, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 89, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
+				this.signal_manager.clear_queued_signals();
 			}
 		}
+		Gui.end();
 		if(!this.simulating) {
 			this.handle_wire_drawing();
 		}
@@ -5898,6 +5887,7 @@ Main.prototype = {
 	,grid_height: null
 	,grid_x: null
 	,grid_y: null
+	,signal_manager: null
 	,tool_x: null
 	,tool_y: null
 	,tool_cols: null
@@ -5920,10 +5910,12 @@ Main.prototype = {
 				while(_g2 < row.length) {
 					var wm = row[_g2];
 					++_g2;
-					wm.resolve_tick();
+					wm.restart_module();
 				}
 			}
-		} else {
+			this.resolution_tick = this.signal_manager.resolve_signals_once(this);
+		}
+		if(!this.resolution_tick) {
 			var _g3 = 0;
 			var _g11 = this.wire_grid;
 			while(_g3 < _g11.length) {
@@ -5936,8 +5928,8 @@ Main.prototype = {
 					wm1.start_power_tick(this);
 				}
 			}
+			this.resolution_tick = true;
 		}
-		this.resolution_tick = !this.resolution_tick;
 	}
 	,restart_modules: function() {
 		var _g = 0;
@@ -6164,7 +6156,7 @@ Main.prototype = {
 			var target_cell = { r : (haxegon_Mouse.get_y() - this.grid_y) / Main.module_side_length | 0, c : (haxegon_Mouse.get_x() - this.grid_x) / Main.module_side_length | 0};
 			var target_wm = this.get_module_from_cell(target_cell);
 			if(target_wm != null) {
-				this.wire_grid[target_cell.r][target_cell.c] = Main.new_module_from_tool(this.held_tool,target_cell,target_wm);
+				this.wire_grid[target_cell.r][target_cell.c] = this.new_module_from_tool(this.held_tool,target_cell,target_wm);
 			}
 		}
 		if(this.holding_tool && !haxegon_Mouse.leftheld()) {
@@ -6216,6 +6208,26 @@ Main.prototype = {
 	}
 	,get_cell_point: function(c) {
 		return { x : this.grid_x + c.c * Main.module_side_length, y : this.grid_y + c.r * Main.module_side_length};
+	}
+	,new_module_from_tool: function(tool,cell,wm) {
+		switch(tool) {
+		case 1:
+			return new Wire_$Module(cell,wm);
+		case 16:
+			return new Power_$Module(cell,wm);
+		case 18:
+			return new Bridge_$Module(cell,wm);
+		case 22:
+			return new Diode_$Module(cell,wm);
+		case 24:
+			return Diode_$Module.new_and_diode(cell,wm);
+		case 38:
+			return new Emittor_$Module(cell,wm);
+		case 39:
+			return Reciever_$Module.new_registered_reciever_module(this.signal_manager,cell,wm);
+		default:
+			return null;
+		}
 	}
 	,__class__: Main
 };
@@ -6662,9 +6674,6 @@ Wire_$Module.prototype = {
 			left_neighbor.handle_power_input(game,4);
 		}
 	}
-	,resolve_tick: function() {
-		this.restart_module();
-	}
 	,restart_module: function() {
 		if(this.up == 1) {
 			this.up = 0;
@@ -7104,21 +7113,12 @@ Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 	}
 	,__class__: Diode_$Module
 });
-var Signal_$Emittor = function() { };
-$hxClasses["Signal_Emittor"] = Signal_$Emittor;
-Signal_$Emittor.__name__ = ["Signal_Emittor"];
-Signal_$Emittor.prototype = {
-	channel: null
-	,send_signal: null
-	,__class__: Signal_$Emittor
-};
 var Emittor_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = Signal_$Manager.channels[0];
+	this.channel = Signal_$Manager.channels.green;
 };
 $hxClasses["Emittor_Module"] = Emittor_$Module;
 Emittor_$Module.__name__ = ["Emittor_Module"];
-Emittor_$Module.__interfaces__ = [Signal_$Emittor];
 Emittor_$Module.__super__ = Wire_$Module;
 Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 	channel: null
@@ -7128,11 +7128,12 @@ Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 			return;
 		}
 		this.set_wire_status(dir,1);
+		game.signal_manager.send_signal_to_channel(this.channel);
 	}
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,41);
-		haxegon_Gfx.set_imagecolor(this.channel.color);
+		haxegon_Gfx.set_imagecolor(this.channel);
 		if(this.up != 1 && this.down != 1 && this.left != 1 && this.left != 1) {
 			haxegon_Gfx.set_imagealpha(0.65);
 		}
@@ -7152,30 +7153,37 @@ Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,47);
 		}
 	}
-	,send_signal: function(manager) {
-	}
 	,__class__: Emittor_$Module
 });
 var Signal_$Reciever = function() { };
 $hxClasses["Signal_Reciever"] = Signal_$Reciever;
 Signal_$Reciever.__name__ = ["Signal_Reciever"];
 Signal_$Reciever.prototype = {
-	channel: null
+	get_channel: null
+	,change_channel: null
 	,recieve_signal: null
 	,__class__: Signal_$Reciever
 };
 var Reciever_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = Signal_$Manager.channels[0];
+	this.channel = Signal_$Manager.channels.green;
 	this.incoming_signal = false;
 };
 $hxClasses["Reciever_Module"] = Reciever_$Module;
 Reciever_$Module.__name__ = ["Reciever_Module"];
 Reciever_$Module.__interfaces__ = [Signal_$Reciever];
+Reciever_$Module.new_registered_reciever_module = function(sm,cell,wm) {
+	var rm = new Reciever_$Module(cell,wm);
+	rm.register_reciever(sm);
+	return rm;
+};
 Reciever_$Module.__super__ = Wire_$Module;
 Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 	channel: null
 	,incoming_signal: null
+	,register_reciever: function(sm) {
+		sm.add_reciever(this.channel,this);
+	}
 	,handle_power_input: function(game,dir) {
 		var input_status = this.get_wire_status(dir);
 		if(input_status != 0) {
@@ -7183,10 +7191,14 @@ Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 		}
 		this.set_wire_status(dir,1);
 	}
+	,restart_module: function() {
+		Wire_$Module.prototype.restart_module.call(this);
+		this.incoming_signal = false;
+	}
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,40);
-		haxegon_Gfx.set_imagecolor(this.channel.color);
+		haxegon_Gfx.set_imagecolor(this.channel);
 		if(!this.incoming_signal) {
 			haxegon_Gfx.set_imagealpha(0.65);
 		}
@@ -7196,6 +7208,14 @@ Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 		if(this.incoming_signal) {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,43);
 		}
+	}
+	,get_channel: function() {
+		return this.channel;
+	}
+	,change_channel: function(channel,sm) {
+		sm.remove_reciever(this.channel,this);
+		this.channel = channel;
+		sm.add_reciever(this.channel,this);
 	}
 	,recieve_signal: function(game) {
 		if(this.incoming_signal) {
@@ -7343,9 +7363,75 @@ Reflect.makeVarArgs = function(f) {
 		return f(a);
 	};
 };
-var Signal_$Manager = function() { };
+var Signal_$Manager = function() {
+	this.channel_data_map = new haxe_ds_IntMap();
+	var _g = 0;
+	var _g1 = Reflect.fields(Signal_$Manager.channels);
+	while(_g < _g1.length) {
+		var f = _g1[_g];
+		++_g;
+		var this1 = this.channel_data_map;
+		var k = Reflect.field(Signal_$Manager.channels,f);
+		var v = { queued_signals : 0, recievers : []};
+		this1.h[k] = v;
+	}
+};
 $hxClasses["Signal_Manager"] = Signal_$Manager;
 Signal_$Manager.__name__ = ["Signal_Manager"];
+Signal_$Manager.prototype = {
+	channel_data_map: null
+	,get_channel_recievers: function(channel) {
+		return this.channel_data_map.h[channel].recievers;
+	}
+	,get_channel_queued_signals: function(channel) {
+		return this.channel_data_map.h[channel].queued_signals;
+	}
+	,add_reciever: function(channel,reciever) {
+		if(reciever == null) {
+			return;
+		}
+		this.channel_data_map.h[channel].recievers.push(reciever);
+	}
+	,remove_reciever: function(channel,reciever) {
+		if(reciever == null) {
+			return false;
+		}
+		return HxOverrides.remove(this.channel_data_map.h[channel].recievers,reciever);
+	}
+	,send_signal_to_channel: function(channel) {
+		var tmp = this.channel_data_map.h[channel];
+		tmp.queued_signals++;
+	}
+	,resolve_signals_once: function(game) {
+		var resolved_any_signals = false;
+		var channel = this.channel_data_map.keys();
+		while(channel.hasNext()) {
+			var channel1 = channel.next();
+			var data = this.channel_data_map.h[channel1];
+			if(data.queued_signals > 0) {
+				resolved_any_signals = true;
+				data.queued_signals--;
+				var _g = 0;
+				var _g1 = data.recievers;
+				while(_g < _g1.length) {
+					var reciever = _g1[_g];
+					++_g;
+					reciever.recieve_signal(game);
+				}
+			}
+		}
+		return resolved_any_signals;
+	}
+	,clear_queued_signals: function() {
+		var channel = this.channel_data_map.keys();
+		while(channel.hasNext()) {
+			var channel1 = channel.next();
+			var data = this.channel_data_map.h[channel1];
+			data.queued_signals = 0;
+		}
+	}
+	,__class__: Signal_$Manager
+};
 var Std = function() { };
 $hxClasses["Std"] = Std;
 Std.__name__ = ["Std"];
@@ -48806,7 +48892,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 940959;
+	this.version = 509551;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -98282,7 +98368,7 @@ openfl_text_Font.__registeredFonts = [];
 Wire_$Module.module_sheet_name = "module_sheet";
 Wire_$Module.hover_opacity_off = 0.35;
 Wire_$Module.hover_opacity_on = 0.75;
-Signal_$Manager.channels = [{ name : "green", color : 7725099}];
+Signal_$Manager.channels = { green : 7725099};
 Tooltip.tooltip_sheet_name = "tooltip_sheet";
 Tooltip.tab_height = 16;
 _$Wire_$Module_Wire_$Status_$Impl_$.disabled = -1;

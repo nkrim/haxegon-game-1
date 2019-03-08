@@ -3,6 +3,7 @@ import Wire_Module.*;
 import Wire_Module.Module_Sheet;
 import Wire_Module.Wire_Status.*;
 import Tooltip;
+import Signal_Manager;
 // Modules
 import Modules.Power_Module;
 import Modules.Bridge_Module;
@@ -54,6 +55,8 @@ class Main {
 	  	// wire_grid[0][0] = new Power_Module({r:0,c:0});
 	  	// wire_grid[2][0] = new Power_Module({r:2,c:0});
 
+	  	signal_manager = new Signal_Manager();
+
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
 	  	Tooltip.load_tooltip_spritesheet();
@@ -70,13 +73,13 @@ class Main {
 	  		if(Gui.button("Start")) {
 	  			Mouse.leftforcerelease();
 	  			Mouse.rightforcerelease();
-	  			simulating = true;
-	  			resolution_tick = true;
+	  			this.simulating = true;
+	  			this.resolution_tick = true;
 	  			tick(); // Perform resolution tick on start
 	  		}
 	  		Gui.shift();
 	  		if(Gui.button("Reset")) {
-	  			wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+	  			this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 	  		}
 	  	}
 	  	else {
@@ -84,10 +87,12 @@ class Main {
 	  			tick();
 	  		}
 	  		if(Gui.button("Stop")) {
-	  			simulating = false;
+	  			this.simulating = false;
 	  			restart_modules();
+	  			this.signal_manager.clear_queued_signals();
 	  		}
 	  	}
+	  	Gui.end();
 
 	  	if(!simulating) {
 	  		handle_wire_drawing();
@@ -109,6 +114,8 @@ class Main {
   	var grid_height = 8;
   	var grid_x = 200;
   	var grid_y = 100;
+
+  	public var signal_manager : Signal_Manager;
 
   	var tool_x = 100;
   	var tool_y = 100;
@@ -133,24 +140,25 @@ class Main {
   	============ */
   	function tick() {
   		// Resolution tick, just perform augmentation actions based on channel inputs
-  		if(resolution_tick) {
-  			for(row in wire_grid) {
+  		if(this.resolution_tick) {
+  			// Restart all modules first
+  			for(row in this.wire_grid) {
   				for(wm in row) {
-  					wm.resolve_tick();
+  					wm.restart_module();
   				}
   			}
+  			// Continue resolving on next tick if any signals resolved
+  			this.resolution_tick = this.signal_manager.resolve_signals_once(this);
   		}
   		// Power tick, spread power and do module evalutions
-  		else {
-  			for(row in wire_grid) {
+  		if(!this.resolution_tick) {
+  			for(row in this.wire_grid) {
   				for(wm in row) {
   					wm.start_power_tick(this);
   				}
   			}
+  			this.resolution_tick = true;
   		}
-
-  		// Toggle resolution_tick
-  		resolution_tick = !resolution_tick;
   	}
 
   	function restart_modules() {
@@ -600,16 +608,25 @@ class Main {
  		}
  	}
 
- 	public static function new_module_from_tool(tool:Tool, cell:Cell, ?wm:Wire_Module) {
+ 	public function new_module_from_tool(tool:Tool, cell:Cell, ?wm:Wire_Module) {
  		return switch(tool) {
  			case wire: new Wire_Module(cell, wm);
  			case power: new Power_Module(cell, wm);
  			case or_diode: new Diode_Module(cell, wm);
  			case and_diode: Diode_Module.new_and_diode(cell, wm);
  			case emittor: new Emittor_Module(cell, wm);
- 			case reciever: new Reciever_Module(cell, wm);
+ 			case reciever: Reciever_Module.new_registered_reciever_module(this.signal_manager, cell, wm);
  			case bridge: new Bridge_Module(cell, wm);
  			default: null;
  		}
  	}
+
+ 	// Assumes there will never be a grid with more than 32 length 
+	public static function cell_hash(c:Cell):Int {
+ 		return (c.r<<5) + c.c;
+ 	}
+ 	public static function cell_unhash(n:Int):Cell {
+ 		return { r: n>>5, c: n & 31 };
+ 	}
+
 }

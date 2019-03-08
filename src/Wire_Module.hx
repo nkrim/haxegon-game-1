@@ -171,10 +171,6 @@ class Wire_Module {
 		if(left_neighbor != null) { left_neighbor.handle_power_input(game, RIGHT); }
 	}
 
-	public function resolve_tick() {
-		restart_module();
-	}
-
 	public function restart_module() {
 		if(this.up == on)
 			this.up = off;
