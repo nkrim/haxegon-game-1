@@ -68,7 +68,7 @@ class Main {
 	function update() {
 	  	Text.display(0, 0, "Hello, Sailor!");
 
-	  	Gui.window("Simulation controls", grid_x, grid_y - 64);
+	  	Gui.window("Simulation controls", grid_x, 10);
 	  	if(!simulating) {
 	  		if(Gui.button("Start")) {
 	  			Mouse.leftforcerelease();
@@ -95,7 +95,7 @@ class Main {
 	  	Gui.end();
 
 	  	if(!simulating) {
-	  		handle_wire_drawing();
+	  		handle_wire_drawing_and_hovering();
 	  	}
 
 	  	handle_tooltip_interaction();
@@ -225,6 +225,13 @@ class Main {
 
   	// BASIC TOOLTIP INTERACTION
   	function handle_tooltip_interaction() {
+  		// If simulating, make sure to quit out of tooltip if it is currently active, otherwise exit
+  		if(simulating) {
+  			if(tooltip.is_showing())
+  				tooltip.set_module(null);
+  			return;
+  		}
+
   		var hover_cell = get_hover_cell();
   		// If right-click on a valid tile, open up tooltip for that tile 
   		if(Mouse.rightreleased()) {
@@ -271,9 +278,12 @@ class Main {
   	var drawing_entry_dir = NODIR; // can be NODIR while drawing
   	var drawing_last_dir = NODIR;
 
-	function handle_wire_drawing() {
-		if(tooltip.is_showing())
+	function handle_wire_drawing_and_hovering() {
+		// If tooltip is showing, outline the tooltipped module, then exit
+		if(tooltip.is_showing()) {
+			tooltip.get_module().outline = true;
 			return;
+		}
 
 		var hover_cell = get_hover_cell();
 
@@ -429,6 +439,10 @@ class Main {
 			else if(drawing_entry_dir != NODIR &&  wm.get_wire_status(drawing_last_dir) == disabled) {
 				wm.set_wire_status(drawing_last_dir, off);
 			}
+			// Otherwise, if backwards drawing and on enabled wire, delete it
+			else if(drawing_backwards && wm.get_wire_status(drawing_last_dir) != disabled) {
+				wm.set_wire_status(drawing_last_dir, disabled);
+			}
 			drawing_wires = false;
 		}
 
@@ -437,12 +451,19 @@ class Main {
 			if(drawing_wires && drawing_last_cell != null && drawing_last_dir != NODIR) {
 				var wm = get_module_from_cell(drawing_last_cell);
 				wm.hovering = drawing_last_dir;
+				wm.outline = true;
 			}
 			else if(hover_cell != null) {
 				var wm = get_module_from_cell(hover_cell);
 				var cell_point = get_cell_point(hover_cell);
 				wm.hovering = general_wire_hover_status(cell_point.x, cell_point.y);
+				wm.outline = true;
 			}
+		}
+		else if(hover_cell != null){
+			var wm = get_module_from_cell(hover_cell);
+			var cell_point = get_cell_point(hover_cell);
+			wm.outline = true;
 		}
 	}
 

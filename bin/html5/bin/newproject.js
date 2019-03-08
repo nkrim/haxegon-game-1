@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","32");
+		_this.setReserved("build","33");
 	} else {
-		_this.h["build"] = "32";
+		_this.h["build"] = "33";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5836,7 +5836,7 @@ Main.prototype = {
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,this.grid_y - 64,null,{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "update"});
 		if(!this.simulating) {
 			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 73, className : "Main", methodName : "update"})) {
 				haxegon_Mouse.leftforcerelease();
@@ -5875,7 +5875,7 @@ Main.prototype = {
 		}
 		Gui.end();
 		if(!this.simulating) {
-			this.handle_wire_drawing();
+			this.handle_wire_drawing_and_hovering();
 		}
 		this.handle_tooltip_interaction();
 		this.draw_wire_grid();
@@ -5959,6 +5959,12 @@ Main.prototype = {
 		return { r : r, c : c};
 	}
 	,handle_tooltip_interaction: function() {
+		if(this.simulating) {
+			if(this.tooltip.is_showing()) {
+				this.tooltip.set_module(null);
+			}
+			return;
+		}
 		var hover_cell = this.get_hover_cell();
 		if(haxegon_Mouse.rightreleased()) {
 			if(hover_cell != null) {
@@ -5980,8 +5986,9 @@ Main.prototype = {
 	,drawing_last_cell: null
 	,drawing_entry_dir: null
 	,drawing_last_dir: null
-	,handle_wire_drawing: function() {
+	,handle_wire_drawing_and_hovering: function() {
 		if(this.tooltip.is_showing()) {
+			this.tooltip.get_module().outline = true;
 			return;
 		}
 		var hover_cell = this.get_hover_cell();
@@ -6093,6 +6100,8 @@ Main.prototype = {
 				this.drawing_wires_initial_click = false;
 			} else if(this.drawing_entry_dir != 0 && wm4.get_wire_status(this.drawing_last_dir) == -1) {
 				wm4.set_wire_status(this.drawing_last_dir,0);
+			} else if(this.drawing_backwards && wm4.get_wire_status(this.drawing_last_dir) != -1) {
+				wm4.set_wire_status(this.drawing_last_dir,-1);
 			}
 			this.drawing_wires = false;
 		}
@@ -6100,11 +6109,17 @@ Main.prototype = {
 			if(this.drawing_wires && this.drawing_last_cell != null && this.drawing_last_dir != 0) {
 				var wm5 = this.get_module_from_cell(this.drawing_last_cell);
 				wm5.hovering = this.drawing_last_dir;
+				wm5.outline = true;
 			} else if(hover_cell != null) {
 				var wm6 = this.get_module_from_cell(hover_cell);
 				var cell_point3 = this.get_cell_point(hover_cell);
 				wm6.hovering = Main.general_wire_hover_status(cell_point3.x,cell_point3.y);
+				wm6.outline = true;
 			}
+		} else if(hover_cell != null) {
+			var wm7 = this.get_module_from_cell(hover_cell);
+			var cell_point4 = this.get_cell_point(hover_cell);
+			wm7.outline = true;
 		}
 	}
 	,handle_in_cell_wire_drawing_change: function(wm,last_dir,new_dir) {
@@ -6582,12 +6597,14 @@ var Wire_$Module = function(cell,wm) {
 		this.right = wm.right;
 		this.left = wm.left;
 		this.hovering = wm.hovering;
+		this.outline = wm.outline;
 	} else {
 		this.up = -1;
 		this.down = -1;
 		this.right = -1;
 		this.left = -1;
 		this.hovering = 0;
+		this.outline = false;
 	}
 };
 $hxClasses["Wire_Module"] = Wire_$Module;
@@ -6602,6 +6619,7 @@ Wire_$Module.prototype = {
 	,right: null
 	,left: null
 	,hovering: null
+	,outline: null
 	,get_wire_status: function(dir) {
 		switch(dir) {
 		case 1:
@@ -6808,6 +6826,10 @@ Wire_$Module.prototype = {
 			haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,15);
 			break;
 		default:
+		}
+		if(this.outline) {
+			haxegon_Gfx.drawbox(x,y,65,65,10066329);
+			this.outline = false;
 		}
 	}
 	,__class__: Wire_$Module
@@ -48892,7 +48914,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 509551;
+	this.version = 207893;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

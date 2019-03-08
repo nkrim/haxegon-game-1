@@ -84,6 +84,7 @@ class Wire_Module {
 	public var left : Wire_Status;
 	// Hovering direction for redering
 	public var hovering : Direction;
+	public var outline : Bool;
 
 	// Augmentations on the module
 	//public var augs : Augmentations;
@@ -97,6 +98,7 @@ class Wire_Module {
 			this.right = wm.right;
 			this.left = wm.left;
 			this.hovering = wm.hovering;
+			this.outline = wm.outline;
 		}
 		else {
 			this.up = disabled;
@@ -104,6 +106,7 @@ class Wire_Module {
 			this.right = disabled;
 			this.left = disabled;
 			this.hovering = NODIR;
+			this.outline = false;
 		}
 	}
 
@@ -311,6 +314,12 @@ class Wire_Module {
 			}
 			case on: 	Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.right_on);
 			default: null;
+		}
+
+		// Handle outline
+		if(outline) {
+			Gfx.drawbox(x, y, 65, 65, 0x999999);
+			outline = false;
 		}
 	}
 }
