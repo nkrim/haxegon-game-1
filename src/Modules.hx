@@ -6,6 +6,7 @@ import Wire_Module.*;
 import Wire_Module.Wire_Status;
 import Wire_Module.Module_Sheet;
 import Signal_Manager;
+import Signal_Manager.Signal_Emittor;
 import Signal_Manager.Signal_Reciever;
 
 
@@ -252,7 +253,7 @@ class Diode_Module extends Wire_Module {
 
 /* EMITTOR MODULE
 ================= */
-class Emittor_Module extends Wire_Module {
+class Emittor_Module extends Wire_Module implements Signal_Emittor {
 
 	// Public vars
 	public var channel : Int;
@@ -261,7 +262,7 @@ class Emittor_Module extends Wire_Module {
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal_Manager.channels.green;
+		this.channel = 0;
 	}
 
 	// Overrides
@@ -281,7 +282,7 @@ class Emittor_Module extends Wire_Module {
 		// Draw base
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.emittor_base);
 		// Set color and draw on mask
-		Gfx.imagecolor = this.channel;
+		Gfx.imagecolor = Signal_Manager.channels[this.channel];
 		// If there are no inputs on, reduce the alpha
 		if(this.up != on && this.down != on && this.left != on && this.left != on)
 			Gfx.imagealpha = 0.65;
@@ -313,7 +314,7 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = Signal_Manager.channels.green;
+		this.channel = 0;
 		this.incoming_signal = false;
 	}
 	public function register_reciever(sm: Signal_Manager) {
@@ -344,7 +345,7 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 		// Draw base
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.reciever_base);
 		// Set color and draw on mask
-		Gfx.imagecolor = this.channel;
+		Gfx.imagecolor = Signal_Manager.channels[this.channel];
 		// If there's no incoming_signal, reduce the alpha
 		if(!this.incoming_signal)
 			Gfx.imagealpha = 0.65;
@@ -365,6 +366,7 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	public function change_channel(channel: Int, sm: Signal_Manager) {
 		sm.remove_reciever(this.channel, this);
 		this.channel = channel;
+		trace(this.channel);
 		sm.add_reciever(this.channel, this);
 	}
 

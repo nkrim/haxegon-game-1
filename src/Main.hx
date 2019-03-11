@@ -79,6 +79,7 @@ class Main {
 	  		}
 	  		Gui.shift();
 	  		if(Gui.button("Reset")) {
+	  			signal_manager.reset_signal_manager();
 	  			this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 	  		}
 	  	}
@@ -248,7 +249,7 @@ class Main {
   		}
 
   		if(tooltip.is_showing()) {
-  			tooltip.handle_internal_interaction();
+  			tooltip.handle_internal_interaction(this);
   		}
   	}
 

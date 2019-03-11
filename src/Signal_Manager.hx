@@ -6,6 +6,9 @@ import Reflect;
 
 /* INTERACES
 ============ */
+interface Signal_Emittor {
+	public var channel : Int;
+}
 interface Signal_Reciever {
 	public function get_channel():Int;
 	public function change_channel(channel: Int, sm: Signal_Manager):Void;
@@ -26,19 +29,30 @@ typedef Channel_Data = {
 class Signal_Manager {
 
 	// SIGNALS OPERATIONS
-	public static var channels = {
-		green: 0x75e02b,
-	};
+	public static var channels = [
+		0x06aa00,
+		0x1e44fa,
+		0xf51515,
+		0xffed00,
+		0x00ffca,
+		0xc600e6,
+		0xff9e00,
+		0xb2ff1f,
+		0xff009e,
+		0x854500,
+		0x8a8a8a,
+		0xffffff,
+	];
 
 	// protected vars
-	var channel_data_map : Map<Int,Channel_Data>;
+	var channel_data_map : Array<Channel_Data>;
 
 	// Constructor
 	public function new() {
 		// Init channel_reciever_map with empty arrays for each channel
-		this.channel_data_map = new Map<Int,Channel_Data>();
-		for(f in Reflect.fields(channels)) {
-			this.channel_data_map[Reflect.field(channels, f)] = { queued_signals: 0, recievers: new Array<Signal_Reciever>() };
+		this.channel_data_map = new Array<Channel_Data>();
+		for(c in Signal_Manager.channels) {
+			this.channel_data_map.push( { queued_signals: 0, recievers: new Array<Signal_Reciever>() } );
 		}
 	}
 
@@ -54,6 +68,7 @@ class Signal_Manager {
 	public function add_reciever(channel: Int, reciever: Signal_Reciever):Void {
 		if(reciever == null)
 			return;
+		trace(channel);
 		this.channel_data_map[channel].recievers.push(reciever);
 	}
 	public function remove_reciever(channel: Int, reciever: Signal_Reciever):Bool {
@@ -71,8 +86,7 @@ class Signal_Manager {
 	// Resolves only one queued signal per-channel, to perform resolutions on a tick-by-tick basis
 	public function resolve_signals_once(game:Main):Bool {
 		var resolved_any_signals = false;
-		for(channel in this.channel_data_map.keys()) {
-			var data = this.channel_data_map[channel];
+		for(data in this.channel_data_map) {
 			if(data.queued_signals > 0) {
 				resolved_any_signals = true;
 				data.queued_signals--;
@@ -85,9 +99,15 @@ class Signal_Manager {
 	}
 
 	public function clear_queued_signals() {
-		for(channel in this.channel_data_map.keys()) {
-			var data = this.channel_data_map[channel];
+		for(data in this.channel_data_map) {
 			data.queued_signals = 0;
+		}
+	}
+
+	public function reset_signal_manager() {
+		for(data in this.channel_data_map) {
+			data.queued_signals = 0;
+			data.recievers = new Array<Signal_Reciever>();
 		}
 	}
 }

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","33");
+		_this.setReserved("build","35");
 	} else {
-		_this.h["build"] = "33";
+		_this.h["build"] = "35";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5847,6 +5847,7 @@ Main.prototype = {
 			}
 			Gui.shift();
 			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 81, className : "Main", methodName : "update"})) {
+				this.signal_manager.reset_signal_manager();
 				var _g = [];
 				var _g2 = 0;
 				var _g1 = this.grid_height;
@@ -5864,10 +5865,10 @@ Main.prototype = {
 				this.wire_grid = _g;
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 86, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 89, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 90, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules();
 				this.signal_manager.clear_queued_signals();
@@ -5977,7 +5978,7 @@ Main.prototype = {
 			this.tooltip.set_module(null);
 		}
 		if(this.tooltip.is_showing()) {
-			this.tooltip.handle_internal_interaction();
+			this.tooltip.handle_internal_interaction(this);
 		}
 	}
 	,drawing_wires_initial_click: null
@@ -6264,7 +6265,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i6737R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i3140R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i6733R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i4056R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -7135,12 +7136,20 @@ Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 	}
 	,__class__: Diode_$Module
 });
+var Signal_$Emittor = function() { };
+$hxClasses["Signal_Emittor"] = Signal_$Emittor;
+Signal_$Emittor.__name__ = ["Signal_Emittor"];
+Signal_$Emittor.prototype = {
+	channel: null
+	,__class__: Signal_$Emittor
+};
 var Emittor_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = Signal_$Manager.channels.green;
+	this.channel = 0;
 };
 $hxClasses["Emittor_Module"] = Emittor_$Module;
 Emittor_$Module.__name__ = ["Emittor_Module"];
+Emittor_$Module.__interfaces__ = [Signal_$Emittor];
 Emittor_$Module.__super__ = Wire_$Module;
 Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 	channel: null
@@ -7155,7 +7164,7 @@ Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,41);
-		haxegon_Gfx.set_imagecolor(this.channel);
+		haxegon_Gfx.set_imagecolor(Signal_$Manager.channels[this.channel]);
 		if(this.up != 1 && this.down != 1 && this.left != 1 && this.left != 1) {
 			haxegon_Gfx.set_imagealpha(0.65);
 		}
@@ -7188,7 +7197,7 @@ Signal_$Reciever.prototype = {
 };
 var Reciever_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = Signal_$Manager.channels.green;
+	this.channel = 0;
 	this.incoming_signal = false;
 };
 $hxClasses["Reciever_Module"] = Reciever_$Module;
@@ -7220,7 +7229,7 @@ Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,40);
-		haxegon_Gfx.set_imagecolor(this.channel);
+		haxegon_Gfx.set_imagecolor(Signal_$Manager.channels[this.channel]);
 		if(!this.incoming_signal) {
 			haxegon_Gfx.set_imagealpha(0.65);
 		}
@@ -7237,6 +7246,7 @@ Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 	,change_channel: function(channel,sm) {
 		sm.remove_reciever(this.channel,this);
 		this.channel = channel;
+		haxe_Log.trace(this.channel,{ fileName : "Modules.hx", lineNumber : 369, className : "Reciever_Module", methodName : "change_channel"});
 		sm.add_reciever(this.channel,this);
 	}
 	,recieve_signal: function(game) {
@@ -7386,16 +7396,13 @@ Reflect.makeVarArgs = function(f) {
 	};
 };
 var Signal_$Manager = function() {
-	this.channel_data_map = new haxe_ds_IntMap();
+	this.channel_data_map = [];
 	var _g = 0;
-	var _g1 = Reflect.fields(Signal_$Manager.channels);
+	var _g1 = Signal_$Manager.channels;
 	while(_g < _g1.length) {
-		var f = _g1[_g];
+		var c = _g1[_g];
 		++_g;
-		var this1 = this.channel_data_map;
-		var k = Reflect.field(Signal_$Manager.channels,f);
-		var v = { queued_signals : 0, recievers : []};
-		this1.h[k] = v;
+		this.channel_data_map.push({ queued_signals : 0, recievers : []});
 	}
 };
 $hxClasses["Signal_Manager"] = Signal_$Manager;
@@ -7403,41 +7410,42 @@ Signal_$Manager.__name__ = ["Signal_Manager"];
 Signal_$Manager.prototype = {
 	channel_data_map: null
 	,get_channel_recievers: function(channel) {
-		return this.channel_data_map.h[channel].recievers;
+		return this.channel_data_map[channel].recievers;
 	}
 	,get_channel_queued_signals: function(channel) {
-		return this.channel_data_map.h[channel].queued_signals;
+		return this.channel_data_map[channel].queued_signals;
 	}
 	,add_reciever: function(channel,reciever) {
 		if(reciever == null) {
 			return;
 		}
-		this.channel_data_map.h[channel].recievers.push(reciever);
+		haxe_Log.trace(channel,{ fileName : "Signal_Manager.hx", lineNumber : 71, className : "Signal_Manager", methodName : "add_reciever"});
+		this.channel_data_map[channel].recievers.push(reciever);
 	}
 	,remove_reciever: function(channel,reciever) {
 		if(reciever == null) {
 			return false;
 		}
-		return HxOverrides.remove(this.channel_data_map.h[channel].recievers,reciever);
+		return HxOverrides.remove(this.channel_data_map[channel].recievers,reciever);
 	}
 	,send_signal_to_channel: function(channel) {
-		var tmp = this.channel_data_map.h[channel];
-		tmp.queued_signals++;
+		this.channel_data_map[channel].queued_signals++;
 	}
 	,resolve_signals_once: function(game) {
 		var resolved_any_signals = false;
-		var channel = this.channel_data_map.keys();
-		while(channel.hasNext()) {
-			var channel1 = channel.next();
-			var data = this.channel_data_map.h[channel1];
+		var _g = 0;
+		var _g1 = this.channel_data_map;
+		while(_g < _g1.length) {
+			var data = _g1[_g];
+			++_g;
 			if(data.queued_signals > 0) {
 				resolved_any_signals = true;
 				data.queued_signals--;
-				var _g = 0;
-				var _g1 = data.recievers;
-				while(_g < _g1.length) {
-					var reciever = _g1[_g];
-					++_g;
+				var _g2 = 0;
+				var _g3 = data.recievers;
+				while(_g2 < _g3.length) {
+					var reciever = _g3[_g2];
+					++_g2;
 					reciever.recieve_signal(game);
 				}
 			}
@@ -7445,11 +7453,22 @@ Signal_$Manager.prototype = {
 		return resolved_any_signals;
 	}
 	,clear_queued_signals: function() {
-		var channel = this.channel_data_map.keys();
-		while(channel.hasNext()) {
-			var channel1 = channel.next();
-			var data = this.channel_data_map.h[channel1];
+		var _g = 0;
+		var _g1 = this.channel_data_map;
+		while(_g < _g1.length) {
+			var data = _g1[_g];
+			++_g;
 			data.queued_signals = 0;
+		}
+	}
+	,reset_signal_manager: function() {
+		var _g = 0;
+		var _g1 = this.channel_data_map;
+		while(_g < _g1.length) {
+			var data = _g1[_g];
+			++_g;
+			data.queued_signals = 0;
+			data.recievers = [];
 		}
 	}
 	,__class__: Signal_$Manager
@@ -7555,14 +7574,17 @@ StringTools.hex = function(n,digits) {
 	}
 	return s;
 };
-var Tab = $hxClasses["Tab"] = { __ename__ : ["Tab"], __constructs__ : ["DIR","TOG","ROT"] };
+var Tab = $hxClasses["Tab"] = { __ename__ : ["Tab"], __constructs__ : ["DIR","SIG","TOG","ROT"] };
 Tab.DIR = ["DIR",0];
 Tab.DIR.toString = $estr;
 Tab.DIR.__enum__ = Tab;
-Tab.TOG = ["TOG",1];
+Tab.SIG = ["SIG",1];
+Tab.SIG.toString = $estr;
+Tab.SIG.__enum__ = Tab;
+Tab.TOG = ["TOG",2];
 Tab.TOG.toString = $estr;
 Tab.TOG.__enum__ = Tab;
-Tab.ROT = ["ROT",2];
+Tab.ROT = ["ROT",3];
 Tab.ROT.toString = $estr;
 Tab.ROT.__enum__ = Tab;
 var Tooltip = function() {
@@ -7570,6 +7592,10 @@ var Tooltip = function() {
 	this.x = 0;
 	this.y = 0;
 	this.module = null;
+	this.is_hovering_tab = false;
+	this.hovered_tab = Tab.DIR;
+	this.hovering_dir = 0;
+	this.hovering_channel = -1;
 };
 $hxClasses["Tooltip"] = Tooltip;
 Tooltip.__name__ = ["Tooltip"];
@@ -7581,7 +7607,10 @@ Tooltip.prototype = {
 	,x: null
 	,y: null
 	,module: null
+	,is_hovering_tab: null
+	,hovered_tab: null
 	,hovering_dir: null
+	,hovering_channel: null
 	,set_position: function(x,y) {
 		this.x = x;
 		this.y = y;
@@ -7593,19 +7622,49 @@ Tooltip.prototype = {
 		this.module = module;
 		if(this.uses_dirs()) {
 			this.tab = Tab.DIR;
+		} else if(this.uses_sig()) {
+			this.tab = Tab.SIG;
 		} else {
 			this.tab = Tab.TOG;
 		}
 	}
-	,handle_internal_interaction: function() {
+	,handle_internal_interaction: function(game) {
 		if(this.module == null) {
 			return;
 		}
-		if(haxegon_Mouse.leftreleased()) {
-			var hovering_dir = this.hovering_dir_button();
-			if(hovering_dir != 0) {
-				this.module.toggle_dir_setting_status(hovering_dir);
+		var _g = this.tab;
+		switch(_g[1]) {
+		case 0:
+			if(haxegon_Mouse.leftreleased()) {
+				var hovering_dir = this.hovering_dir_button();
+				if(hovering_dir != 0) {
+					this.module.toggle_dir_setting_status(hovering_dir);
+				}
 			}
+			break;
+		case 1:
+			var channel_x = this.x + 4;
+			var channel_y = this.y + 22;
+			this.hovering_channel = this.get_channel_hover_index(channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
+			if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
+				var reciever = this.cast_to_reciever();
+				if(reciever != null) {
+					if(reciever.get_channel() != this.hovering_channel) {
+						reciever.change_channel(this.hovering_channel,game.signal_manager);
+					}
+				} else {
+					var emittor = this.cast_to_emittor();
+					if(emittor != null) {
+						if(emittor.channel != this.hovering_channel) {
+							emittor.channel = this.hovering_channel;
+						}
+					} else {
+						haxe_Log.trace("Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager",{ fileName : "Tooltip.hx", lineNumber : 138, className : "Tooltip", methodName : "handle_internal_interaction"});
+					}
+				}
+			}
+			break;
+		default:
 		}
 	}
 	,hovering_dir_button: function() {
@@ -7644,75 +7703,125 @@ Tooltip.prototype = {
 		y = y_temp + cy;
 		return { x : x, y : y};
 	}
+	,get_channel_hover_index: function(x_start,y_start,length,width,height) {
+		var mx = haxegon_Mouse.get_x() - x_start;
+		var my = haxegon_Mouse.get_y() - y_start;
+		if(mx < 0 || mx >= length * width || my < 0 || my >= length * height) {
+			return -1;
+		}
+		return (mx / length | 0) + width * (my / length | 0);
+	}
+	,index_to_channel_point: function(index,x_start,y_start,length,width) {
+		return { x : x_start + index % width * length, y : y_start + (index / width | 0) * length};
+	}
 	,draw_tooltip: function() {
 		if(this.module == null) {
 			return;
 		}
-		var dirs_enabled = this.uses_dirs();
+		var dir_enabled = this.uses_dirs();
+		var sig_enabled = this.uses_sig();
 		var _g = this.tab;
 		switch(_g[1]) {
 		case 0:
-			if(dirs_enabled) {
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,10);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_enabled ? 7 : 5);
+			if(dir_enabled) {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
 				var hovering_dir = this.hovering_dir_button();
 				if(!this.module.get_dir_setting_status(1)) {
 					var up_setting = this.module.get_dir_setting_status(1);
 					if(hovering_dir == 1) {
 						haxegon_Gfx.set_imagealpha(up_setting ? 0.25 : 0.5);
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,15);
 						haxegon_Gfx.set_imagealpha(1);
 					} else if(!up_setting) {
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,15);
 					}
 				}
 				if(!this.module.get_dir_setting_status(2)) {
 					var down_setting = this.module.get_dir_setting_status(2);
 					if(hovering_dir == 2) {
 						haxegon_Gfx.set_imagealpha(down_setting ? 0.25 : 0.5);
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,16);
 						haxegon_Gfx.set_imagealpha(1);
 					} else if(!down_setting) {
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,16);
 					}
 				}
 				if(!this.module.get_dir_setting_status(4)) {
 					var right_setting = this.module.get_dir_setting_status(4);
 					if(hovering_dir == 4) {
 						haxegon_Gfx.set_imagealpha(right_setting ? 0.25 : 0.5);
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,18);
 						haxegon_Gfx.set_imagealpha(1);
 					} else if(!right_setting) {
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,18);
 					}
 				}
 				if(!this.module.get_dir_setting_status(3)) {
 					var left_setting = this.module.get_dir_setting_status(3);
 					if(hovering_dir == 3) {
 						haxegon_Gfx.set_imagealpha(left_setting ? 0.25 : 0.5);
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,17);
 						haxegon_Gfx.set_imagealpha(1);
 					} else if(!left_setting) {
-						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+						haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,17);
 					}
 				}
 			} else {
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,10);
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
-				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,15);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,16);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,18);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,17);
 			}
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
 			break;
 		case 1:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			if(sig_enabled) {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,19);
+				var channel_x = this.x + 4;
+				var channel_y = this.y + 22;
+				if(this.hovering_channel >= 0) {
+					var hovering_point = this.index_to_channel_point(this.hovering_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(hovering_point.x,hovering_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_hover);
+				}
+				var reciever = this.cast_to_reciever();
+				var cur_channel = -1;
+				if(reciever != null) {
+					cur_channel = reciever.get_channel();
+				} else {
+					var emittor = this.cast_to_emittor();
+					if(emittor != null) {
+						cur_channel = emittor.channel;
+					}
+				}
+				if(cur_channel < 0) {
+					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 319, className : "Tooltip", methodName : "draw_tooltip"});
+				} else {
+					var selected_point = this.index_to_channel_point(cur_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(selected_point.x,selected_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
+				}
+			} else {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,19);
+			}
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_enabled ? 7 : 5);
 			break;
 		case 2:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dirs_enabled ? 3 : 1);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,8);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+			break;
+		case 3:
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
 			break;
 		}
 	}
@@ -7722,11 +7831,43 @@ Tooltip.prototype = {
 	,uses_dirs: function(cur_module) {
 		return js_Boot.__instanceof(cur_module != null ? cur_module : this.module,Diode_$Module);
 	}
+	,uses_sig: function(cur_module) {
+		var m = cur_module != null ? cur_module : this.module;
+		if(!js_Boot.__instanceof(m,Emittor_$Module)) {
+			return js_Boot.__instanceof(m,Reciever_$Module);
+		} else {
+			return true;
+		}
+	}
 	,hovering: function() {
 		if(this.is_showing()) {
 			return haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x,this.y,65,65);
 		} else {
 			return false;
+		}
+	}
+	,cast_to_emittor: function(cur_module) {
+		var m = cur_module != null ? cur_module : this.module;
+		try {
+			return js_Boot.__cast(m , Signal_$Emittor);
+		} catch( msg ) {
+			haxe_CallStack.lastException = msg;
+			if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
+			if( js_Boot.__instanceof(msg,String) ) {
+				return null;
+			} else throw(msg);
+		}
+	}
+	,cast_to_reciever: function(cur_module) {
+		var m = cur_module != null ? cur_module : this.module;
+		try {
+			return js_Boot.__cast(m , Signal_$Reciever);
+		} catch( msg ) {
+			haxe_CallStack.lastException = msg;
+			if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
+			if( js_Boot.__instanceof(msg,String) ) {
+				return null;
+			} else throw(msg);
 		}
 	}
 	,__class__: Tooltip
@@ -48914,7 +49055,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 207893;
+	this.version = 763562;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -98390,9 +98531,14 @@ openfl_text_Font.__registeredFonts = [];
 Wire_$Module.module_sheet_name = "module_sheet";
 Wire_$Module.hover_opacity_off = 0.35;
 Wire_$Module.hover_opacity_on = 0.75;
-Signal_$Manager.channels = { green : 7725099};
+Signal_$Manager.channels = [436736,1983738,16061717,16772352,65482,12976358,16752128,11730719,16711838,8733952,9079434,16777215];
 Tooltip.tooltip_sheet_name = "tooltip_sheet";
 Tooltip.tab_height = 16;
+Tooltip.channel_length = 14;
+Tooltip.channel_width = 4;
+Tooltip.channel_height = 3;
+Tooltip.channel_outline_selected = 5789537;
+Tooltip.channel_outline_hover = 11776678;
 _$Wire_$Module_Wire_$Status_$Impl_$.disabled = -1;
 _$Wire_$Module_Wire_$Status_$Impl_$.off = 0;
 _$Wire_$Module_Wire_$Status_$Impl_$.on = 1;

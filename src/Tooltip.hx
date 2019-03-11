@@ -9,22 +9,28 @@ abstract Tooltip_Sheet(Int) from Int to Int {
   	var dir_tab_disabled   		= 1;
   	var dir_tab_enabled_hover	= 2;
   	var dir_tab_enabled 		= 3;
-	var tog_tab_hover			= 4;
-	var tog_tab 				= 5;
-	var rot_tab_hover			= 6;
-	var rot_tab					= 7;
-	var bg_disabled				= 8;
-	var bg_enabled	     		= 9;
-	var dir_main				= 10;
-	var dir_up_disabled			= 11;
-	var dir_down_disabled 		= 12;
-	var dir_left_disabled		= 13;
-	var dir_right_disabled		= 14;
+  	var sig_tab_disabled_hover	= 4;
+  	var sig_tab_disabled   		= 5;
+  	var sig_tab_enabled_hover	= 6;
+  	var sig_tab_enabled 		= 7;
+	var tog_tab_hover			= 8;
+	var tog_tab 				= 9;
+	var rot_tab_hover			= 10;
+	var rot_tab					= 11;
+	var bg_disabled				= 12;
+	var bg_enabled	     		= 13;
+	var dir_main				= 14;
+	var dir_up_disabled			= 15;
+	var dir_down_disabled 		= 16;
+	var dir_left_disabled		= 17;
+	var dir_right_disabled		= 18;
+	var sig_main	 			= 19;
 }
 
 
 enum Tab {
 	DIR;
+	SIG;
 	TOG;
 	ROT;
 }
@@ -42,7 +48,12 @@ class Tooltip {
 	var x : Int;
 	var y : Int;
 	var module : Wire_Module;
+
+	var is_hovering_tab : Bool;
+	var hovered_tab : Tab;
+
 	var hovering_dir : Direction;
+	var hovering_channel : Int;
 
 	// Constructor
 	public function new() {
@@ -51,6 +62,11 @@ class Tooltip {
 		this.x = 0;
 		this.y = 0;
 		this.module = null;
+
+		this.is_hovering_tab = false;
+		this.hovered_tab = DIR;
+		this.hovering_dir = NODIR;
+		this.hovering_channel = -1;
 	}
 
 	// Spritesheet loading
@@ -70,23 +86,60 @@ class Tooltip {
 		this.module = module;
 		if(uses_dirs())
 			this.tab = DIR;
+		else if(uses_sig())
+			this.tab = SIG;
 		else
 			this.tab = TOG;
 	}
 
 
-	// Interaction
+	/* Interaction
+	-------------- */
 	static var tab_height = 16;
-	public function handle_internal_interaction() {
+	static var channel_length = 14;
+	static var channel_width = 4;
+ 	static var channel_height = 3;
+
+
+	public function handle_internal_interaction(game:Main) {
 		if(this.module == null)
 			return;
 
-		if(Mouse.leftreleased()) {
-			// Check if clicked dir
-			var hovering_dir = hovering_dir_button();
-			if(hovering_dir != NODIR) {
-				this.module.toggle_dir_setting_status(hovering_dir);
+		switch(tab) {
+			// DIR
+			case DIR: {
+				if(Mouse.leftreleased()) {
+					// Check if clicked dir
+					var hovering_dir = hovering_dir_button();
+					if(hovering_dir != NODIR) {
+						this.module.toggle_dir_setting_status(hovering_dir);
+					}
+				}
 			}
+			// SIG
+			case SIG: {
+				var channel_x = this.x + 4;
+				var channel_y = this.y + 22;
+				this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
+				// If hovering a channel and mouse released, select the channel
+				if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
+					var reciever = cast_to_reciever();
+					if(reciever != null) {
+						if(reciever.get_channel() != this.hovering_channel)
+							reciever.change_channel(this.hovering_channel, game.signal_manager);
+					}
+					else {
+						var emittor = cast_to_emittor();
+						if(emittor != null) {
+							if(emittor.channel != this.hovering_channel)
+								emittor.channel = this.hovering_channel;
+						}
+						else
+							trace('Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager');
+					}	
+				}
+			}
+			default: null;
 		}
 	}
 
@@ -137,22 +190,45 @@ class Tooltip {
 		return { x:x, y:y };
 	}
 
+	function get_channel_hover_index(x_start:Int, y_start:Int, length:Int, width: Int, height: Int):Int {
+		var mx = Mouse.x - x_start;
+		var my = Mouse.y - y_start;
+
+		if(mx < 0 || mx >= length*width || my < 0 || my >= length*height)
+			return -1;
+		return Std.int(mx/length) + (width * Std.int(my/length));
+	}
+	function index_to_channel_point(index: Int, x_start:Int, y_start:Int, length:Int, width: Int):Main.Point {
+		return {
+			x: x_start + (index%width)*length,
+			y: y_start + Std.int(index/width)*length,
+		}
+	}
 
 
-	// Rendering
+
+	/* Rendering
+	------------ */
+	static var channel_outline_selected = 0x585761;
+	static var channel_outline_hover = 0xb3b2a6;
+
 	public function draw_tooltip() {
 		if(this.module == null)
 			return;
 
 		// Draw tooltip box relative to which tab is open
-		var dirs_enabled = uses_dirs();
+		var dir_enabled = uses_dirs();
+		var sig_enabled = uses_sig();
 		switch(this.tab) {
+			/* DIR
+			------ */
 			case DIR: {
 				// Draw other tabs
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab_enabled);
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab_enabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab);
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab);
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_enabled ? Tooltip_Sheet.sig_tab_enabled : Tooltip_Sheet.sig_tab_disabled);
 				// Draw main
-				if(dirs_enabled) {
+				if(dir_enabled) {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.dir_main);
 					var hovering_dir = hovering_dir_button();
@@ -209,11 +285,54 @@ class Tooltip {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.dir_left_disabled);
 				}
 				// Draw cur tab
-				Gfx.drawtile(x, y, tooltip_sheet_name, dirs_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+			}
+			/* SIG
+			------ */
+			case SIG: {
+				// Draw other tabs
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab);
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				// Draw main
+				if(sig_enabled) {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.sig_main);
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 22;
+					// Outline hovered cell, if hover != selected and is greater than 0
+					if(this.hovering_channel >= 0) {
+						var hovering_point = index_to_channel_point(this.hovering_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(hovering_point.x, hovering_point.y, channel_length, channel_length, channel_outline_hover);
+					}
+					var reciever = cast_to_reciever();
+					var cur_channel = -1;
+					if(reciever != null) {
+						cur_channel = reciever.get_channel();
+					}
+					else {
+						var emittor = cast_to_emittor();
+						if(emittor != null)
+							cur_channel = emittor.channel;
+					}
+					if(cur_channel < 0) {
+						trace("Tooltip.draw_tooltip.SIG: Could not get channel from module");
+					}
+					else {
+						var selected_point = index_to_channel_point(cur_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(selected_point.x, selected_point.y, channel_length, channel_length, channel_outline_selected);
+					}
+				}
+				else {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.sig_main);
+				}
+				// Draw cur tab
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_enabled ? Tooltip_Sheet.sig_tab_enabled : Tooltip_Sheet.sig_tab_disabled);
 			}
 			case TOG: {
 				// Draw other tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, dirs_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
 				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab_enabled);
 				// Draw main
 				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
@@ -222,7 +341,7 @@ class Tooltip {
 			}
 			case ROT: {
 				// Draw tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, dirs_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
 				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab_enabled);
 				// Draw main
 				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
@@ -241,8 +360,31 @@ class Tooltip {
 		return Std.is(cur_module != null ? cur_module : this.module, Modules.Diode_Module);
 	}
 
+	public function uses_sig(?cur_module:Wire_Module) {
+		var m = cur_module != null ? cur_module : this.module;
+		return Std.is(m, Modules.Emittor_Module) || Std.is(m, Modules.Reciever_Module);
+	}
+
 	public function hovering() {
 		return is_showing() && Geom.inbox(Mouse.x, Mouse.y, this.x, this.y, 65, 65);
 	}
 
+	public function cast_to_emittor(?cur_module:Wire_Module) {
+		var m = cur_module != null ? cur_module : this.module;
+		try {
+			return cast(m, Signal_Manager.Signal_Emittor);
+		}
+		catch(msg:String) {
+			return null;
+		}
+	}
+	public function cast_to_reciever(?cur_module:Wire_Module) {
+		var m = cur_module != null ? cur_module : this.module;
+		try {
+			return cast(m, Signal_Manager.Signal_Reciever);
+		}
+		catch(msg:String) {
+			return null;
+		}
+	}
 }
