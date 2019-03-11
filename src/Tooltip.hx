@@ -160,20 +160,7 @@ class Tooltip {
 					this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
 					// If hovering a channel and mouse released, select the channel
 					if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
-						var reciever = cast_to_reciever();
-						if(reciever != null) {
-							if(reciever.get_channel() != this.hovering_channel)
-								reciever.change_channel(this.hovering_channel, game.signal_manager);
-						}
-						else {
-							var emittor = cast_to_emittor();
-							if(emittor != null) {
-								if(emittor.channel != this.hovering_channel)
-									emittor.channel = this.hovering_channel;
-							}
-							else
-								trace('Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager');
-						}	
+						Signal_Manager.set_channel_for_module(this.module, this.hovering_channel, game.signal_manager);
 					}
 				}
 				default: null;
@@ -348,16 +335,7 @@ class Tooltip {
 						var hovering_point = index_to_channel_point(this.hovering_channel, channel_x, channel_y, channel_length, channel_width);
 						Gfx.drawbox(hovering_point.x, hovering_point.y, channel_length, channel_length, channel_outline_hover);
 					}
-					var reciever = cast_to_reciever();
-					var cur_channel = -1;
-					if(reciever != null) {
-						cur_channel = reciever.get_channel();
-					}
-					else {
-						var emittor = cast_to_emittor();
-						if(emittor != null)
-							cur_channel = emittor.channel;
-					}
+					var cur_channel = Signal_Manager.get_channel_from_module(this.module);
 					if(cur_channel < 0) {
 						trace("Tooltip.draw_tooltip.SIG: Could not get channel from module");
 					}
@@ -415,24 +393,5 @@ class Tooltip {
 
 	public function hovering() {
 		return is_showing() && Geom.inbox(Mouse.x, Mouse.y, this.x, this.y, 65, 65);
-	}
-
-	public function cast_to_emittor(?cur_module:Wire_Module) {
-		var m = cur_module != null ? cur_module : this.module;
-		try {
-			return cast(m, Signal_Manager.Signal_Emittor);
-		}
-		catch(msg:String) {
-			return null;
-		}
-	}
-	public function cast_to_reciever(?cur_module:Wire_Module) {
-		var m = cur_module != null ? cur_module : this.module;
-		try {
-			return cast(m, Signal_Manager.Signal_Reciever);
-		}
-		catch(msg:String) {
-			return null;
-		}
 	}
 }

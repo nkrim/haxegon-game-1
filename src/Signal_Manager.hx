@@ -110,4 +110,47 @@ class Signal_Manager {
 			data.recievers = new Array<Signal_Reciever>();
 		}
 	}
+
+	/* Helper Procedures
+	-------------------- */
+	public static function cast_to_emittor(wm:Wire_Module) {
+		try {
+			return cast(wm, Signal_Emittor);
+		}
+		catch(msg:String) {
+			return null;
+		}
+	}
+	public static function cast_to_reciever(wm:Wire_Module) {
+		try {
+			return cast(wm, Signal_Reciever);
+		}
+		catch(msg:String) {
+			return null;
+		}
+	}
+
+	public static function get_channel_from_module(wm:Wire_Module):Int {
+		var emittor = cast_to_emittor(wm);
+		if(emittor != null)
+			return emittor.channel;
+		var reciever = cast_to_reciever(wm);
+		if(reciever != null)
+			return reciever.get_channel();
+		return -1;
+	}
+
+	public static function set_channel_for_module(wm:Wire_Module, new_channel: Int, sm: Signal_Manager):Bool {
+		var emittor = cast_to_emittor(wm);
+		if(emittor != null) {
+			emittor.channel = new_channel;
+			return true;
+		}
+		var reciever = cast_to_reciever(wm);
+		if(reciever != null) {
+			reciever.change_channel(new_channel, sm);
+			return true;
+		}
+		return false;
+	}
 }

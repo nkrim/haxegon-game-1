@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","38");
+		_this.setReserved("build","39");
 	} else {
-		_this.h["build"] = "38";
+		_this.h["build"] = "39";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6265,7 +6265,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i6733R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i4056R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i6732R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i4056R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -7145,7 +7145,15 @@ Signal_$Emittor.prototype = {
 };
 var Emittor_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = 0;
+	var wm_channel = -1;
+	if(wm != null) {
+		wm_channel = Signal_$Manager.get_channel_from_module(wm);
+	}
+	if(wm_channel >= 0) {
+		this.channel = wm_channel;
+	} else {
+		this.channel = 0;
+	}
 };
 $hxClasses["Emittor_Module"] = Emittor_$Module;
 Emittor_$Module.__name__ = ["Emittor_Module"];
@@ -7165,7 +7173,7 @@ Emittor_$Module.prototype = $extend(Wire_$Module.prototype,{
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,41);
 		haxegon_Gfx.set_imagecolor(Signal_$Manager.channels[this.channel]);
-		if(this.up != 1 && this.down != 1 && this.left != 1 && this.left != 1) {
+		if(this.up != 1 && this.down != 1 && this.left != 1 && this.right != 1) {
 			haxegon_Gfx.set_imagealpha(0.65);
 		}
 		haxegon_Gfx.drawtile(x,y,Wire_$Module.module_sheet_name,42);
@@ -7197,8 +7205,16 @@ Signal_$Reciever.prototype = {
 };
 var Reciever_$Module = function(cell,wm) {
 	Wire_$Module.call(this,cell,wm);
-	this.channel = 0;
 	this.incoming_signal = false;
+	var wm_channel = -1;
+	if(wm != null) {
+		wm_channel = Signal_$Manager.get_channel_from_module(wm);
+	}
+	if(wm_channel >= 0) {
+		this.channel = wm_channel;
+	} else {
+		this.channel = 0;
+	}
 };
 $hxClasses["Reciever_Module"] = Reciever_$Module;
 Reciever_$Module.__name__ = ["Reciever_Module"];
@@ -7246,7 +7262,7 @@ Reciever_$Module.prototype = $extend(Wire_$Module.prototype,{
 	,change_channel: function(channel,sm) {
 		sm.remove_reciever(this.channel,this);
 		this.channel = channel;
-		haxe_Log.trace(this.channel,{ fileName : "Modules.hx", lineNumber : 369, className : "Reciever_Module", methodName : "change_channel"});
+		haxe_Log.trace(this.channel,{ fileName : "Modules.hx", lineNumber : 384, className : "Reciever_Module", methodName : "change_channel"});
 		sm.add_reciever(this.channel,this);
 	}
 	,recieve_signal: function(game) {
@@ -7407,6 +7423,52 @@ var Signal_$Manager = function() {
 };
 $hxClasses["Signal_Manager"] = Signal_$Manager;
 Signal_$Manager.__name__ = ["Signal_Manager"];
+Signal_$Manager.cast_to_emittor = function(wm) {
+	try {
+		return js_Boot.__cast(wm , Signal_$Emittor);
+	} catch( msg ) {
+		haxe_CallStack.lastException = msg;
+		if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
+		if( js_Boot.__instanceof(msg,String) ) {
+			return null;
+		} else throw(msg);
+	}
+};
+Signal_$Manager.cast_to_reciever = function(wm) {
+	try {
+		return js_Boot.__cast(wm , Signal_$Reciever);
+	} catch( msg ) {
+		haxe_CallStack.lastException = msg;
+		if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
+		if( js_Boot.__instanceof(msg,String) ) {
+			return null;
+		} else throw(msg);
+	}
+};
+Signal_$Manager.get_channel_from_module = function(wm) {
+	var emittor = Signal_$Manager.cast_to_emittor(wm);
+	if(emittor != null) {
+		return emittor.channel;
+	}
+	var reciever = Signal_$Manager.cast_to_reciever(wm);
+	if(reciever != null) {
+		return reciever.get_channel();
+	}
+	return -1;
+};
+Signal_$Manager.set_channel_for_module = function(wm,new_channel,sm) {
+	var emittor = Signal_$Manager.cast_to_emittor(wm);
+	if(emittor != null) {
+		emittor.channel = new_channel;
+		return true;
+	}
+	var reciever = Signal_$Manager.cast_to_reciever(wm);
+	if(reciever != null) {
+		reciever.change_channel(new_channel,sm);
+		return true;
+	}
+	return false;
+};
 Signal_$Manager.prototype = {
 	channel_data_map: null
 	,get_channel_recievers: function(channel) {
@@ -7687,21 +7749,7 @@ Tooltip.prototype = {
 				var channel_y = this.y + 22;
 				this.hovering_channel = this.get_channel_hover_index(channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
 				if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
-					var reciever = this.cast_to_reciever();
-					if(reciever != null) {
-						if(reciever.get_channel() != this.hovering_channel) {
-							reciever.change_channel(this.hovering_channel,game.signal_manager);
-						}
-					} else {
-						var emittor = this.cast_to_emittor();
-						if(emittor != null) {
-							if(emittor.channel != this.hovering_channel) {
-								emittor.channel = this.hovering_channel;
-							}
-						} else {
-							haxe_Log.trace("Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager",{ fileName : "Tooltip.hx", lineNumber : 175, className : "Tooltip", methodName : "handle_internal_interaction"});
-						}
-					}
+					Signal_$Manager.set_channel_for_module(this.module,this.hovering_channel,game.signal_manager);
 				}
 				break;
 			default:
@@ -7838,18 +7886,9 @@ Tooltip.prototype = {
 					var hovering_point = this.index_to_channel_point(this.hovering_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
 					haxegon_Gfx.drawbox(hovering_point.x,hovering_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_hover);
 				}
-				var reciever = this.cast_to_reciever();
-				var cur_channel = -1;
-				if(reciever != null) {
-					cur_channel = reciever.get_channel();
-				} else {
-					var emittor = this.cast_to_emittor();
-					if(emittor != null) {
-						cur_channel = emittor.channel;
-					}
-				}
+				var cur_channel = Signal_$Manager.get_channel_from_module(this.module);
 				if(cur_channel < 0) {
-					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 362, className : "Tooltip", methodName : "draw_tooltip"});
+					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 340, className : "Tooltip", methodName : "draw_tooltip"});
 				} else {
 					var selected_point = this.index_to_channel_point(cur_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
 					haxegon_Gfx.drawbox(selected_point.x,selected_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
@@ -7896,30 +7935,6 @@ Tooltip.prototype = {
 			return haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x,this.y,65,65);
 		} else {
 			return false;
-		}
-	}
-	,cast_to_emittor: function(cur_module) {
-		var m = cur_module != null ? cur_module : this.module;
-		try {
-			return js_Boot.__cast(m , Signal_$Emittor);
-		} catch( msg ) {
-			haxe_CallStack.lastException = msg;
-			if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
-			if( js_Boot.__instanceof(msg,String) ) {
-				return null;
-			} else throw(msg);
-		}
-	}
-	,cast_to_reciever: function(cur_module) {
-		var m = cur_module != null ? cur_module : this.module;
-		try {
-			return js_Boot.__cast(m , Signal_$Reciever);
-		} catch( msg ) {
-			haxe_CallStack.lastException = msg;
-			if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
-			if( js_Boot.__instanceof(msg,String) ) {
-				return null;
-			} else throw(msg);
 		}
 	}
 	,__class__: Tooltip
@@ -49107,7 +49122,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 466719;
+	this.version = 832829;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

@@ -262,7 +262,14 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = 0;
+		var wm_channel = -1;
+		if(wm != null) {
+			wm_channel = Signal_Manager.get_channel_from_module(wm);
+		}
+		if(wm_channel >= 0)
+			this.channel = wm_channel;
+		else
+			this.channel = 0;
 	}
 
 	// Overrides
@@ -284,7 +291,7 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 		// Set color and draw on mask
 		Gfx.imagecolor = Signal_Manager.channels[this.channel];
 		// If there are no inputs on, reduce the alpha
-		if(this.up != on && this.down != on && this.left != on && this.left != on)
+		if(this.up != on && this.down != on && this.left != on && this.right != on)
 			Gfx.imagealpha = 0.65;
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.module_color_mask);
 		Gfx.imagealpha = 1;
@@ -314,8 +321,16 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	public override function new(cell:Cell, ?wm:Wire_Module) {
 		super(cell, wm);
 
-		this.channel = 0;
 		this.incoming_signal = false;
+
+		var wm_channel = -1;
+		if(wm != null) {
+			wm_channel = Signal_Manager.get_channel_from_module(wm);
+		}
+		if(wm_channel >= 0)
+			this.channel = wm_channel;
+		else
+			this.channel = 0;
 	}
 	public function register_reciever(sm: Signal_Manager) {
 		sm.add_reciever(this.channel, this);
