@@ -91,10 +91,15 @@ $ase --batch \
 --layer "Tabs/Dirs/Enabled_Hover" $sprite \
 --layer "Tabs/Dirs/Enabled" $sprite \
 --ignore-layer "Tabs/Dirs" \
---layer "Tabs/Toggle/Disabled" $sprite \
+--layer "Tabs/Signal/Disabled_Hover" $sprite \
+--layer "Tabs/Signal/Disabled" $sprite \
+--layer "Tabs/Signal/Enabled_Hover" $sprite \
+--layer "Tabs/Signal/Enabled" $sprite \
+--ignore-layer "Tabs/Signal" \
+--layer "Tabs/Toggle/Enabled_Hover" $sprite \
 --layer "Tabs/Toggle/Enabled" $sprite \
 --ignore-layer "Tabs/Toggle" \
---layer "Tabs/Rotation/Disabled" $sprite \
+--layer "Tabs/Rotation/Enabled_Hover" $sprite \
 --layer "Tabs/Rotation/Enabled" $sprite \
 --ignore-layer "Tabs/Rotation" \
 --layer "Main/BG_Disabled" $sprite \
@@ -107,6 +112,8 @@ $ase --batch \
 --layer "Settings/Dirs/Disabled/Left" $sprite --ignore-layer "Settings/Dirs/Disabled/Left" \
 --layer "Settings/Dirs/Disabled/Right" $sprite --ignore-layer "Settings/Dirs/Disabled/Right" \
 --ignore-layer "Settings/Dirs" \
+--layer "Settings/Signal/BG" --layer "Settings/Signal/Colors" $sprite \
+--ignore-layer "Settings/Signal" \
 --sheet $out --sheet-pack
 
 
