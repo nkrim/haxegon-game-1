@@ -105,41 +105,79 @@ class Tooltip {
 		if(this.module == null)
 			return;
 
-		switch(tab) {
-			// DIR
-			case DIR: {
-				if(Mouse.leftreleased()) {
-					// Check if clicked dir
-					var hovering_dir = hovering_dir_button();
-					if(hovering_dir != NODIR) {
-						this.module.toggle_dir_setting_status(hovering_dir);
-					}
-				}
+		// Tab hover/changing handling
+		var tab_width = 19;
+		var tab_height = 17;
+		if(Geom.inbox(Mouse.x, Mouse.y, this.x, this.y, 64, tab_height)) {
+			is_hovering_tab = true;
+			// First check box hit for current tab (as it is the largest)
+			var dir_x = 0;
+			var sig_x = 15;
+			var tog_x = 30;
+			var rot_x = 45;
+			var cur_tab_x = this.x + switch(tab) {
+				case DIR: dir_x;
+				case SIG: sig_x;
+				case TOG: tog_x;
+				case ROT: rot_x;
 			}
-			// SIG
-			case SIG: {
-				var channel_x = this.x + 4;
-				var channel_y = this.y + 22;
-				this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
-				// If hovering a channel and mouse released, select the channel
-				if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
-					var reciever = cast_to_reciever();
-					if(reciever != null) {
-						if(reciever.get_channel() != this.hovering_channel)
-							reciever.change_channel(this.hovering_channel, game.signal_manager);
-					}
-					else {
-						var emittor = cast_to_emittor();
-						if(emittor != null) {
-							if(emittor.channel != this.hovering_channel)
-								emittor.channel = this.hovering_channel;
+			if(Geom.inbox(Mouse.x, Mouse.y, cur_tab_x, this.y, tab_width, tab_height))
+				hovered_tab = tab;
+			// Otherwise, do tabs in order (excluding cur tab)
+			else {
+				if(tab != DIR && Geom.inbox(Mouse.x, Mouse.y, this.x+dir_x, this.y, tab_width, tab_height))
+					hovered_tab = DIR;
+				else if(tab != SIG && Geom.inbox(Mouse.x, Mouse.y, this.x+sig_x, this.y, tab_width, tab_height))
+					hovered_tab = SIG;
+				else if(tab != TOG && Geom.inbox(Mouse.x, Mouse.y, this.x+tog_x, this.y, tab_width, tab_height))
+					hovered_tab = TOG;
+				else if(tab != ROT && Geom.inbox(Mouse.x, Mouse.y, this.x+rot_x, this.y, tab_width, tab_height))
+					hovered_tab = ROT;
+			}
+			// Register click for tab-change
+			if(hovered_tab != tab && Mouse.leftreleased()) {
+				tab = hovered_tab;
+			}
+		}
+
+		// Settings handling
+ 		else {
+			switch(tab) {
+				// DIR
+				case DIR: {
+					if(Mouse.leftreleased()) {
+						// Check if clicked dir
+						var hovering_dir = hovering_dir_button();
+						if(hovering_dir != NODIR) {
+							this.module.toggle_dir_setting_status(hovering_dir);
 						}
-						else
-							trace('Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager');
-					}	
+					}
 				}
+				// SIG
+				case SIG: {
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 22;
+					this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
+					// If hovering a channel and mouse released, select the channel
+					if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
+						var reciever = cast_to_reciever();
+						if(reciever != null) {
+							if(reciever.get_channel() != this.hovering_channel)
+								reciever.change_channel(this.hovering_channel, game.signal_manager);
+						}
+						else {
+							var emittor = cast_to_emittor();
+							if(emittor != null) {
+								if(emittor.channel != this.hovering_channel)
+									emittor.channel = this.hovering_channel;
+							}
+							else
+								trace('Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager');
+						}	
+					}
+				}
+				default: null;
 			}
-			default: null;
 		}
 	}
 
@@ -216,17 +254,22 @@ class Tooltip {
 		if(this.module == null)
 			return;
 
-		// Draw tooltip box relative to which tab is open
+		// Determine proper sprite for each tab 
 		var dir_enabled = uses_dirs();
 		var sig_enabled = uses_sig();
+		var dir_sprite = Tooltip_Sheet.dir_tab_disabled + (dir_enabled ? 2 : 0) - (is_hovering_tab && hovered_tab == DIR ? 1 : 0);
+		var sig_sprite = Tooltip_Sheet.sig_tab_disabled + (sig_enabled ? 2 : 0) - (is_hovering_tab && hovered_tab == SIG ? 1 : 0); 
+		var tog_sprite = is_hovering_tab && hovered_tab == TOG ? Tooltip_Sheet.tog_tab_hover : Tooltip_Sheet.tog_tab;
+		var rot_sprite = is_hovering_tab && hovered_tab == ROT ? Tooltip_Sheet.rot_tab_hover : Tooltip_Sheet.rot_tab;
+		// Draw tooltip box relative to which tab is open
 		switch(this.tab) {
 			/* DIR
 			------ */
 			case DIR: {
 				// Draw other tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab);
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab);
-				Gfx.drawtile(x, y, tooltip_sheet_name, sig_enabled ? Tooltip_Sheet.sig_tab_enabled : Tooltip_Sheet.sig_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, rot_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, tog_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
 				// Draw main
 				if(dir_enabled) {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
@@ -285,15 +328,15 @@ class Tooltip {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.dir_left_disabled);
 				}
 				// Draw cur tab
-				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 			}
 			/* SIG
 			------ */
 			case SIG: {
 				// Draw other tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab);
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab);
-				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, rot_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, tog_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 				// Draw main
 				if(sig_enabled) {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
@@ -328,27 +371,32 @@ class Tooltip {
 					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.sig_main);
 				}
 				// Draw cur tab
-				Gfx.drawtile(x, y, tooltip_sheet_name, sig_enabled ? Tooltip_Sheet.sig_tab_enabled : Tooltip_Sheet.sig_tab_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
 			}
 			case TOG: {
 				// Draw other tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab_enabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, rot_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 				// Draw main
 				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
 				// Draw cur tab
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab_enabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, tog_sprite);
 			}
 			case ROT: {
-				// Draw tabs
-				Gfx.drawtile(x, y, tooltip_sheet_name, dir_enabled ? Tooltip_Sheet.dir_tab_enabled : Tooltip_Sheet.dir_tab_disabled);
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_tab_enabled);
+				// Draw other tabs
+				Gfx.drawtile(x, y, tooltip_sheet_name, tog_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
+				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 				// Draw main
 				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
 				// Draw cur tab
-				// Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.rot_tab_enabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, rot_sprite);
 			}
 		}
+
+		// Reset tab hover
+		is_hovering_tab = false;
 	}
 
 	// Helpers

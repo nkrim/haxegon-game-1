@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","35");
+		_this.setReserved("build","37");
 	} else {
-		_this.h["build"] = "35";
+		_this.h["build"] = "37";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -7632,39 +7632,80 @@ Tooltip.prototype = {
 		if(this.module == null) {
 			return;
 		}
-		var _g = this.tab;
-		switch(_g[1]) {
-		case 0:
-			if(haxegon_Mouse.leftreleased()) {
-				var hovering_dir = this.hovering_dir_button();
-				if(hovering_dir != 0) {
-					this.module.toggle_dir_setting_status(hovering_dir);
-				}
+		var tab_width = 19;
+		var tab_height = 17;
+		if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x,this.y,64,tab_height)) {
+			this.is_hovering_tab = true;
+			var dir_x = 0;
+			var sig_x = 15;
+			var tog_x = 30;
+			var rot_x = 45;
+			var _g = this.tab;
+			var cur_tab_x;
+			switch(_g[1]) {
+			case 0:
+				cur_tab_x = dir_x;
+				break;
+			case 1:
+				cur_tab_x = sig_x;
+				break;
+			case 2:
+				cur_tab_x = tog_x;
+				break;
+			case 3:
+				cur_tab_x = rot_x;
+				break;
 			}
-			break;
-		case 1:
-			var channel_x = this.x + 4;
-			var channel_y = this.y + 22;
-			this.hovering_channel = this.get_channel_hover_index(channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
-			if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
-				var reciever = this.cast_to_reciever();
-				if(reciever != null) {
-					if(reciever.get_channel() != this.hovering_channel) {
-						reciever.change_channel(this.hovering_channel,game.signal_manager);
+			var cur_tab_x1 = this.x + cur_tab_x;
+			if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),cur_tab_x1,this.y,tab_width,tab_height)) {
+				this.hovered_tab = this.tab;
+			} else if(this.tab != Tab.DIR && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x + dir_x,this.y,tab_width,tab_height)) {
+				this.hovered_tab = Tab.DIR;
+			} else if(this.tab != Tab.SIG && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x + sig_x,this.y,tab_width,tab_height)) {
+				this.hovered_tab = Tab.SIG;
+			} else if(this.tab != Tab.TOG && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x + tog_x,this.y,tab_width,tab_height)) {
+				this.hovered_tab = Tab.TOG;
+			} else if(this.tab != Tab.ROT && haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x + rot_x,this.y,tab_width,tab_height)) {
+				this.hovered_tab = Tab.ROT;
+			}
+			if(this.hovered_tab != this.tab && haxegon_Mouse.leftreleased()) {
+				this.tab = this.hovered_tab;
+			}
+		} else {
+			var _g1 = this.tab;
+			switch(_g1[1]) {
+			case 0:
+				if(haxegon_Mouse.leftreleased()) {
+					var hovering_dir = this.hovering_dir_button();
+					if(hovering_dir != 0) {
+						this.module.toggle_dir_setting_status(hovering_dir);
 					}
-				} else {
-					var emittor = this.cast_to_emittor();
-					if(emittor != null) {
-						if(emittor.channel != this.hovering_channel) {
-							emittor.channel = this.hovering_channel;
+				}
+				break;
+			case 1:
+				var channel_x = this.x + 4;
+				var channel_y = this.y + 22;
+				this.hovering_channel = this.get_channel_hover_index(channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
+				if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
+					var reciever = this.cast_to_reciever();
+					if(reciever != null) {
+						if(reciever.get_channel() != this.hovering_channel) {
+							reciever.change_channel(this.hovering_channel,game.signal_manager);
 						}
 					} else {
-						haxe_Log.trace("Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager",{ fileName : "Tooltip.hx", lineNumber : 138, className : "Tooltip", methodName : "handle_internal_interaction"});
+						var emittor = this.cast_to_emittor();
+						if(emittor != null) {
+							if(emittor.channel != this.hovering_channel) {
+								emittor.channel = this.hovering_channel;
+							}
+						} else {
+							haxe_Log.trace("Tooltip.handle_internal_interaction: expected module to be a Signal_Reciever or Signal_Manager",{ fileName : "Tooltip.hx", lineNumber : 175, className : "Tooltip", methodName : "handle_internal_interaction"});
+						}
 					}
 				}
+				break;
+			default:
 			}
-			break;
-		default:
 		}
 	}
 	,hovering_dir_button: function() {
@@ -7720,12 +7761,16 @@ Tooltip.prototype = {
 		}
 		var dir_enabled = this.uses_dirs();
 		var sig_enabled = this.uses_sig();
+		var dir_sprite = 1 + (dir_enabled ? 2 : 0) - (this.is_hovering_tab && this.hovered_tab == Tab.DIR ? 1 : 0);
+		var sig_sprite = 5 + (sig_enabled ? 2 : 0) - (this.is_hovering_tab && this.hovered_tab == Tab.SIG ? 1 : 0);
+		var tog_sprite = this.is_hovering_tab && this.hovered_tab == Tab.TOG ? 8 : 9;
+		var rot_sprite = this.is_hovering_tab && this.hovered_tab == Tab.ROT ? 10 : 11;
 		var _g = this.tab;
 		switch(_g[1]) {
 		case 0:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_enabled ? 7 : 5);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
 			if(dir_enabled) {
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,14);
@@ -7778,12 +7823,12 @@ Tooltip.prototype = {
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,18);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,17);
 			}
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
 			break;
 		case 1:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,11);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,9);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
 			if(sig_enabled) {
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,19);
@@ -7804,7 +7849,7 @@ Tooltip.prototype = {
 					}
 				}
 				if(cur_channel < 0) {
-					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 319, className : "Tooltip", methodName : "draw_tooltip"});
+					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 362, className : "Tooltip", methodName : "draw_tooltip"});
 				} else {
 					var selected_point = this.index_to_channel_point(cur_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
 					haxegon_Gfx.drawbox(selected_point.x,selected_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
@@ -7813,17 +7858,24 @@ Tooltip.prototype = {
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
 				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,19);
 			}
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_enabled ? 7 : 5);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
 			break;
 		case 2:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
 			break;
 		case 3:
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_enabled ? 3 : 1);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
 			break;
 		}
+		this.is_hovering_tab = false;
 	}
 	,is_showing: function() {
 		return this.module != null;
@@ -49055,7 +49107,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 763562;
+	this.version = 693536;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
