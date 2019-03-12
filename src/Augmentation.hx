@@ -16,8 +16,8 @@ class Toggle_Augmentation implements Augmentation {
 	var active_state : Bool;
 
 	// Constructor
-	public function new(sm:Signal_Manager) {
-		this.channel = 4;
+	public function new(sm:Signal_Manager, ?channel:Int=0) {
+		this.channel = channel;
 		this.active_state = true;
 
 		// Register w/ signal manager

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","40");
+		_this.setReserved("build","42");
 	} else {
-		_this.h["build"] = "40";
+		_this.h["build"] = "42";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4261,8 +4261,11 @@ var Augmentation = function() { };
 $hxClasses["Augmentation"] = Augmentation;
 Augmentation.__name__ = ["Augmentation"];
 Augmentation.__interfaces__ = [Signal_$Reciever];
-var Toggle_$Augmentation = function(sm) {
-	this.channel = 4;
+var Toggle_$Augmentation = function(sm,channel) {
+	if(channel == null) {
+		channel = 0;
+	}
+	this.channel = channel;
 	this.active_state = true;
 	sm.add_aug_reciever(this.channel,this);
 };
@@ -5882,16 +5885,16 @@ Main.prototype = {
 		}
 		this.wire_grid = _g;
 		this.signal_manager = new Signal_$Manager();
-		this.wire_grid[0][1].toggle_aug = new Toggle_$Augmentation(this.signal_manager);
+		this.wire_grid[0][1].toggle_aug = new Toggle_$Augmentation(this.signal_manager,4);
 		Wire_$Module.load_module_spritesheet();
 		Tooltip.load_tooltip_spritesheet();
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 75, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 74, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 77, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 76, className : "Main", methodName : "update"})) {
 				haxegon_Mouse.leftforcerelease();
 				haxegon_Mouse.rightforcerelease();
 				this.simulating = true;
@@ -5899,7 +5902,7 @@ Main.prototype = {
 				this.tick();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"})) {
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 84, className : "Main", methodName : "update"})) {
 				this.signal_manager.reset_signal_manager();
 				var _g = [];
 				var _g2 = 0;
@@ -5918,10 +5921,10 @@ Main.prototype = {
 				this.wire_grid = _g;
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 90, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 94, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 93, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules_and_augmentations();
 				this.signal_manager.clear_queued_signals();
@@ -49245,7 +49248,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 20750;
+	this.version = 734646;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

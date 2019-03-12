@@ -54,12 +54,11 @@ class Main {
 	  	Gfx.clearcolor = 0x222222;
 
 	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
-	  	// wire_grid[0][0] = new Power_Module({r:0,c:0});
-	  	// wire_grid[2][0] = new Power_Module({r:2,c:0});
 
 	  	signal_manager = new Signal_Manager();
 
-	  	wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager);
+	  	// TEMP WIRE_GRID CHANGE FOR TESTING TOGGLE_AUG
+	  	wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager, 4);
 
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
