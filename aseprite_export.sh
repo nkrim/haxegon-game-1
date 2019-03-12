@@ -36,10 +36,15 @@ $ase --batch \
 --layer "Power/BG" $sprite \
 --layer "Power/On" $sprite \
 --ignore-layer "Power" \
---layer "Bridge/BG" $sprite \
---layer "Bridge/On_Horiz" $sprite \
---layer "Bridge/On_Vert" $sprite \
---ignore-layer "Bridge/On_Horiz" $sprite \
+--layer "Bridge/Vert/BG" $sprite \
+--layer "Bridge/Vert/On_Horiz" $sprite \
+--layer "Bridge/Vert/On_Vert" $sprite \
+--ignore-layer "Bridge/Vert/On_Horiz" $sprite \
+--ignore-layer "Bridge/Vert" \
+--layer "Bridge/Horiz/BG" $sprite \
+--layer "Bridge/Horiz/On_Horiz" $sprite \
+--layer "Bridge/Horiz/On_Vert" $sprite \
+--ignore-layer "Bridge/Horiz/On_Horiz" $sprite \
 --ignore-layer "Bridge" \
 --layer "Diode/BG" $sprite \
 --layer "Diode/On" $sprite \
@@ -80,6 +85,20 @@ $ase --batch \
 --layer "Reciever/Inputs/Down_In" $sprite --ignore-layer "Reciever/Inputs/Down_In" \
 --layer "Reciever/Inputs/Left_In" $sprite --ignore-layer "Reciever/Inputs/Left_In" \
 --layer "Reciever/Inputs/Right_In" $sprite --ignore-layer "Reciever/Inputs/Right_In" \
+--ignore-layer "Reciever" \
+--layer "Toggle/BG_On" $sprite --ignore-layer "Toggle/BG_On" \
+--layer "Toggle/BG_Off" $sprite --ignore-layer "Toggle/BG_Off" \
+--layer "Toggle/Color_Mask" $sprite --ignore-layer "Toggle/Color_Mask" \
+--ignore-layer "Toggle" \
+--layer "Rotator/Rot_Up/BG" $sprite --ignore-layer "Rotator/Rot_Up/BG" \
+--layer "Rotator/Rot_Up/Color_Mask" $sprite --ignore-layer "Rotator/Rot_Up/Color_Mask" \
+--layer "Rotator/Rot_Right/BG" $sprite --ignore-layer "Rotator/Rot_Right/BG" \
+--layer "Rotator/Rot_Right/Color_Mask" $sprite --ignore-layer "Rotator/Rot_Right/Color_Mask" \
+--layer "Rotator/Rot_Down/BG" $sprite --ignore-layer "Rotator/Rot_Down/BG" \
+--layer "Rotator/Rot_Down/Color_Mask" $sprite --ignore-layer "Rotator/Rot_Down/Color_Mask" \
+--layer "Rotator/Rot_Left/BG" $sprite --ignore-layer "Rotator/Rot_Left/BG" \
+--layer "Rotator/Rot_Left/Color_Mask" $sprite --ignore-layer "Rotator/Rot_Left/Color_Mask" \
+--ignore-layer "Rotator" \
 --sheet $out --sheet-pack
 
 # tooltip_sprite_64x64.aseprite
