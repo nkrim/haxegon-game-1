@@ -13,21 +13,27 @@ interface Augmentation extends Signal_Reciever {}
 class Toggle_Augmentation implements Augmentation { 
 
 	// Protected vars
+	var starting_state : Bool = true;
 	var channel : Int;
 	var active_state : Bool;
 
 	// Constructor
 	public function new(sm:Signal_Manager, ?channel:Int=0) {
 		this.channel = channel;
-		this.active_state = true;
+		this.active_state = this.starting_state;
 
 		// Register w/ signal manager
 		sm.add_aug_reciever(this.channel, this);
 	}
 
-
+	public function get_starting_state() {
+		return this.starting_state;
+	}
 	public function get_active_state() {
 		return this.active_state;
+	}
+	public function toggle_starting_state() {
+		this.starting_state = this.active_state = !this.starting_state;
 	}
 
 
@@ -48,7 +54,7 @@ class Toggle_Augmentation implements Augmentation {
 	/* INTERACTION
 	-------------- */
 	public function reset() {
-		this.active_state = true;
+		this.active_state = this.starting_state;
 	}
 
 	/* RENDERING

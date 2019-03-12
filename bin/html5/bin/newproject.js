@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","43");
+		_this.setReserved("build","46");
 	} else {
-		_this.h["build"] = "43";
+		_this.h["build"] = "46";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4265,18 +4265,26 @@ var Toggle_$Augmentation = function(sm,channel) {
 	if(channel == null) {
 		channel = 0;
 	}
+	this.starting_state = true;
 	this.channel = channel;
-	this.active_state = true;
+	this.active_state = this.starting_state;
 	sm.add_aug_reciever(this.channel,this);
 };
 $hxClasses["Toggle_Augmentation"] = Toggle_$Augmentation;
 Toggle_$Augmentation.__name__ = ["Toggle_Augmentation"];
 Toggle_$Augmentation.__interfaces__ = [Augmentation];
 Toggle_$Augmentation.prototype = {
-	channel: null
+	starting_state: null
+	,channel: null
 	,active_state: null
+	,get_starting_state: function() {
+		return this.starting_state;
+	}
 	,get_active_state: function() {
 		return this.active_state;
+	}
+	,toggle_starting_state: function() {
+		this.starting_state = this.active_state = !this.starting_state;
 	}
 	,get_channel: function() {
 		return this.channel;
@@ -4290,7 +4298,7 @@ Toggle_$Augmentation.prototype = {
 		this.active_state = !this.active_state;
 	}
 	,reset: function() {
-		this.active_state = true;
+		this.active_state = this.starting_state;
 	}
 	,draw: function(x,y) {
 		if(!this.active_state) {
@@ -5968,16 +5976,15 @@ Main.prototype = {
 		}
 		this.wire_grid = _g;
 		this.signal_manager = new Signal_$Manager();
-		this.wire_grid[0][1].rotator_aug = new Rotator_$Augmentation({ r : 0, c : 1},this.signal_manager,4);
 		Wire_$Module.load_module_spritesheet();
 		Tooltip.load_tooltip_spritesheet();
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 76, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 72, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 78, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 74, className : "Main", methodName : "update"})) {
 				haxegon_Mouse.leftforcerelease();
 				haxegon_Mouse.rightforcerelease();
 				this.simulating = true;
@@ -5985,7 +5992,7 @@ Main.prototype = {
 				this.tick();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 86, className : "Main", methodName : "update"})) {
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 82, className : "Main", methodName : "update"})) {
 				this.signal_manager.reset_signal_manager();
 				var _g = [];
 				var _g2 = 0;
@@ -6004,10 +6011,10 @@ Main.prototype = {
 				this.wire_grid = _g;
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 92, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 88, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 95, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules_and_augmentations();
 				this.signal_manager.clear_queued_signals();
@@ -6131,7 +6138,7 @@ Main.prototype = {
 				var module = this.get_module_from_cell(hover_cell);
 				this.tooltip.set_module(module);
 				var cell_point = this.get_cell_point(hover_cell);
-				this.tooltip.set_position(cell_point.x + 40,cell_point.y - 46);
+				this.tooltip.set_position(cell_point.x + 64,cell_point.y - 6);
 			}
 		} else if((haxegon_Mouse.leftclick() || haxegon_Mouse.leftreleased()) && !this.tooltip.hovering()) {
 			this.tooltip.set_module(null);
@@ -6424,7 +6431,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i4056R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i5531R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -7919,6 +7926,7 @@ Tooltip.prototype = {
 		if(this.module == null) {
 			return;
 		}
+		this.hovering_channel = -1;
 		var tab_width = 19;
 		var tab_height = 17;
 		if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),this.x,this.y,64,tab_height)) {
@@ -7977,7 +7985,68 @@ Tooltip.prototype = {
 					Signal_$Manager.set_channel_for_module(this.module,this.hovering_channel,game.signal_manager);
 				}
 				break;
-			default:
+			case 2:
+				var switch_x = this.x + 5;
+				var switch_y = this.y + 17;
+				var switch_width = 20;
+				var switch_height = 12;
+				if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),switch_x,switch_y,switch_width,switch_height)) {
+					if(haxegon_Mouse.leftreleased()) {
+						if(this.module.toggle_aug == null) {
+							this.module.toggle_aug = new Toggle_$Augmentation(game.signal_manager);
+						} else {
+							game.signal_manager.remove_aug_reciever(this.module.toggle_aug.get_channel(),this.module.toggle_aug);
+							this.module.toggle_aug = null;
+						}
+					}
+					return;
+				}
+				if(this.module.toggle_aug == null) {
+					return;
+				}
+				var starting_x = this.x + 47;
+				var starting_y = this.y + 17;
+				var starting_width = 12;
+				var starting_height = 12;
+				if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),starting_x,starting_y,starting_width,starting_height)) {
+					if(haxegon_Mouse.leftreleased()) {
+						this.module.toggle_aug.toggle_starting_state();
+					}
+					return;
+				}
+				var channel_x1 = this.x + 4;
+				var channel_y1 = this.y + 28;
+				this.hovering_channel = this.get_channel_hover_index(channel_x1,channel_y1,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
+				if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
+					this.module.toggle_aug.change_channel(this.hovering_channel,game.signal_manager);
+				}
+				break;
+			case 3:
+				var switch_x1 = this.x + 5;
+				var switch_y1 = this.y + 17;
+				var switch_width1 = 20;
+				var switch_height1 = 12;
+				if(haxegon_Geom.inbox(haxegon_Mouse.get_x(),haxegon_Mouse.get_y(),switch_x1,switch_y1,switch_width1,switch_height1)) {
+					if(haxegon_Mouse.leftreleased()) {
+						if(this.module.rotator_aug == null) {
+							this.module.rotator_aug = new Rotator_$Augmentation(this.module.cell,game.signal_manager);
+						} else {
+							game.signal_manager.remove_aug_reciever(this.module.rotator_aug.get_channel(),this.module.rotator_aug);
+							this.module.rotator_aug = null;
+						}
+					}
+					return;
+				}
+				if(this.module.rotator_aug == null) {
+					return;
+				}
+				var channel_x2 = this.x + 4;
+				var channel_y2 = this.y + 28;
+				this.hovering_channel = this.get_channel_hover_index(channel_x2,channel_y2,Tooltip.channel_length,Tooltip.channel_width,Tooltip.channel_height);
+				if(this.hovering_channel >= 0 && haxegon_Mouse.leftreleased()) {
+					this.module.rotator_aug.change_channel(this.hovering_channel,game.signal_manager);
+				}
+				break;
 			}
 		}
 	}
@@ -8113,7 +8182,7 @@ Tooltip.prototype = {
 				}
 				var cur_channel = Signal_$Manager.get_channel_from_module(this.module);
 				if(cur_channel < 0) {
-					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 340, className : "Tooltip", methodName : "draw_tooltip"});
+					haxe_Log.trace("Tooltip.draw_tooltip.SIG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 426, className : "Tooltip", methodName : "draw_tooltip"});
 				} else {
 					var selected_point = this.index_to_channel_point(cur_channel,channel_x,channel_y,Tooltip.channel_length,Tooltip.channel_width);
 					haxegon_Gfx.drawbox(selected_point.x,selected_point.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
@@ -8128,14 +8197,60 @@ Tooltip.prototype = {
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+			if(this.module.toggle_aug == null) {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,21);
+				haxegon_Gfx.set_imagealpha(0.5);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,22);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,24);
+				haxegon_Gfx.set_imagealpha(1);
+			} else {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,20);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,this.module.toggle_aug.get_starting_state() ? 22 : 23);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,24);
+				var channel_x1 = this.x + 4;
+				var channel_y1 = this.y + 28;
+				if(this.hovering_channel >= 0) {
+					var hovering_point1 = this.index_to_channel_point(this.hovering_channel,channel_x1,channel_y1,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(hovering_point1.x,hovering_point1.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_hover);
+				}
+				var cur_channel1 = this.module.toggle_aug.get_channel();
+				if(cur_channel1 < 0) {
+					haxe_Log.trace("Tooltip.draw_tooltip.TOG: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 472, className : "Tooltip", methodName : "draw_tooltip"});
+				} else {
+					var selected_point1 = this.index_to_channel_point(cur_channel1,channel_x1,channel_y1,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(selected_point1.x,selected_point1.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
+				}
+			}
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
 			break;
 		case 3:
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,tog_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,sig_sprite);
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,dir_sprite);
-			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,12);
+			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,13);
+			if(this.module.rotator_aug == null) {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,21);
+				haxegon_Gfx.set_imagealpha(0.5);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,24);
+				haxegon_Gfx.set_imagealpha(1);
+			} else {
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,20);
+				haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,24);
+				var channel_x2 = this.x + 4;
+				var channel_y2 = this.y + 28;
+				if(this.hovering_channel >= 0) {
+					var hovering_point2 = this.index_to_channel_point(this.hovering_channel,channel_x2,channel_y2,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(hovering_point2.x,hovering_point2.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_hover);
+				}
+				var cur_channel2 = this.module.rotator_aug.get_channel();
+				if(cur_channel2 < 0) {
+					haxe_Log.trace("Tooltip.draw_tooltip.ROT: Could not get channel from module",{ fileName : "Tooltip.hx", lineNumber : 512, className : "Tooltip", methodName : "draw_tooltip"});
+				} else {
+					var selected_point2 = this.index_to_channel_point(cur_channel2,channel_x2,channel_y2,Tooltip.channel_length,Tooltip.channel_width);
+					haxegon_Gfx.drawbox(selected_point2.x,selected_point2.y,Tooltip.channel_length,Tooltip.channel_length,Tooltip.channel_outline_selected);
+				}
+			}
 			haxegon_Gfx.drawtile(this.x,this.y,Tooltip.tooltip_sheet_name,rot_sprite);
 			break;
 		}
@@ -49347,7 +49462,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 871175;
+	this.version = 243819;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

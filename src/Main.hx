@@ -58,10 +58,6 @@ class Main {
 
 	  	signal_manager = new Signal_Manager();
 
-	  	// TEMP WIRE_GRID CHANGE FOR TESTING TOGGLE_AUG
-	  	// wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager, 4);
-	  	wire_grid[0][1].rotator_aug = new Rotator_Augmentation({r:0,c:1}, signal_manager, 4);
-
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
 	  	Tooltip.load_tooltip_spritesheet();
@@ -257,7 +253,7 @@ class Main {
   				var module = get_module_from_cell(hover_cell);
   				tooltip.set_module(module);
   				var cell_point = get_cell_point(hover_cell);
-  				tooltip.set_position(cell_point.x + 40, cell_point.y - 46);
+  				tooltip.set_position(cell_point.x+64, cell_point.y-6);
   			}
   		}
   		// If left click down or up outside of tooltipl, close it

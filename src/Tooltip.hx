@@ -1,6 +1,8 @@
 import haxegon.*;
 import Main.Direction;
 import Wire_Module;
+import Augmentation.Toggle_Augmentation;
+import Augmentation.Rotator_Augmentation;
 
 /* TOOLTIP SPRITE SHEET MAPPINGS */
 @:enum
@@ -25,6 +27,11 @@ abstract Tooltip_Sheet(Int) from Int to Int {
 	var dir_left_disabled		= 17;
 	var dir_right_disabled		= 18;
 	var sig_main	 			= 19;
+	var tog_switch_on  			= 20;
+	var tog_switch_off 			= 21;
+	var tog_starting_on 		= 22;
+	var tog_starting_off 		= 23;
+	var tog_channels 			= 24;
 }
 
 
@@ -105,6 +112,9 @@ class Tooltip {
 		if(this.module == null)
 			return;
 
+		// Reset hover_channel
+		this.hovering_channel = -1;
+
 		// Tab hover/changing handling
 		var tab_width = 19;
 		var tab_height = 17;
@@ -161,6 +171,81 @@ class Tooltip {
 					// If hovering a channel and mouse released, select the channel
 					if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
 						Signal_Manager.set_channel_for_module(this.module, this.hovering_channel, game.signal_manager);
+					}
+				}
+				// TOG
+				case TOG: {
+					// Switch handling
+					var switch_x = this.x + 5;
+					var switch_y = this.y + 17;
+					var switch_width = 20;
+					var switch_height = 12;
+					if(Geom.inbox(Mouse.x, Mouse.y, switch_x, switch_y, switch_width, switch_height)) {
+						// If mouse released, instantiate or delete toggle_switch
+						if(Mouse.leftreleased()) {
+							if(this.module.toggle_aug == null)
+								this.module.toggle_aug = new Toggle_Augmentation(game.signal_manager);
+							else {
+								game.signal_manager.remove_aug_reciever(this.module.toggle_aug.get_channel(), this.module.toggle_aug);
+								this.module.toggle_aug = null;
+							}
+						}
+						// Quit out, no other relevant settings matter if the cursor is here
+						return;
+					}
+					// If there's no toggle_aug, don't do anything else
+					if(this.module.toggle_aug == null)
+						return;
+					// Starting mode handling
+					var starting_x = this.x + 47;
+					var starting_y = this.y + 17;
+					var starting_width = 12;
+					var starting_height = 12;
+					if(Geom.inbox(Mouse.x, Mouse.y, starting_x, starting_y, starting_width, starting_height)) {
+						// If mouse released, toggle starting mode
+						if(Mouse.leftreleased()) {
+							this.module.toggle_aug.toggle_starting_state();
+						}
+						// Quit out, no other relevant settings matter if the cursor is here
+						return;
+					}
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 28;
+					this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
+					// If hovering a channel and mouse released, select the channel
+					if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
+						this.module.toggle_aug.change_channel(this.hovering_channel, game.signal_manager);
+					}
+				}
+				// ROT
+				case ROT: {
+					// Switch handling
+					var switch_x = this.x + 5;
+					var switch_y = this.y + 17;
+					var switch_width = 20;
+					var switch_height = 12;
+					if(Geom.inbox(Mouse.x, Mouse.y, switch_x, switch_y, switch_width, switch_height)) {
+						// If mouse released, instantiate or delete toggle_switch
+						if(Mouse.leftreleased()) {
+							if(this.module.rotator_aug == null)
+								this.module.rotator_aug = new Rotator_Augmentation(this.module.cell, game.signal_manager);
+							else {
+								game.signal_manager.remove_aug_reciever(this.module.rotator_aug.get_channel(), this.module.rotator_aug);
+								this.module.rotator_aug = null;
+							}
+						}
+						// Quit out, no other relevant settings matter if the cursor is here
+						return;
+					}
+					// If there's no rotator_aug, don't do anything else
+					if(this.module.rotator_aug == null)
+						return;
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 28;
+					this.hovering_channel = get_channel_hover_index(channel_x, channel_y, channel_length, channel_width, channel_height);
+					// If hovering a channel and mouse released, select the channel
+					if(this.hovering_channel >= 0 && Mouse.leftreleased()) {
+						this.module.rotator_aug.change_channel(this.hovering_channel, game.signal_manager);
 					}
 				}
 				default: null;
@@ -335,6 +420,7 @@ class Tooltip {
 						var hovering_point = index_to_channel_point(this.hovering_channel, channel_x, channel_y, channel_length, channel_width);
 						Gfx.drawbox(hovering_point.x, hovering_point.y, channel_length, channel_length, channel_outline_hover);
 					}
+					// Outline current channel
 					var cur_channel = Signal_Manager.get_channel_from_module(this.module);
 					if(cur_channel < 0) {
 						trace("Tooltip.draw_tooltip.SIG: Could not get channel from module");
@@ -357,7 +443,39 @@ class Tooltip {
 				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
 				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 				// Draw main
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
+				// Draw inactive version
+				if(this.module.toggle_aug == null) {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_switch_off);
+					// Set alpha to 0.5 to show inactive items
+					Gfx.imagealpha = 0.5;
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_starting_on);
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_channels);
+					// Reset alpha
+					Gfx.imagealpha = 1;
+				}
+				// Draw active version
+				else {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_switch_on);
+					Gfx.drawtile(x, y, tooltip_sheet_name, this.module.toggle_aug.get_starting_state() ? Tooltip_Sheet.tog_starting_on : Tooltip_Sheet.tog_starting_off);
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_channels);
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 28;
+					// Outline hovered cell, if hover != selected and is greater than 0
+					if(this.hovering_channel >= 0) {
+						var hovering_point = index_to_channel_point(this.hovering_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(hovering_point.x, hovering_point.y, channel_length, channel_length, channel_outline_hover);
+					}
+					// Outline current channel
+					var cur_channel = this.module.toggle_aug.get_channel();
+					if(cur_channel < 0) {
+						trace("Tooltip.draw_tooltip.TOG: Could not get channel from module");
+					}
+					else {
+						var selected_point = index_to_channel_point(cur_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(selected_point.x, selected_point.y, channel_length, channel_length, channel_outline_selected);
+					}
+				}
 				// Draw cur tab
 				Gfx.drawtile(x, y, tooltip_sheet_name, tog_sprite);
 			}
@@ -367,7 +485,37 @@ class Tooltip {
 				Gfx.drawtile(x, y, tooltip_sheet_name, sig_sprite);
 				Gfx.drawtile(x, y, tooltip_sheet_name, dir_sprite);
 				// Draw main
-				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_disabled);
+				Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.bg_enabled);
+				// Draw inactive version
+				if(this.module.rotator_aug == null) {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_switch_off);
+					// Set alpha to 0.5 to show inactive items
+					Gfx.imagealpha = 0.5;
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_channels);
+					// Reset alpha
+					Gfx.imagealpha = 1;
+				}
+				// Draw active version
+				else {
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_switch_on);
+					Gfx.drawtile(x, y, tooltip_sheet_name, Tooltip_Sheet.tog_channels);
+					var channel_x = this.x + 4;
+					var channel_y = this.y + 28;
+					// Outline hovered cell, if hover != selected and is greater than 0
+					if(this.hovering_channel >= 0) {
+						var hovering_point = index_to_channel_point(this.hovering_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(hovering_point.x, hovering_point.y, channel_length, channel_length, channel_outline_hover);
+					}
+					// Outline current channel
+					var cur_channel = this.module.rotator_aug.get_channel();
+					if(cur_channel < 0) {
+						trace("Tooltip.draw_tooltip.ROT: Could not get channel from module");
+					}
+					else {
+						var selected_point = index_to_channel_point(cur_channel, channel_x, channel_y, channel_length, channel_width);
+						Gfx.drawbox(selected_point.x, selected_point.y, channel_length, channel_length, channel_outline_selected);
+					}
+				}
 				// Draw cur tab
 				Gfx.drawtile(x, y, tooltip_sheet_name, rot_sprite);
 			}
