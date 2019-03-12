@@ -10,6 +10,8 @@ import Modules.Bridge_Module;
 import Modules.Diode_Module;
 import Modules.Emittor_Module;
 import Modules.Reciever_Module;
+// Augmentations
+import Augmentation.Toggle_Augmentation;
 
 
 /* ENUM CLASSES */
@@ -57,6 +59,8 @@ class Main {
 
 	  	signal_manager = new Signal_Manager();
 
+	  	wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager);
+
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
 	  	Tooltip.load_tooltip_spritesheet();
@@ -89,7 +93,7 @@ class Main {
 	  		}
 	  		if(Gui.button("Stop")) {
 	  			this.simulating = false;
-	  			restart_modules();
+	  			restart_modules_and_augmentations();
 	  			this.signal_manager.clear_queued_signals();
 	  		}
 	  	}
@@ -166,6 +170,16 @@ class Main {
   		for(row in wire_grid) {
 			for(wm in row) {
 				wm.restart_module();
+			}
+		}
+  	}
+  	function restart_modules_and_augmentations() {
+  		for(row in wire_grid) {
+			for(wm in row) {
+				wm.restart_module();
+				// Reset augmentaitons
+				if(wm.toggle_aug != null) 
+					wm.toggle_aug.reset();
 			}
 		}
   	}

@@ -2,6 +2,7 @@ import haxegon.*;
 import Main;
 import Map;
 import Reflect;
+import Augmentation;
 
 
 /* INTERACES
@@ -21,6 +22,7 @@ interface Signal_Reciever {
 typedef Channel_Data = {
 	queued_signals: Int,
 	recievers: Array<Signal_Reciever>,
+	aug_recievers: Array<Augmentation>,
 }
 
 
@@ -29,7 +31,7 @@ typedef Channel_Data = {
 class Signal_Manager {
 
 	// SIGNALS OPERATIONS
-	public static var channels = [
+	public static var channels:Array<Int> = [
 		0x06aa00,
 		0x1e44fa,
 		0xf51515,
@@ -52,7 +54,11 @@ class Signal_Manager {
 		// Init channel_reciever_map with empty arrays for each channel
 		this.channel_data_map = new Array<Channel_Data>();
 		for(c in Signal_Manager.channels) {
-			this.channel_data_map.push( { queued_signals: 0, recievers: new Array<Signal_Reciever>() } );
+			this.channel_data_map.push( { 
+				queued_signals: 0, 
+				recievers: new Array<Signal_Reciever>(),
+				aug_recievers: new Array<Augmentation>(),
+			} );
 		}
 	}
 
@@ -68,13 +74,22 @@ class Signal_Manager {
 	public function add_reciever(channel: Int, reciever: Signal_Reciever):Void {
 		if(reciever == null)
 			return;
-		trace(channel);
 		this.channel_data_map[channel].recievers.push(reciever);
 	}
 	public function remove_reciever(channel: Int, reciever: Signal_Reciever):Bool {
 		if(reciever == null)
 			return false;
 		return this.channel_data_map[channel].recievers.remove(reciever);
+	}
+	public function add_aug_reciever(channel: Int, reciever: Augmentation):Void {
+		if(reciever == null)
+			return;
+		this.channel_data_map[channel].aug_recievers.push(reciever);
+	}
+	public function remove_aug_reciever(channel: Int, reciever: Augmentation):Bool {
+		if(reciever == null)
+			return false;
+		return this.channel_data_map[channel].aug_recievers.remove(reciever);
 	}
 
 	/* Interactions
@@ -86,13 +101,32 @@ class Signal_Manager {
 	// Resolves only one queued signal per-channel, to perform resolutions on a tick-by-tick basis
 	public function resolve_signals_once(game:Main):Bool {
 		var resolved_any_signals = false;
-		for(data in this.channel_data_map) {
-			if(data.queued_signals > 0) {
+		// Copy queued_signals into new array so as not to be corrupted by resolutions
+		var copy_queue_signals = new Array<Int>();
+		for(data in this.channel_data_map)
+			copy_queue_signals.push(data.queued_signals);
+
+		// Resolve aug_recievers first
+		for(i in 0...this.channel_data_map.length) {
+			var queued_signals = copy_queue_signals[i];
+			var data = this.channel_data_map[i];
+			if(queued_signals > 0) {
+				for(aug_reciever in data.aug_recievers) {
+					aug_reciever.recieve_signal(game);
+				}
+			}
+		}
+		// Resolve recievers second
+		for(i in 0...this.channel_data_map.length) {
+			var queued_signals = copy_queue_signals[i];
+			var data = this.channel_data_map[i];
+			if(queued_signals > 0) {
 				resolved_any_signals = true;
-				data.queued_signals--;
 				for(reciever in data.recievers) {
 					reciever.recieve_signal(game);
 				}
+				// Decrement the persistent queued_signals
+				data.queued_signals--;
 			}
 		}
 		return resolved_any_signals;
@@ -108,6 +142,7 @@ class Signal_Manager {
 		for(data in this.channel_data_map) {
 			data.queued_signals = 0;
 			data.recievers = new Array<Signal_Reciever>();
+			data.aug_recievers = new Array<Augmentation>();
 		}
 	}
 

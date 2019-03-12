@@ -2,6 +2,7 @@ import haxegon.*;
 import Main.*;
 import Main.Cell;
 import Main.Direction;
+import Augmentation.Toggle_Augmentation;
 
 /* WIRE SPRITE SHEET MAPPINGS */
 @:enum
@@ -28,32 +29,47 @@ abstract Module_Sheet(Int) from Int to Int {
 	var bridge_on_horiz			= 19;
 	var bridge_on_both  		= 20;
 	var bridge_on_vert  		= 21;
-	var diode_off 				= 22;
-	var diode_on 				= 23;
-	var diode_and_off 			= 24;
-	var diode_and_on 			= 25;
-	var diode_out_up_off 		= 26;
-	var diode_out_up_on 		= 27;
-	var diode_out_down_off 		= 28;
-	var diode_out_down_on 		= 29;
-	var diode_out_left_off 		= 30;
-	var diode_out_left_on 		= 31;
-	var diode_out_right_off 	= 32;
-	var diode_out_right_on 		= 33;
-	var diode_in_up_on 			= 34;
-	var diode_in_down_on 		= 35;
-	var diode_in_left_on 		= 36;
-	var diode_in_right_on 		= 37;
-	var emittor_base_display	= 38;
-	var reciever_base_display 	= 39;
-	var reciever_base 			= 40;
-	var emittor_base 			= 41;
-	var module_color_mask		= 42;
-	var reciever_on				= 43;
-	var emittor_up_on 			= 44;
-	var emittor_down_on 		= 45;
-	var emittor_left_on 		= 46;
-	var emittor_right_on		= 47;
+	var bridge_rot_off 			= 22;
+	var bridge_rot_on_horiz		= 23;
+	var bridge_rot_on_both  	= 24;
+	var bridge_rot_on_vert  	= 25;
+	var diode_off 				= 26;
+	var diode_on 				= 27;
+	var diode_and_off 			= 28;
+	var diode_and_on 			= 29;
+	var diode_out_up_off 		= 30;
+	var diode_out_up_on 		= 31;
+	var diode_out_down_off 		= 32;
+	var diode_out_down_on 		= 33;
+	var diode_out_left_off 		= 34;
+	var diode_out_left_on 		= 35;
+	var diode_out_right_off 	= 36;
+	var diode_out_right_on 		= 37;
+	var diode_in_up_on 			= 38;
+	var diode_in_down_on 		= 39;
+	var diode_in_left_on 		= 40;
+	var diode_in_right_on 		= 41;
+	var emittor_base_display	= 42;
+	var reciever_base_display 	= 43;
+	var reciever_base 			= 44;
+	var emittor_base 			= 45;
+	var module_color_mask		= 46;
+	var reciever_on				= 47;
+	var emittor_up_on 			= 48;
+	var emittor_down_on 		= 49;
+	var emittor_left_on 		= 50;
+	var emittor_right_on		= 51;
+	var toggle_on 				= 52;
+	var toggle_off 				= 53;
+	var toggle_color_mask 		= 54;
+	var rotator_up_main 		= 55;
+	var rotator_up_color 		= 56;
+	var rotator_right_main 		= 57;
+	var rotator_right_color 	= 58;
+	var rotator_down_main 		= 59;
+	var rotator_down_color 		= 60;
+	var rotator_left_main 		= 61;
+	var rotator_left_color 		= 62;
 }
 
 /* ENUM CLASSES */
@@ -87,18 +103,18 @@ class Wire_Module {
 	public var outline : Bool;
 
 	// Augmentations on the module
-	//public var augs : Augmentations;
+	public var toggle_aug : Toggle_Augmentation;
 
 	public function new(cell:Cell, ?wm:Wire_Module) {
 		this.cell = cell;
 		if(wm != null) {
-			this.cell = wm.cell;
 			this.up = wm.up;
 			this.down = wm.down;
 			this.right = wm.right;
 			this.left = wm.left;
 			this.hovering = wm.hovering;
 			this.outline = wm.outline;
+			this.toggle_aug = wm.toggle_aug;
 		}
 		else {
 			this.up = disabled;
@@ -107,6 +123,7 @@ class Wire_Module {
 			this.left = disabled;
 			this.hovering = NODIR;
 			this.outline = false;
+			this.toggle_aug = null;
 		}
 	}
 
@@ -139,6 +156,10 @@ class Wire_Module {
 	public function start_power_tick(game : Main) {}
 
 	public function handle_power_input(game : Main, dir : Direction) {
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
@@ -209,6 +230,9 @@ class Wire_Module {
 	public function draw_module(x:Int, y:Int, simulating:Bool) {
 		// BASE
 		Gfx.drawtile(x, y, module_sheet_name, Module_Sheet.base);
+
+		// AUGMENTATIONS
+		if(this.toggle_aug != null) toggle_aug.draw(x, y);
 
 		// HOVER
 		var hover = this.hovering;

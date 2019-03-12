@@ -14,6 +14,10 @@ import Signal_Manager.Signal_Reciever;
 =============== */
 class Power_Module extends Wire_Module {
 	public override function start_power_tick(game : Main) {
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		var up_neighbor = null;
 		if(this.up != disabled) {
 			this.up = on;
@@ -54,7 +58,11 @@ class Power_Module extends Wire_Module {
 ================ */
 class Bridge_Module extends Wire_Module {
 
-	public override function handle_power_input(game : Main, dir : Direction) { 
+	public override function handle_power_input(game : Main, dir : Direction) {
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return; 
+
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
@@ -138,6 +146,10 @@ class Diode_Module extends Wire_Module {
 	}
 
 	public override function handle_power_input(game : Main, dir : Direction) { 
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
@@ -274,6 +286,10 @@ class Emittor_Module extends Wire_Module implements Signal_Emittor {
 
 	// Overrides
 	public override function handle_power_input(game : Main, dir : Direction) { 
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
@@ -343,6 +359,10 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 
 	// Overrides
 	public override function handle_power_input(game : Main, dir : Direction) { 
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
@@ -381,11 +401,14 @@ class Reciever_Module extends Wire_Module implements Signal_Reciever {
 	public function change_channel(channel: Int, sm: Signal_Manager) {
 		sm.remove_reciever(this.channel, this);
 		this.channel = channel;
-		trace(this.channel);
 		sm.add_reciever(this.channel, this);
 	}
 
 	public function recieve_signal(game:Main):Void {
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
 		if(this.incoming_signal)
 			return;
 
