@@ -133,6 +133,12 @@ $ase --batch \
 --ignore-layer "Settings/Dirs" \
 --layer "Settings/Signal/BG" --layer "Settings/Signal/Colors" $sprite \
 --ignore-layer "Settings/Signal" \
+--layer "Settings/Toggle/Switch_On" $sprite --ignore-layer "Settings/Toggle/Switch_On" \
+--layer "Settings/Toggle/Switch_Off" $sprite --ignore-layer "Settings/Toggle/Switch_Off" \
+--layer "Settings/Toggle/Starting_Mode_On" $sprite --ignore-layer "Settings/Toggle/Starting_Mode_On" \
+--layer "Settings/Toggle/Starting_Mode_Off" $sprite --ignore-layer "Settings/Toggle/Starting_Mode_Off" \
+--layer "Settings/Toggle/Colors_BG" --layer "Settings/Toggle/Colors" $sprite \
+--ignore-layer "Settings/Toggle" \
 --sheet $out --sheet-pack
 
 
