@@ -3,6 +3,7 @@ import Main.*;
 import Main.Cell;
 import Main.Direction;
 import Augmentation.Toggle_Augmentation;
+import Augmentation.Rotator_Augmentation;
 
 /* WIRE SPRITE SHEET MAPPINGS */
 @:enum
@@ -104,6 +105,7 @@ class Wire_Module {
 
 	// Augmentations on the module
 	public var toggle_aug : Toggle_Augmentation;
+	public var rotator_aug : Rotator_Augmentation;
 
 	public function new(cell:Cell, ?wm:Wire_Module) {
 		this.cell = cell;
@@ -115,6 +117,7 @@ class Wire_Module {
 			this.hovering = wm.hovering;
 			this.outline = wm.outline;
 			this.toggle_aug = wm.toggle_aug;
+			this.rotator_aug = wm.rotator_aug;
 		}
 		else {
 			this.up = disabled;
@@ -124,6 +127,7 @@ class Wire_Module {
 			this.hovering = NODIR;
 			this.outline = false;
 			this.toggle_aug = null;
+			this.rotator_aug = null;
 		}
 	}
 
@@ -233,6 +237,7 @@ class Wire_Module {
 
 		// AUGMENTATIONS
 		if(this.toggle_aug != null) toggle_aug.draw(x, y);
+		if(this.rotator_aug != null) rotator_aug.draw(x, y);
 
 		// HOVER
 		var hover = this.hovering;

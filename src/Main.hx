@@ -12,6 +12,7 @@ import Modules.Emittor_Module;
 import Modules.Reciever_Module;
 // Augmentations
 import Augmentation.Toggle_Augmentation;
+import Augmentation.Rotator_Augmentation;
 
 
 /* ENUM CLASSES */
@@ -58,7 +59,8 @@ class Main {
 	  	signal_manager = new Signal_Manager();
 
 	  	// TEMP WIRE_GRID CHANGE FOR TESTING TOGGLE_AUG
-	  	wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager, 4);
+	  	// wire_grid[0][1].toggle_aug = new Toggle_Augmentation(signal_manager, 4);
+	  	wire_grid[0][1].rotator_aug = new Rotator_Augmentation({r:0,c:1}, signal_manager, 4);
 
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
@@ -179,6 +181,8 @@ class Main {
 				// Reset augmentaitons
 				if(wm.toggle_aug != null) 
 					wm.toggle_aug.reset();
+				if(wm.rotator_aug != null)
+					wm.rotator_aug.reset(this);
 			}
 		}
   	}

@@ -66,19 +66,36 @@ class Bridge_Module extends Wire_Module {
 		var input_status = get_wire_status(dir);
 		if(input_status != off)
 			return;
-		if(dir == UP || dir == DOWN) {
-			if(this.up != disabled) this.up = on;
-			if(this.down != disabled) this.down = on;
-		}
-		else {
-			if(this.left != disabled) this.left = on;
-			if(this.right != disabled) this.right = on;
-		}
-		var bridge_to_neighbor = switch(dir) {
-			case UP: game.get_down_neighbor(this.cell);
-			case DOWN: game.get_up_neighbor(this.cell);
-			case RIGHT: game.get_left_neighbor(this.cell);
-			case LEFT: game.get_right_neighbor(this.cell);
+		var bridge_to_neighbor = null;
+		switch(dir) {
+			case UP: {
+				this.up = on;
+				if(this.down != off)
+					return;
+				this.down = on;
+				bridge_to_neighbor = game.get_down_neighbor(this.cell);
+			}
+			case DOWN: {
+				this.down = on;
+				if(this.up != off)
+					return;
+				this.up = on;
+				bridge_to_neighbor = game.get_up_neighbor(this.cell);
+			}
+			case RIGHT: {
+				this.right = on;
+				if(this.left != off)
+					return;
+				this.left = on;
+				bridge_to_neighbor = game.get_left_neighbor(this.cell);
+			}
+			case LEFT: {
+				this.left = on;
+				if(this.right != off)
+					return;
+				this.right = on;
+				bridge_to_neighbor = game.get_right_neighbor(this.cell);
+			}
 			default: null;
 		}
 		if(bridge_to_neighbor != null) {
@@ -97,6 +114,8 @@ class Bridge_Module extends Wire_Module {
 			sprite = Module_Sheet.bridge_on_horiz;
 		else if(vert_powered)
 			sprite = Module_Sheet.bridge_on_vert;
+		if(this.rotator_aug != null && (this.rotator_aug.get_rotation_index()&1) == 1)
+			sprite += 4;
 		Gfx.drawtile(x, y, module_sheet_name, sprite);
 	}
 }
