@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","47");
+		_this.setReserved("build","48");
 	} else {
-		_this.h["build"] = "47";
+		_this.h["build"] = "48";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5864,7 +5864,7 @@ var Main = function() {
 	this.resolution_tick = true;
 	this.simulating = false;
 	this.tooltip = new Tooltip();
-	this.tools = [{ name : "Wire", tool : 1},{ name : "Power", tool : 16},{ name : "OR Diode", tool : 26},{ name : "AND Diode", tool : 28},{ name : "Emittor", tool : 42},{ name : "Reciever", tool : 43},{ name : "Bridge", tool : 18}];
+	this.tools = [{ name : "Wire", tool : 1},{ name : "Power", tool : 16},{ name : "OR", tool : 26},{ name : "AND", tool : 28},{ name : "Emittor", tool : 42},{ name : "Reciever", tool : 43},{ name : "Bridge", tool : 18}];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
@@ -6333,7 +6333,6 @@ Main.prototype = {
 	,holding_tool: null
 	,held_tool: null
 	,handle_and_draw_toolbar: function(simulating) {
-		haxegon_Text.set_size(3);
 		if(this.holding_tool && haxegon_Mouse.leftreleased() && haxegon_Mouse.get_y() >= this.grid_y && haxegon_Mouse.get_x() >= this.grid_x) {
 			var target_cell = { r : (haxegon_Mouse.get_y() - this.grid_y) / Main.module_side_length | 0, c : (haxegon_Mouse.get_x() - this.grid_x) / Main.module_side_length | 0};
 			var target_wm = this.get_module_from_cell(target_cell);
@@ -49463,7 +49462,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 85112;
+	this.version = 451073;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
