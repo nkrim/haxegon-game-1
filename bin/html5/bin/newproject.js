@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","46");
+		_this.setReserved("build","47");
 	} else {
-		_this.h["build"] = "46";
+		_this.h["build"] = "47";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5864,7 +5864,7 @@ var Main = function() {
 	this.resolution_tick = true;
 	this.simulating = false;
 	this.tooltip = new Tooltip();
-	this.tools = [1,16,26,28,42,43,18];
+	this.tools = [{ name : "Wire", tool : 1},{ name : "Power", tool : 16},{ name : "OR Diode", tool : 26},{ name : "AND Diode", tool : 28},{ name : "Emittor", tool : 42},{ name : "Reciever", tool : 43},{ name : "Bridge", tool : 18}];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
 	this.tool_y = 100;
@@ -5957,8 +5957,7 @@ Main.cell_unhash = function(n) {
 };
 Main.prototype = {
 	init: function() {
-		haxegon_Text.set_font("Kankin");
-		haxegon_Text.set_size(32);
+		haxegon_Text.set_size(8);
 		haxegon_Gfx.clearcolor = 2236962;
 		var _g = [];
 		var _g2 = 0;
@@ -5982,9 +5981,9 @@ Main.prototype = {
 	}
 	,update: function() {
 		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 72, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 75, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 74, className : "Main", methodName : "update"})) {
+			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 77, className : "Main", methodName : "update"})) {
 				haxegon_Mouse.leftforcerelease();
 				haxegon_Mouse.rightforcerelease();
 				this.simulating = true;
@@ -5992,7 +5991,7 @@ Main.prototype = {
 				this.tick();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 82, className : "Main", methodName : "update"})) {
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"})) {
 				this.signal_manager.reset_signal_manager();
 				var _g = [];
 				var _g2 = 0;
@@ -6011,10 +6010,10 @@ Main.prototype = {
 				this.wire_grid = _g;
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 88, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 94, className : "Main", methodName : "update"})) {
 				this.simulating = false;
 				this.restart_modules_and_augmentations();
 				this.signal_manager.clear_queued_signals();
@@ -6334,7 +6333,8 @@ Main.prototype = {
 	,holding_tool: null
 	,held_tool: null
 	,handle_and_draw_toolbar: function(simulating) {
-		if(this.holding_tool && haxegon_Mouse.leftreleased()) {
+		haxegon_Text.set_size(3);
+		if(this.holding_tool && haxegon_Mouse.leftreleased() && haxegon_Mouse.get_y() >= this.grid_y && haxegon_Mouse.get_x() >= this.grid_x) {
 			var target_cell = { r : (haxegon_Mouse.get_y() - this.grid_y) / Main.module_side_length | 0, c : (haxegon_Mouse.get_x() - this.grid_x) / Main.module_side_length | 0};
 			var target_wm = this.get_module_from_cell(target_cell);
 			if(target_wm != null) {
@@ -6359,11 +6359,12 @@ Main.prototype = {
 				tile_fill_color = this.tile_focus_color;
 				if(!simulating && haxegon_Mouse.leftclick()) {
 					this.holding_tool = true;
-					this.held_tool = this.tools[i];
+					this.held_tool = this.tools[i].tool;
 				}
 			}
 			haxegon_Gfx.fillbox(x,y,this.tool_side_length,this.tool_side_length,tile_fill_color);
-			haxegon_Gfx.drawtile(sprite_x,sprite_y,Wire_$Module.module_sheet_name,this.tools[i]);
+			haxegon_Gfx.drawtile(sprite_x,sprite_y,Wire_$Module.module_sheet_name,this.tools[i].tool);
+			haxegon_Text.display(x + 1,y + 1,this.tools[i].name);
 		}
 		if(this.holding_tool) {
 			var drag_sprite_offset = Main.module_side_length / 2 | 0;
@@ -49462,7 +49463,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 243819;
+	this.version = 85112;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

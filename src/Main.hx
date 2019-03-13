@@ -45,13 +45,16 @@ typedef Point = {
 	x : Int,
 	y : Int,
 }
+typedef Tool_Data = {
+	name: String,
+	tool: Tool,
+}
 
 
 
 class Main {
 	function init(){
-	  	Text.font = "Kankin";
-	  	Text.size = 32;
+	  	Text.size = 8;
 	  	Gfx.clearcolor = 0x222222;
 
 	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
@@ -123,7 +126,15 @@ class Main {
   	var tool_y = 100;
   	var tool_cols = 2;
   	var tool_side_length = 41;
-  	var tools = [ Tool.wire, Tool.power, Tool.or_diode, Tool.and_diode, Tool.emittor, Tool.reciever, Tool.bridge];
+  	var tools:Array<Tool_Data> = [
+  		{ name: "Wire", tool: Tool.wire, },
+		{ name: "Power", tool: Tool.power, },
+		{ name: "OR", tool: Tool.or_diode,	},
+		{ name: "AND", tool: Tool.and_diode, },
+		{ name: "Emittor", tool: Tool.emittor, },
+		{ name: "Reciever", tool: Tool.reciever, },
+		{ name: "Bridge", tool: Tool.bridge, },
+	];
 
   	var tooltip = new Tooltip();
 
@@ -554,7 +565,7 @@ class Main {
 
   	function handle_and_draw_toolbar(simulating:Bool) {
   		// Handle tool dropping
-  		if(holding_tool && Mouse.leftreleased()) {
+  		if(holding_tool && Mouse.leftreleased() && Mouse.y >= grid_y && Mouse.x >= grid_x) {
   			var target_cell = { r: Std.int((Mouse.y - grid_y)/module_side_length), c: Std.int((Mouse.x - grid_x)/module_side_length) };
   			var target_wm = get_module_from_cell(target_cell);
   			if(target_wm != null) {
@@ -580,11 +591,13 @@ class Main {
   				tile_fill_color = tile_focus_color;
   				if(!simulating && Mouse.leftclick()) {
   					holding_tool = true;
-  					held_tool = tools[i];
+  					held_tool = tools[i].tool;
   				}
   			}
   			Gfx.fillbox(x, y, tool_side_length, tool_side_length, tile_fill_color);
-  			Gfx.drawtile(sprite_x, sprite_y, module_sheet_name, tools[i]);
+  			Gfx.drawtile(sprite_x, sprite_y, module_sheet_name, tools[i].tool);
+  			// Draw name
+  			Text.display(x+1, y+1, tools[i].name);
   		}
 
   		// Draw ghost when holding
