@@ -67,7 +67,7 @@ import sys.FileSystem;
 
 		#else
 
-		data = '{"name":null,"assets":"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i5531R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh","rootPath":null,"version":2,"libraryArgs":[],"libraryType":null}';
+		data = '{"name":null,"assets":"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy33:data%2Fgraphics%2Flevel_sheet.pngR0i662R1y5:IMAGER5R9R7tgoR8y34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1R10R5R11R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i5531R1R10R5R12R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R13R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R15R7tgh","rootPath":null,"version":2,"libraryArgs":[],"libraryType":null}';
 		manifest = AssetManifest.parse (data, rootPath);
 		library = AssetLibrary.fromManifest (manifest);
 		Assets.registerLibrary ("default", library);
@@ -96,6 +96,7 @@ null
 #if flash
 
 @:keep @:bind #if display private #end class __ASSET__data_fonts_kankin_ttf extends null { }
+@:keep @:bind #if display private #end class __ASSET__data_graphics_level_sheet_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
 @:keep @:bind #if display private #end class __ASSET__data_graphics_module_sheet_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
 @:keep @:bind #if display private #end class __ASSET__data_graphics_tooltip_sheet_png extends flash.display.BitmapData { public function new () { super (0, 0, true, 0); } }
 @:keep @:bind #if display private #end class __ASSET__data_how_to_add_assets_txt extends null { }
@@ -106,6 +107,7 @@ null
 #elseif (desktop || cpp)
 
 @:keep @:font("bin/html5/obj/webfont/Kankin.ttf") #if display private #end class __ASSET__data_fonts_kankin_ttf extends lime.text.Font {}
+@:keep @:image("data/graphics/level_sheet.png") #if display private #end class __ASSET__data_graphics_level_sheet_png extends lime.graphics.Image {}
 @:keep @:image("data/graphics/module_sheet.png") #if display private #end class __ASSET__data_graphics_module_sheet_png extends lime.graphics.Image {}
 @:keep @:image("data/graphics/tooltip_sheet.png") #if display private #end class __ASSET__data_graphics_tooltip_sheet_png extends lime.graphics.Image {}
 @:keep @:file("data/how to add assets.txt") #if display private #end class __ASSET__data_how_to_add_assets_txt extends haxe.io.Bytes {}

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","48");
+		_this.setReserved("build","49");
 	} else {
-		_this.h["build"] = "48";
+		_this.h["build"] = "49";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5822,6 +5822,209 @@ Lambda.array = function(it) {
 	}
 	return a;
 };
+var Level = function() { };
+$hxClasses["Level"] = Level;
+Level.__name__ = ["Level"];
+Level.prototype = {
+	load_level: null
+	,unload_level: null
+	,draw_level: null
+	,is_succesful: null
+	,restart_level: null
+	,__class__: Level
+};
+var Level_$Globals = function() { };
+$hxClasses["Level_Globals"] = Level_$Globals;
+Level_$Globals.__name__ = ["Level_Globals"];
+Level_$Globals.load_level_spritesheet = function() {
+	haxegon_Gfx.loadtiles(Level_$Globals.level_sheet_name,64,64);
+};
+var Universal_$Signal_$Reciever = function() { };
+$hxClasses["Universal_Signal_Reciever"] = Universal_$Signal_$Reciever;
+Universal_$Signal_$Reciever.__name__ = ["Universal_Signal_Reciever"];
+Universal_$Signal_$Reciever.prototype = {
+	recieve_all_signals: null
+	,__class__: Universal_$Signal_$Reciever
+};
+var Pattern_$Level = function(pattern) {
+	this.pattern = pattern;
+	this.read_pattern = [];
+	this.succesful_repetitions = 0;
+	this.max_line_width = 0;
+	var _g = 0;
+	while(_g < pattern.length) {
+		var line = pattern[_g];
+		++_g;
+		if(line.length > this.max_line_width) {
+			this.max_line_width = line.length;
+		}
+	}
+};
+$hxClasses["Pattern_Level"] = Pattern_$Level;
+Pattern_$Level.__name__ = ["Pattern_Level"];
+Pattern_$Level.__interfaces__ = [Universal_$Signal_$Reciever,Level];
+Pattern_$Level.prototype = {
+	pattern: null
+	,read_pattern: null
+	,succesful_repetitions: null
+	,max_line_width: null
+	,load_level: function(game) {
+		game.signal_manager.add_universal_reciever(this);
+	}
+	,unload_level: function(game) {
+		game.signal_manager.remove_universal_reciever(this);
+		this.restart_level();
+	}
+	,is_succesful: function() {
+		return this.succesful_repetitions >= Pattern_$Level.required_repetitions;
+	}
+	,restart_level: function() {
+		this.read_pattern = [];
+		this.succesful_repetitions = 0;
+	}
+	,recieve_all_signals: function(channels,game) {
+		if(this.is_succesful()) {
+			return;
+		}
+		var current_index = -1;
+		if(this.read_pattern_matches()) {
+			this.succesful_repetitions++;
+			this.read_pattern = [];
+			var tmp = this.read_pattern;
+			var _g = [];
+			var _g2 = 0;
+			var _g1 = this.pattern[0].length;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.push(false);
+			}
+			tmp.push(_g);
+			current_index = 0;
+		} else if(this.read_pattern.length < this.pattern.length) {
+			current_index = this.read_pattern.length;
+			var tmp1 = this.read_pattern;
+			var _g3 = [];
+			var _g21 = 0;
+			var _g11 = this.pattern[current_index].length;
+			while(_g21 < _g11) {
+				var i1 = _g21++;
+				_g3.push(false);
+			}
+			tmp1.push(_g3);
+		} else {
+			return;
+		}
+		var pattern_line = this.pattern[current_index];
+		var read_pattern_line = this.read_pattern[current_index];
+		var num_valid_channels = 0;
+		var _g12 = 0;
+		var _g4 = pattern_line.length;
+		while(_g12 < _g4) {
+			var i2 = _g12++;
+			var current_channel = pattern_line[i2];
+			if(channels.indexOf(current_channel) >= 0) {
+				read_pattern_line[i2] = true;
+				++num_valid_channels;
+			}
+		}
+		if(num_valid_channels < channels.length) {
+			read_pattern_line.push(false);
+		}
+	}
+	,draw_level: function(simulating) {
+		var x = 720;
+		var y = 100;
+		var padding = 20;
+		var line_padding = 10;
+		var orb_padding = 10;
+		var orb_size = 32;
+		var border_width = 3;
+		var background_color = 7170938;
+		var outline_color = 5394780;
+		var valid_color = 436736;
+		var invalid_color = 16061717;
+		var width = 2 * padding + (2 * orb_padding + orb_size) * (this.max_line_width + 1);
+		var height = 2 * padding - line_padding + (line_padding + 2 * orb_padding + orb_size) * this.pattern.length;
+		haxegon_Gfx.fillbox(x,y,width,height,outline_color);
+		haxegon_Gfx.fillbox(x + border_width,y + border_width,width - 2 * border_width,height - 2 * border_width,background_color);
+		haxegon_Text.display(x + padding,y + 7,"" + this.succesful_repetitions + " of " + Pattern_$Level.required_repetitions + " Iterations");
+		var line_width = (2 * orb_padding + orb_size) * this.max_line_width;
+		var line_height = 2 * orb_padding + orb_size;
+		var line_x = x + padding;
+		var line_y = y + padding;
+		var _g1 = 0;
+		var _g = this.pattern.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var line_state = this.read_pattern_line_state(i);
+			var box_color = line_state > 0 ? valid_color : line_state < 0 ? invalid_color : outline_color;
+			haxegon_Gfx.drawbox(line_x,line_y,line_width,line_height,box_color);
+			var pattern_line = this.pattern[i];
+			var read_pattern_line = i < this.read_pattern.length ? this.read_pattern[i] : null;
+			var orb_x = line_x + orb_padding;
+			var orb_y = line_y + orb_padding;
+			var _g3 = 0;
+			var _g2 = pattern_line.length;
+			while(_g3 < _g2) {
+				var i1 = _g3++;
+				haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,0);
+				haxegon_Gfx.set_imagecolor(Signal_$Manager.channels[pattern_line[i1]]);
+				haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,1);
+				haxegon_Gfx.resetcolor();
+				if(read_pattern_line != null && !read_pattern_line[i1]) {
+					haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,2);
+				}
+				orb_x += 2 * orb_padding + orb_size;
+			}
+			if(read_pattern_line != null && read_pattern_line.length > pattern_line.length) {
+				haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,0);
+				haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,1);
+				haxegon_Gfx.drawtile(orb_x,orb_y,Level_$Globals.level_sheet_name,2);
+			}
+			line_y += 2 * orb_padding + line_padding + orb_size;
+		}
+	}
+	,read_pattern_matches: function() {
+		if(this.read_pattern.length != this.pattern.length) {
+			return false;
+		}
+		var _g = 0;
+		var _g1 = this.read_pattern;
+		while(_g < _g1.length) {
+			var line = _g1[_g];
+			++_g;
+			if(line.indexOf(false) >= 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,read_pattern_failed: function() {
+		if(this.read_pattern.length > this.pattern.length) {
+			return true;
+		}
+		var _g = 0;
+		var _g1 = this.read_pattern;
+		while(_g < _g1.length) {
+			var line = _g1[_g];
+			++_g;
+			if(line.indexOf(false) >= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	,read_pattern_line_state: function(index) {
+		if(index >= this.read_pattern.length || index >= this.pattern.length) {
+			return 0;
+		}
+		if(this.read_pattern[index].indexOf(false) >= 0) {
+			return -1;
+		}
+		return 1;
+	}
+	,__class__: Pattern_$Level
+};
 var _$List_ListNode = function(item,next) {
 	this.item = item;
 	this.next = next;
@@ -5869,6 +6072,9 @@ var Main = function() {
 	this.tool_cols = 2;
 	this.tool_y = 100;
 	this.tool_x = 100;
+	this.playing = false;
+	this.time_of_last_tick = -1.0;
+	this.tick_rate = 0.5;
 	this.grid_y = 100;
 	this.grid_x = 200;
 	this.grid_height = 8;
@@ -5974,56 +6180,57 @@ Main.prototype = {
 			_g.push(_g3);
 		}
 		this.wire_grid = _g;
+		this.level = new Pattern_$Level([[0,1],[2,3],[0,2],[1,3]]);
 		this.signal_manager = new Signal_$Manager();
+		this.level.load_level(this);
 		Wire_$Module.load_module_spritesheet();
 		Tooltip.load_tooltip_spritesheet();
+		Level_$Globals.load_level_spritesheet();
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
-		haxegon_Text.display(0,0,"Hello, Sailor!");
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 75, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 81, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Start",{ fileName : "Main.hx", lineNumber : 77, className : "Main", methodName : "update"})) {
-				haxegon_Mouse.leftforcerelease();
-				haxegon_Mouse.rightforcerelease();
-				this.simulating = true;
-				this.resolution_tick = true;
-				this.tick();
+			if(Gui.button("Play",{ fileName : "Main.hx", lineNumber : 83, className : "Main", methodName : "update"})) {
+				this.play();
+			}
+			Gui.nextrow();
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "update"})) {
+				this.play();
+				this.pause();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"})) {
-				this.signal_manager.reset_signal_manager();
-				var _g = [];
-				var _g2 = 0;
-				var _g1 = this.grid_height;
-				while(_g2 < _g1) {
-					var r = _g2++;
-					var _g3 = [];
-					var _g5 = 0;
-					var _g4 = this.grid_width;
-					while(_g5 < _g4) {
-						var c = _g5++;
-						_g3.push(new Wire_$Module({ r : r, c : c}));
-					}
-					_g.push(_g3);
-				}
-				this.wire_grid = _g;
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 92, className : "Main", methodName : "update"})) {
+				this.reset();
 			}
 		} else {
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
-				this.tick();
+			if(this.playing) {
+				if(Gui.button("Pause",{ fileName : "Main.hx", lineNumber : 98, className : "Main", methodName : "update"})) {
+					this.pause();
+				}
+			} else if(Gui.button("Resume",{ fileName : "Main.hx", lineNumber : 103, className : "Main", methodName : "update"})) {
+				this.resume();
 			}
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 94, className : "Main", methodName : "update"})) {
-				this.simulating = false;
-				this.restart_modules_and_augmentations();
-				this.signal_manager.clear_queued_signals();
+			Gui.shift();
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 109, className : "Main", methodName : "update"})) {
+				this.stop();
+			}
+			Gui.nextrow();
+			if(!this.playing && Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 114, className : "Main", methodName : "update"})) {
+				this.tick();
 			}
 		}
 		Gui.end();
+		if(this.should_perform_play_tick()) {
+			this.tick();
+		}
 		if(!this.simulating) {
 			this.handle_wire_drawing_and_hovering();
 		}
 		this.handle_tooltip_interaction();
+		if(this.level != null) {
+			this.level.draw_level(this.simulating);
+		}
 		this.draw_wire_grid();
 		this.handle_and_draw_toolbar(this.simulating);
 		this.tooltip.draw_tooltip();
@@ -6033,6 +6240,10 @@ Main.prototype = {
 	,grid_height: null
 	,grid_x: null
 	,grid_y: null
+	,tick_rate: null
+	,time_of_last_tick: null
+	,playing: null
+	,level: null
 	,signal_manager: null
 	,tool_x: null
 	,tool_y: null
@@ -6045,6 +6256,58 @@ Main.prototype = {
 	,tile_background_color: null
 	,tile_focus_color: null
 	,outline_color: null
+	,play: function() {
+		haxegon_Mouse.leftforcerelease();
+		haxegon_Mouse.rightforcerelease();
+		this.playing = true;
+		this.simulating = true;
+		this.resolution_tick = true;
+		this.tick();
+		this.time_of_last_tick = haxegon_Core.get_time();
+	}
+	,pause: function() {
+		this.playing = false;
+	}
+	,resume: function() {
+		if(this.simulating) {
+			this.playing = true;
+			this.tick();
+		}
+	}
+	,stop: function() {
+		this.playing = false;
+		this.simulating = false;
+		this.restart_modules_and_augmentations();
+		this.signal_manager.clear_queued_signals();
+		this.level.restart_level();
+	}
+	,reset: function() {
+		this.level.unload_level(this);
+		this.signal_manager.reset_signal_manager();
+		var _g = [];
+		var _g2 = 0;
+		var _g1 = this.grid_height;
+		while(_g2 < _g1) {
+			var r = _g2++;
+			var _g3 = [];
+			var _g5 = 0;
+			var _g4 = this.grid_width;
+			while(_g5 < _g4) {
+				var c = _g5++;
+				_g3.push(new Wire_$Module({ r : r, c : c}));
+			}
+			_g.push(_g3);
+		}
+		this.wire_grid = _g;
+		this.level.load_level(this);
+	}
+	,should_perform_play_tick: function() {
+		if(this.simulating && this.playing) {
+			return haxegon_Core.get_time() - this.time_of_last_tick >= this.tick_rate;
+		} else {
+			return false;
+		}
+	}
 	,tick: function() {
 		if(this.resolution_tick) {
 			var _g = 0;
@@ -6076,6 +6339,8 @@ Main.prototype = {
 			}
 			this.resolution_tick = true;
 		}
+		this.signal_manager.resolve_universal_signals_once(this);
+		this.time_of_last_tick = haxegon_Core.get_time();
 	}
 	,restart_modules: function() {
 		var _g = 0;
@@ -6431,7 +6696,7 @@ ManifestResources.init = function(config) {
 	var data;
 	var manifest;
 	var library;
-	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1y5:IMAGER5R9R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i5531R1R10R5R11R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R12R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R14R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	data = "{\"name\":null,\"assets\":\"aoy4:sizei55940y4:typey4:FONTy9:classNamey30:__ASSET__data_fonts_kankin_ttfy2:idy25:data%2Ffonts%2FKankin.ttfy7:preloadtgoy4:pathy33:data%2Fgraphics%2Flevel_sheet.pngR0i662R1y5:IMAGER5R9R7tgoR8y34:data%2Fgraphics%2Fmodule_sheet.pngR0i9656R1R10R5R11R7tgoR8y35:data%2Fgraphics%2Ftooltip_sheet.pngR0i5531R1R10R5R12R7tgoR8y34:data%2Fhow%20to%20add%20assets.txtR0i6838R1y4:TEXTR5R13R7tgoR8y15:data%2Ficon.pngR0i143966R1R10R5R15R7tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -7615,6 +7880,16 @@ var Signal_$Manager = function() {
 		++_g;
 		this.channel_data_map.push({ queued_signals : 0, recievers : [], aug_recievers : []});
 	}
+	var _g2 = [];
+	var _g11 = 0;
+	var _g21 = Signal_$Manager.channels;
+	while(_g11 < _g21.length) {
+		var c1 = _g21[_g11];
+		++_g11;
+		_g2.push(0);
+	}
+	this.tick_channel_signals = _g2;
+	this.universal_recievers = [];
 };
 $hxClasses["Signal_Manager"] = Signal_$Manager;
 Signal_$Manager.__name__ = ["Signal_Manager"];
@@ -7666,6 +7941,8 @@ Signal_$Manager.set_channel_for_module = function(wm,new_channel,sm) {
 };
 Signal_$Manager.prototype = {
 	channel_data_map: null
+	,tick_channel_signals: null
+	,universal_recievers: null
 	,get_channel_recievers: function(channel) {
 		return this.channel_data_map[channel].recievers;
 	}
@@ -7696,8 +7973,49 @@ Signal_$Manager.prototype = {
 		}
 		return HxOverrides.remove(this.channel_data_map[channel].aug_recievers,reciever);
 	}
+	,add_universal_reciever: function(reciever) {
+		if(reciever == null) {
+			return;
+		}
+		this.universal_recievers.push(reciever);
+	}
+	,remove_universal_reciever: function(reciever) {
+		if(reciever == null) {
+			return false;
+		}
+		return HxOverrides.remove(this.universal_recievers,reciever);
+	}
 	,send_signal_to_channel: function(channel) {
 		this.channel_data_map[channel].queued_signals++;
+		this.tick_channel_signals[channel]++;
+	}
+	,resolve_universal_signals_once: function(game) {
+		var active_channels = [];
+		var _g1 = 0;
+		var _g = this.channel_data_map.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var queued_signals = this.tick_channel_signals[i];
+			while(queued_signals-- > 0) active_channels.push(i);
+		}
+		if(active_channels.length > 0) {
+			var _g2 = 0;
+			var _g11 = this.universal_recievers;
+			while(_g2 < _g11.length) {
+				var universal_reciever = _g11[_g2];
+				++_g2;
+				universal_reciever.recieve_all_signals(active_channels,game);
+			}
+			var _g3 = [];
+			var _g12 = 0;
+			var _g21 = Signal_$Manager.channels;
+			while(_g12 < _g21.length) {
+				var c = _g21[_g12];
+				++_g12;
+				_g3.push(0);
+			}
+			this.tick_channel_signals = _g3;
+		}
 	}
 	,resolve_signals_once: function(game) {
 		var resolved_any_signals = false;
@@ -7764,6 +8082,7 @@ Signal_$Manager.prototype = {
 			data.recievers = [];
 			data.aug_recievers = [];
 		}
+		this.universal_recievers = [];
 	}
 	,__class__: Signal_$Manager
 };
@@ -49462,7 +49781,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 451073;
+	this.version = 664671;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -98931,6 +99250,8 @@ Gui.id = "";
 Gui.idcount = 0;
 Gui.newid = "";
 Gui.debugmode = false;
+Level_$Globals.level_sheet_name = "level_sheet";
+Pattern_$Level.required_repetitions = 10;
 Main.module_side_length = 64;
 Main.half_module_length = 32;
 openfl_text_Font.__fontByName = new haxe_ds_StringMap();

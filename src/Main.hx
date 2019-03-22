@@ -13,6 +13,10 @@ import Modules.Reciever_Module;
 // Augmentations
 import Augmentation.Toggle_Augmentation;
 import Augmentation.Rotator_Augmentation;
+// Levels
+import Level;
+import Level.Level_Globals;
+import Level.Pattern_Level;
 
 
 /* ENUM CLASSES */
@@ -59,45 +63,64 @@ class Main {
 
 	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 
+	  	level = new Pattern_Level([[0,1],[2,3],[0,2],[1,3]]);
 	  	signal_manager = new Signal_Manager();
+
+	  	level.load_level(this);
 
 	  	// Init sheet loading
 	  	Wire_Module.load_module_spritesheet();
 	  	Tooltip.load_tooltip_spritesheet();
+	  	Level_Globals.load_level_spritesheet();
 
 	  	// DEBUG VALUES
 	  	Core.showstats = true;
 	}
   
 	function update() {
-	  	Text.display(0, 0, "Hello, Sailor!");
-
 	  	Gui.window("Simulation controls", grid_x, 10);
 	  	if(!simulating) {
-	  		if(Gui.button("Start")) {
-	  			Mouse.leftforcerelease();
-	  			Mouse.rightforcerelease();
-	  			this.simulating = true;
-	  			this.resolution_tick = true;
-	  			tick(); // Perform resolution tick on start
+	  		if(Gui.button("Play")) {
+	  			play();
+	  		}
+	  		Gui.nextrow();
+	  		if(Gui.button("Tick")) {
+	  			play();
+	  			pause();
 	  		}
 	  		Gui.shift();
 	  		if(Gui.button("Reset")) {
-	  			signal_manager.reset_signal_manager();
-	  			this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+	  			reset();
 	  		}
 	  	}
 	  	else {
-	  		if(Gui.button("Tick")) {
-	  			tick();
+	  		if(this.playing) {
+	  			if(Gui.button("Pause")) {
+	  				pause();
+	  			}
 	  		}
+	  		else {
+	  			if(Gui.button("Resume")) {
+	  				resume();
+	  			}
+	  		}
+
+	  		Gui.shift();
 	  		if(Gui.button("Stop")) {
-	  			this.simulating = false;
-	  			restart_modules_and_augmentations();
-	  			this.signal_manager.clear_queued_signals();
+	  			stop();
+	  		}
+
+	  		Gui.nextrow();
+	  		if(!this.playing && Gui.button("Tick")) {
+	  			tick();
 	  		}
 	  	}
 	  	Gui.end();
+
+	  	// After handling the UI Controls, if a tick should be performed, do so
+	  	if(should_perform_play_tick()) {
+	  		tick();
+	  	}
 
 	  	if(!simulating) {
 	  		handle_wire_drawing_and_hovering();
@@ -105,6 +128,8 @@ class Main {
 
 	  	handle_tooltip_interaction();
 
+	  	if(level != null)
+	  		level.draw_level(simulating);
 	  	draw_wire_grid();
 	  	handle_and_draw_toolbar(simulating);
 
@@ -120,6 +145,11 @@ class Main {
   	var grid_x = 200;
   	var grid_y = 100;
 
+  	var tick_rate = 0.5;
+  	var time_of_last_tick = -1.0;
+  	var playing = false;
+
+  	public var level : Level;
   	public var signal_manager : Signal_Manager;
 
   	var tool_x = 100;
@@ -151,6 +181,43 @@ class Main {
 
   	/* MECHANICS
   	============ */
+  	function play() {
+  		Mouse.leftforcerelease();
+	  	Mouse.rightforcerelease();
+  		this.playing = true;
+  		this.simulating = true;
+  		this.resolution_tick = true;
+
+  		tick();
+  		time_of_last_tick = Core.time;
+  	}
+  	function pause() {
+  		this.playing = false;
+  	}
+  	function resume() {
+  		if(this.simulating) {
+  			this.playing = true;
+  			tick();
+  		}
+  	}
+  	function stop() {
+		this.playing = false;
+		this.simulating = false;
+		restart_modules_and_augmentations();
+		this.signal_manager.clear_queued_signals();
+		this.level.restart_level();
+  	}
+  	function reset() {
+  		level.unload_level(this);
+		signal_manager.reset_signal_manager();
+		this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+		level.load_level(this);
+  	}
+
+  	function should_perform_play_tick() {
+  		return simulating && playing && Core.time - time_of_last_tick >= tick_rate;
+  	}
+
   	function tick() {
   		// Resolution tick, just perform augmentation actions based on channel inputs
   		if(this.resolution_tick) {
@@ -172,6 +239,12 @@ class Main {
   			}
   			this.resolution_tick = true;
   		}
+  		
+  		// Perform universal signal resolutions
+  		this.signal_manager.resolve_universal_signals_once(this);
+
+  		// Set time_of_last_tick
+  		time_of_last_tick = Core.time;
   	}
 
   	function restart_modules() {
