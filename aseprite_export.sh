@@ -141,8 +141,14 @@ $ase --batch \
 --ignore-layer "Settings/Toggle" \
 --sheet $out --sheet-pack
 
-
-
+# level_sprite_64x64.aseprite
+sprite=$sprite_dir/level_sprite_64x64.aseprite
+out=$out_dir/level_sheet.png
+$ase --batch \
+--layer "Pattern_Level/Orb/BG" $sprite --ignore-layer "Pattern_Level/Orb/BG" \
+--layer "Pattern_Level/Orb/Color_Mask" $sprite --ignore-layer "Pattern_Level/Orb/Color_Mask" \
+--layer "Pattern_Level/Orb/X" $sprite --ignore-layer "Pattern_Level/Orb/X" \
+--sheet $out --sheet-pack
 
 
 
