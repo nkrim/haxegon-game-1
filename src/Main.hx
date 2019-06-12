@@ -17,6 +17,7 @@ import Augmentation.Rotator_Augmentation;
 import Level;
 import Level.Level_Globals;
 import Level.Pattern_Level;
+import Level_Manager;
 
 
 /* ENUM CLASSES */
@@ -61,7 +62,9 @@ class Main {
 	  	Text.size = 8;
 	  	Gfx.clearcolor = 0x222222;
 
-	  	wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+	  	// Init wire_grid with a fresh board
+	  	reset_board();
+	  	// wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 
 	  	level = new Pattern_Level([[0,1],[2,3],[0,2],[1,3]]);
 	  	signal_manager = new Signal_Manager();
@@ -210,7 +213,7 @@ class Main {
   	function reset() {
   		level.unload_level(this);
 		signal_manager.reset_signal_manager();
-		this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+		reset_board();
 		level.load_level(this);
   	}
 
@@ -266,7 +269,21 @@ class Main {
 			}
 		}
   	}
+  	function reset_board() {
+  		this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
+  	}
 
+  	public function change_level(new_level:Level):Bool {
+  		if(new_level == null)
+  			return false;
+  		this.level.unload_level(this);
+		signal_manager.reset_signal_manager();
+		reset_board();
+		// Set new level
+		this.level = new_level;
+		this.level.load_level(this);
+		return true;
+  	}
 
   	/* INTERACTION
   	============== */
