@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","51");
+		_this.setReserved("build","52");
 	} else {
-		_this.h["build"] = "51";
+		_this.h["build"] = "52";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5830,6 +5830,7 @@ Level.prototype = {
 	,unload_level: null
 	,draw_level: null
 	,is_succesful: null
+	,has_been_completed: null
 	,restart_level: null
 	,__class__: Level
 };
@@ -5850,6 +5851,7 @@ var Pattern_$Level = function(pattern) {
 	this.pattern = pattern;
 	this.read_pattern = [];
 	this.succesful_repetitions = 0;
+	this.completed = false;
 	this.max_line_width = 0;
 	var _g = 0;
 	while(_g < pattern.length) {
@@ -5867,6 +5869,7 @@ Pattern_$Level.prototype = {
 	pattern: null
 	,read_pattern: null
 	,succesful_repetitions: null
+	,completed: null
 	,max_line_width: null
 	,load_level: function(game) {
 		game.signal_manager.add_universal_reciever(this);
@@ -5876,7 +5879,15 @@ Pattern_$Level.prototype = {
 		this.restart_level();
 	}
 	,is_succesful: function() {
-		return this.succesful_repetitions >= Pattern_$Level.required_repetitions;
+		var success = this.succesful_repetitions >= Pattern_$Level.required_repetitions;
+		if(!success) {
+			return false;
+		}
+		this.completed = true;
+		return true;
+	}
+	,has_been_completed: function() {
+		return this.completed;
 	}
 	,restart_level: function() {
 		this.read_pattern = [];
@@ -5889,6 +5900,9 @@ Pattern_$Level.prototype = {
 		var current_index = -1;
 		if(this.read_pattern_matches()) {
 			this.succesful_repetitions++;
+			if(this.is_succesful()) {
+				return;
+			}
 			this.read_pattern = [];
 			var tmp = this.read_pattern;
 			var _g = [];
@@ -6024,6 +6038,74 @@ Pattern_$Level.prototype = {
 		return 1;
 	}
 	,__class__: Pattern_$Level
+};
+var Level_$Manager = function(levels) {
+	this.levels = levels.slice();
+	this.current_index = 0;
+};
+$hxClasses["Level_Manager"] = Level_$Manager;
+Level_$Manager.__name__ = ["Level_Manager"];
+Level_$Manager.prototype = {
+	levels: null
+	,current_index: null
+	,get_level: function() {
+		return this.levels[this.current_index];
+	}
+	,select_level: function(game,index) {
+		if(index < 0 || index >= this.levels.length) {
+			return false;
+		}
+		this.current_index = index;
+		var selected_level = this.levels[index];
+		return game.change_level(selected_level);
+	}
+	,next_level: function(game) {
+		return this.select_level(game,this.current_index + 1);
+	}
+	,prev_level: function(game) {
+		return this.select_level(game,this.current_index - 1);
+	}
+	,draw_level_selector: function(simulating) {
+		var x = 720;
+		var y = 10;
+		var width = 200;
+		var height = 80;
+		var padding = 6;
+		var title_padding = 10;
+		var level_icon_width = 20;
+		var level_icon_height = 8;
+		var cur_level_border_width = 2;
+		var border_width = 3;
+		var background_color = 7170938;
+		var outline_color = 5394780;
+		var level_color = 2236962;
+		var cur_level_color = 47872;
+		var completed_level_color = 13421772;
+		var reset_x_value = x + border_width + padding;
+		var max_level_x = x + width - border_width - padding - level_icon_width;
+		var current_x = reset_x_value;
+		var current_y = y + border_width + title_padding + padding;
+		haxegon_Gfx.fillbox(x,y,width,height,outline_color);
+		haxegon_Gfx.fillbox(x + border_width,y + border_width,width - 2 * border_width,height - 2 * border_width,background_color);
+		haxegon_Text.display(x + border_width + padding,y + 7,"Level Selection");
+		var _g1 = 0;
+		var _g = this.levels.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var level_complete = this.levels[i].has_been_completed();
+			var color = level_complete ? completed_level_color : level_color;
+			if(this.current_index == i) {
+				haxegon_Gfx.drawbox(current_x - cur_level_border_width,current_y - cur_level_border_width,level_icon_width + 2 * cur_level_border_width,level_icon_height + 2 * cur_level_border_width,completed_level_color);
+			}
+			haxegon_Gfx.fillbox(current_x,current_y,level_icon_width,level_icon_height,color);
+			current_x += level_icon_width + padding;
+			if(current_x > max_level_x) {
+				current_x = reset_x_value;
+				current_y += level_icon_height + padding;
+			}
+		}
+	}
+	,__class__: Level_$Manager
 };
 var _$List_ListNode = function(item,next) {
 	this.item = item;
@@ -6165,22 +6247,9 @@ Main.prototype = {
 	init: function() {
 		haxegon_Text.set_size(8);
 		haxegon_Gfx.clearcolor = 2236962;
-		var _g = [];
-		var _g2 = 0;
-		var _g1 = this.grid_height;
-		while(_g2 < _g1) {
-			var r = _g2++;
-			var _g3 = [];
-			var _g5 = 0;
-			var _g4 = this.grid_width;
-			while(_g5 < _g4) {
-				var c = _g5++;
-				_g3.push(new Wire_$Module({ r : r, c : c}));
-			}
-			_g.push(_g3);
-		}
-		this.wire_grid = _g;
-		this.level = new Pattern_$Level([[0,1],[2,3],[0,2],[1,3]]);
+		this.reset_board();
+		this.level_manager = new Level_$Manager(this.generate_levels());
+		this.level = this.level_manager.get_level();
 		this.signal_manager = new Signal_$Manager();
 		this.level.load_level(this);
 		Wire_$Module.load_module_spritesheet();
@@ -6189,34 +6258,34 @@ Main.prototype = {
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 81, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"});
 		if(!this.simulating) {
-			if(Gui.button("Play",{ fileName : "Main.hx", lineNumber : 83, className : "Main", methodName : "update"})) {
+			if(Gui.button("Play",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "update"})) {
 				this.play();
 			}
 			Gui.nextrow();
-			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "update"})) {
+			if(Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "update"})) {
 				this.play();
 				this.pause();
 			}
 			Gui.shift();
-			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 92, className : "Main", methodName : "update"})) {
+			if(Gui.button("Reset",{ fileName : "Main.hx", lineNumber : 96, className : "Main", methodName : "update"})) {
 				this.reset();
 			}
 		} else {
 			if(this.playing) {
-				if(Gui.button("Pause",{ fileName : "Main.hx", lineNumber : 98, className : "Main", methodName : "update"})) {
+				if(Gui.button("Pause",{ fileName : "Main.hx", lineNumber : 102, className : "Main", methodName : "update"})) {
 					this.pause();
 				}
-			} else if(Gui.button("Resume",{ fileName : "Main.hx", lineNumber : 103, className : "Main", methodName : "update"})) {
+			} else if(Gui.button("Resume",{ fileName : "Main.hx", lineNumber : 107, className : "Main", methodName : "update"})) {
 				this.resume();
 			}
 			Gui.shift();
-			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 109, className : "Main", methodName : "update"})) {
+			if(Gui.button("Stop",{ fileName : "Main.hx", lineNumber : 113, className : "Main", methodName : "update"})) {
 				this.stop();
 			}
 			Gui.nextrow();
-			if(!this.playing && Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 114, className : "Main", methodName : "update"})) {
+			if(!this.playing && Gui.button("Tick",{ fileName : "Main.hx", lineNumber : 118, className : "Main", methodName : "update"})) {
 				this.tick();
 			}
 		}
@@ -6228,6 +6297,7 @@ Main.prototype = {
 			this.handle_wire_drawing_and_hovering();
 		}
 		this.handle_tooltip_interaction();
+		this.level_manager.draw_level_selector(this.simulating);
 		if(this.level != null) {
 			this.level.draw_level(this.simulating);
 		}
@@ -6244,6 +6314,7 @@ Main.prototype = {
 	,time_of_last_tick: null
 	,playing: null
 	,level: null
+	,level_manager: null
 	,signal_manager: null
 	,tool_x: null
 	,tool_y: null
@@ -6256,6 +6327,12 @@ Main.prototype = {
 	,tile_background_color: null
 	,tile_focus_color: null
 	,outline_color: null
+	,generate_levels: function() {
+		var levels = [];
+		levels.push(new Pattern_$Level([[0],[1],[2],[3]]));
+		levels.push(new Pattern_$Level([[0,1],[2,3],[0,2],[1,3]]));
+		return levels;
+	}
 	,play: function() {
 		haxegon_Mouse.leftforcerelease();
 		haxegon_Mouse.rightforcerelease();
@@ -6284,21 +6361,7 @@ Main.prototype = {
 	,reset: function() {
 		this.level.unload_level(this);
 		this.signal_manager.reset_signal_manager();
-		var _g = [];
-		var _g2 = 0;
-		var _g1 = this.grid_height;
-		while(_g2 < _g1) {
-			var r = _g2++;
-			var _g3 = [];
-			var _g5 = 0;
-			var _g4 = this.grid_width;
-			while(_g5 < _g4) {
-				var c = _g5++;
-				_g3.push(new Wire_$Module({ r : r, c : c}));
-			}
-			_g.push(_g3);
-		}
-		this.wire_grid = _g;
+		this.reset_board();
 		this.level.load_level(this);
 	}
 	,should_perform_play_tick: function() {
@@ -6376,6 +6439,34 @@ Main.prototype = {
 			}
 		}
 	}
+	,reset_board: function() {
+		var _g = [];
+		var _g2 = 0;
+		var _g1 = this.grid_height;
+		while(_g2 < _g1) {
+			var r = _g2++;
+			var _g3 = [];
+			var _g5 = 0;
+			var _g4 = this.grid_width;
+			while(_g5 < _g4) {
+				var c = _g5++;
+				_g3.push(new Wire_$Module({ r : r, c : c}));
+			}
+			_g.push(_g3);
+		}
+		this.wire_grid = _g;
+	}
+	,change_level: function(new_level) {
+		if(new_level == null) {
+			return false;
+		}
+		this.level.unload_level(this);
+		this.signal_manager.reset_signal_manager();
+		this.reset_board();
+		this.level = new_level;
+		this.level.load_level(this);
+		return true;
+	}
 	,get_hover_cell: function() {
 		var mx = haxegon_Mouse.get_x() - this.grid_x;
 		var my = haxegon_Mouse.get_y() - this.grid_y;
@@ -6402,7 +6493,7 @@ Main.prototype = {
 				var module = this.get_module_from_cell(hover_cell);
 				this.tooltip.set_module(module);
 				var cell_point = this.get_cell_point(hover_cell);
-				this.tooltip.set_position(cell_point.x + 64,cell_point.y - 6);
+				this.tooltip.set_position(cell_point.x + 40,cell_point.y + 40);
 			}
 		} else if((haxegon_Mouse.leftclick() || haxegon_Mouse.leftreleased()) && !this.tooltip.hovering()) {
 			this.tooltip.set_module(null);
@@ -49781,7 +49872,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 624818;
+	this.version = 875107;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

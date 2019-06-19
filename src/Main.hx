@@ -66,7 +66,8 @@ class Main {
 	  	reset_board();
 	  	// wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 
-	  	level = new Pattern_Level([[0,1],[2,3],[0,2],[1,3]]);
+	  	level_manager = new Level_Manager(generate_levels());
+	  	level = level_manager.get_level();
 	  	signal_manager = new Signal_Manager();
 
 	  	level.load_level(this);
@@ -131,6 +132,7 @@ class Main {
 
 	  	handle_tooltip_interaction();
 
+	  	level_manager.draw_level_selector(simulating);
 	  	if(level != null)
 	  		level.draw_level(simulating);
 	  	draw_wire_grid();
@@ -153,6 +155,7 @@ class Main {
   	var playing = false;
 
   	public var level : Level;
+  	public var level_manager : Level_Manager;
   	public var signal_manager : Signal_Manager;
 
   	var tool_x = 100;
@@ -180,6 +183,20 @@ class Main {
   	var tile_background_color = 0x6d6b7a;
   	var tile_focus_color = 0x878499;
   	var outline_color = 0x52515c;
+
+
+  	/* LEVEL GENERATION
+  	=================== */
+  	function generate_levels():Array<Level> {
+  		var levels = new Array<Level>();
+  		// Level 1
+  		levels.push(new Pattern_Level([[0],[1],[2],[3]]));
+  		// Level 2
+  		levels.push(new Pattern_Level([[0,1],[2,3],[0,2],[1,3]]));
+  		
+  		// Return
+  		return levels;
+  	}
 
 
   	/* MECHANICS
@@ -354,7 +371,7 @@ class Main {
   				var module = get_module_from_cell(hover_cell);
   				tooltip.set_module(module);
   				var cell_point = get_cell_point(hover_cell);
-  				tooltip.set_position(cell_point.x+64, cell_point.y-6);
+  				tooltip.set_position(cell_point.x+40, cell_point.y+40);
   			}
   		}
   		// If left click down or up outside of tooltipl, close it

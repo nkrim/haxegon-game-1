@@ -10,6 +10,7 @@ interface Level {
 	public function unload_level(game:Main):Void;
 	public function draw_level(simulating:Bool):Void;
 	public function is_succesful():Bool;
+	public function has_been_completed():Bool;
 	public function restart_level():Void;
 }
 
@@ -41,6 +42,7 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	var pattern:Array<Array<Int>>;
 	var read_pattern:Array<Array<Bool>>;
 	var succesful_repetitions:Int;
+	var completed:Bool;
 	// Computed vars
 	var max_line_width:Int;
 
@@ -49,6 +51,7 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		this.pattern = pattern;
 		this.read_pattern = new Array<Array<Bool>>();
 		this.succesful_repetitions = 0;
+		this.completed = false;
 		// Compute max_line_width
 		this.max_line_width = 0;
 		for(line in pattern) {
@@ -69,7 +72,15 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	}
 
 	public function is_succesful() {
-		return succesful_repetitions >= required_repetitions;
+		var success = this.succesful_repetitions >= required_repetitions;
+		if(!success)
+			return false;
+		this.completed = true;
+		return true;
+	}
+
+	public function has_been_completed() {
+		return this.completed;
 	}
 
 	public function restart_level() {
@@ -87,6 +98,10 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		// If read_pattern matches pattern, go to next repetition and start a new read_pattern
 		if(read_pattern_matches()) {
 			succesful_repetitions++;
+			// If succesful, return out
+			if(is_succesful())
+				return;
+			// Reset read_pattern for next iteration
 			read_pattern = new Array<Array<Bool>>();
 			// Insert new parallel array for the first pattern_line, initialized to full false
 			read_pattern.push([for (i in 0...pattern[0].length) false]);
