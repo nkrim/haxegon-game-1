@@ -132,7 +132,7 @@ class Main {
 
 	  	handle_tooltip_interaction();
 
-	  	level_manager.draw_level_selector(simulating);
+	  	level_manager.draw_level_selector(this, simulating);
 	  	if(level != null)
 	  		level.draw_level(simulating);
 	  	draw_wire_grid();

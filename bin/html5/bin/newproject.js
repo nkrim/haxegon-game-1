@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","52");
+		_this.setReserved("build","53");
 	} else {
-		_this.h["build"] = "52";
+		_this.h["build"] = "53";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6065,7 +6065,7 @@ Level_$Manager.prototype = {
 	,prev_level: function(game) {
 		return this.select_level(game,this.current_index - 1);
 	}
-	,draw_level_selector: function(simulating) {
+	,draw_level_selector: function(game,simulating) {
 		var x = 720;
 		var y = 10;
 		var width = 200;
@@ -6075,19 +6075,44 @@ Level_$Manager.prototype = {
 		var level_icon_width = 20;
 		var level_icon_height = 8;
 		var cur_level_border_width = 2;
+		var next_prev_height = 38;
+		var next_prev_width = 40;
 		var border_width = 3;
 		var background_color = 7170938;
 		var outline_color = 5394780;
 		var level_color = 2236962;
-		var cur_level_color = 47872;
+		var cur_level_color = 13421772;
 		var completed_level_color = 13421772;
+		var button_focus_color = 8881305;
 		var reset_x_value = x + border_width + padding;
-		var max_level_x = x + width - border_width - padding - level_icon_width;
+		var max_level_x = x + width - border_width - padding - next_prev_width - level_icon_width;
 		var current_x = reset_x_value;
 		var current_y = y + border_width + title_padding + padding;
 		haxegon_Gfx.fillbox(x,y,width,height,outline_color);
 		haxegon_Gfx.fillbox(x + border_width,y + border_width,width - 2 * border_width,height - 2 * border_width,background_color);
 		haxegon_Text.display(x + border_width + padding,y + 7,"Level Selection");
+		var mx = haxegon_Mouse.get_x();
+		var my = haxegon_Mouse.get_y();
+		var prev_x = x + width - border_width - next_prev_width + 1;
+		var prev_y = y + border_width - 1;
+		if(!simulating && haxegon_Geom.inbox(mx,my,prev_x,prev_y,next_prev_width,next_prev_height)) {
+			haxegon_Gfx.fillbox(prev_x,prev_y,next_prev_width,next_prev_height,button_focus_color);
+			if(haxegon_Mouse.leftreleased()) {
+				this.prev_level(game);
+			}
+		}
+		haxegon_Gfx.drawbox(prev_x,prev_y,next_prev_width,next_prev_height,outline_color);
+		haxegon_Text.display(prev_x + 7,prev_y + next_prev_height / 2 - 4,"Prev");
+		var next_x = prev_x;
+		var next_y = prev_y + next_prev_height;
+		if(!simulating && haxegon_Geom.inbox(mx,my,next_x,next_y,next_prev_width,next_prev_height)) {
+			haxegon_Gfx.fillbox(next_x,next_y,next_prev_width,next_prev_height,button_focus_color);
+			if(haxegon_Mouse.leftreleased()) {
+				this.next_level(game);
+			}
+		}
+		haxegon_Gfx.drawbox(next_x,next_y,next_prev_width,next_prev_height,outline_color);
+		haxegon_Text.display(next_x + 7,next_y + next_prev_height / 2 - 4,"Next");
 		var _g1 = 0;
 		var _g = this.levels.length;
 		while(_g1 < _g) {
@@ -6095,7 +6120,7 @@ Level_$Manager.prototype = {
 			var level_complete = this.levels[i].has_been_completed();
 			var color = level_complete ? completed_level_color : level_color;
 			if(this.current_index == i) {
-				haxegon_Gfx.drawbox(current_x - cur_level_border_width,current_y - cur_level_border_width,level_icon_width + 2 * cur_level_border_width,level_icon_height + 2 * cur_level_border_width,completed_level_color);
+				haxegon_Gfx.drawbox(current_x - cur_level_border_width,current_y - cur_level_border_width,level_icon_width + 2 * cur_level_border_width,level_icon_height + 2 * cur_level_border_width,cur_level_color);
 			}
 			haxegon_Gfx.fillbox(current_x,current_y,level_icon_width,level_icon_height,color);
 			current_x += level_icon_width + padding;
@@ -6297,7 +6322,7 @@ Main.prototype = {
 			this.handle_wire_drawing_and_hovering();
 		}
 		this.handle_tooltip_interaction();
-		this.level_manager.draw_level_selector(this.simulating);
+		this.level_manager.draw_level_selector(this,this.simulating);
 		if(this.level != null) {
 			this.level.draw_level(this.simulating);
 		}
@@ -49872,7 +49897,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 875107;
+	this.version = 771011;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
