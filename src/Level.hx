@@ -140,8 +140,8 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	------------ */
 	public function draw_level(simulating:Bool) {
 		// TEMPORARY POSITIONAL VALUES
-		var x = 720;
-		var y = 100;
+		var x = 620;
+		var y = 70;
 		var padding = 20;
 		var line_padding = 10;
 		var orb_padding = 10;

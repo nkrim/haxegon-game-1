@@ -15,12 +15,12 @@
 -D howlerjs
 -D no-compilation
 -D openfl-html5
--D windowheight=720
+-D windowheight=600
 -D lime-webgl
 -D lime-dom
 -D lime-howlerjs
 -D lime-html5
--D windowwidth=1280
+-D windowwidth=880
 -D html5
 -D web
 --remap flash:openfl

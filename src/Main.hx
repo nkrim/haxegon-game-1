@@ -82,7 +82,7 @@ class Main {
 	}
   
 	function update() {
-	  	Gui.window("Simulation controls", grid_x, 10);
+	  	Gui.window("Simulation controls", grid_x, 5);
 	  	if(!simulating) {
 	  		if(Gui.button("Play")) {
 	  			play();
@@ -147,8 +147,8 @@ class Main {
 
 	var grid_width = 8;
   	var grid_height = 8;
-  	var grid_x = 200;
-  	var grid_y = 100;
+  	var grid_x = 100;
+  	var grid_y = 70;
 
   	var tick_rate = 0.5;
   	var time_of_last_tick = -1.0;
@@ -158,8 +158,8 @@ class Main {
   	public var level_manager : Level_Manager;
   	public var signal_manager : Signal_Manager;
 
-  	var tool_x = 100;
-  	var tool_y = 100;
+  	var tool_x = 10;
+  	var tool_y = 70;
   	var tool_cols = 2;
   	var tool_side_length = 41;
   	var tools:Array<Tool_Data> = [

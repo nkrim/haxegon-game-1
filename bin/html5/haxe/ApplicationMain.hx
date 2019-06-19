@@ -24,7 +24,7 @@ import haxe.macro.Expr;
 		
 		#if (js && html5)
 		#if (munit || utest)
-		lime.system.System.embed ("newproject", null, 1280, 720);
+		lime.system.System.embed ("newproject", null, 880, 600);
 		#end
 		#else
 		create (null);
@@ -39,7 +39,7 @@ import haxe.macro.Expr;
 		
 		ManifestResources.init (config);
 		
-		app.meta["build"] = "53";
+		app.meta["build"] = "54";
 		app.meta["company"] = "Your name here";
 		app.meta["file"] = "newproject";
 		app.meta["name"] = "New Project";
@@ -59,14 +59,14 @@ import haxe.macro.Expr;
 			element: null,
 			frameRate: 60,
 			#if !web fullscreen: false, #end
-			height: 720,
+			height: 600,
 			hidden: #if munit true #else false #end,
 			maximized: false,
 			minimized: false,
 			parameters: {},
 			resizable: true,
 			title: "New Project",
-			width: 1280,
+			width: 880,
 			x: null,
 			y: null,
 			

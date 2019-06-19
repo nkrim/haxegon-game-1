@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <set name="windowwidth" value="1280" />
-  <set name="windowheight" value="720" />
+  <set name="windowwidth" value="880" />
+  <set name="windowheight" value="600" />
   
 	<meta 
     title="New Project" 

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","53");
+		_this.setReserved("build","54");
 	} else {
-		_this.h["build"] = "53";
+		_this.h["build"] = "54";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -928,7 +928,7 @@ ApplicationMain.create = function(config) {
 	} else {
 		_this5.h["version"] = "1.0.0";
 	}
-	var attributes = { allowHighDPI : true, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 720, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "New Project", width : 1280, x : null, y : null};
+	var attributes = { allowHighDPI : true, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 600, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "New Project", width : 880, x : null, y : null};
 	attributes.context = { antialiasing : 0, background : 0, colorDepth : 32, depth : true, hardware : true, stencil : true, type : null, vsync : true};
 	if(app.__window == null) {
 		if(config != null) {
@@ -5946,8 +5946,8 @@ Pattern_$Level.prototype = {
 		}
 	}
 	,draw_level: function(simulating) {
-		var x = 720;
-		var y = 100;
+		var x = 620;
+		var y = 70;
 		var padding = 20;
 		var line_padding = 10;
 		var orb_padding = 10;
@@ -6066,16 +6066,16 @@ Level_$Manager.prototype = {
 		return this.select_level(game,this.current_index - 1);
 	}
 	,draw_level_selector: function(game,simulating) {
-		var x = 720;
-		var y = 10;
+		var x = 620;
+		var y = 5;
 		var width = 200;
-		var height = 80;
+		var height = 60;
 		var padding = 6;
 		var title_padding = 10;
 		var level_icon_width = 20;
 		var level_icon_height = 8;
 		var cur_level_border_width = 2;
-		var next_prev_height = 38;
+		var next_prev_height = 28;
 		var next_prev_width = 40;
 		var border_width = 3;
 		var background_color = 7170938;
@@ -6177,13 +6177,13 @@ var Main = function() {
 	this.tools = [{ name : "Wire", tool : 1},{ name : "Power", tool : 16},{ name : "OR", tool : 26},{ name : "AND", tool : 28},{ name : "Emittor", tool : 42},{ name : "Reciever", tool : 43},{ name : "Bridge", tool : 18}];
 	this.tool_side_length = 41;
 	this.tool_cols = 2;
-	this.tool_y = 100;
-	this.tool_x = 100;
+	this.tool_y = 70;
+	this.tool_x = 10;
 	this.playing = false;
 	this.time_of_last_tick = -1.0;
 	this.tick_rate = 0.5;
-	this.grid_y = 100;
-	this.grid_x = 200;
+	this.grid_y = 70;
+	this.grid_x = 100;
 	this.grid_height = 8;
 	this.grid_width = 8;
 };
@@ -6283,7 +6283,7 @@ Main.prototype = {
 		haxegon_Core.set_showstats(true);
 	}
 	,update: function() {
-		Gui.window("Simulation controls",this.grid_x,10,null,{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"});
+		Gui.window("Simulation controls",this.grid_x,5,null,{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "update"});
 		if(!this.simulating) {
 			if(Gui.button("Play",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "update"})) {
 				this.play();
@@ -15185,8 +15185,8 @@ haxegon_Core.prototype = $extend(starling_display_Sprite.prototype,{
 		haxegon_Text.init();
 		haxegon_Text.defaultfont();
 		haxegon_Sound.init();
-		haxegon_Gfx.screenwidth = Std.parseInt("1280") | 0;
-		haxegon_Gfx.screenheight = Std.parseInt("720") | 0;
+		haxegon_Gfx.screenwidth = Std.parseInt("880") | 0;
+		haxegon_Gfx.screenheight = Std.parseInt("600") | 0;
 		haxegon_Gfx.screenwidthmid = haxegon_Gfx.screenwidth / 2 | 0;
 		haxegon_Gfx.screenheightmid = haxegon_Gfx.screenheight / 2 | 0;
 		haxegon_Gfx.startframe();
@@ -15196,7 +15196,7 @@ haxegon_Core.prototype = $extend(starling_display_Sprite.prototype,{
 		haxegon_Scene.init();
 		if(haxegon_Core.enablescreen) {
 			if(!haxegon_Gfx.gfxinit) {
-				haxegon_Gfx.resizescreen(Std.parseInt("1280"),Std.parseInt("720"));
+				haxegon_Gfx.resizescreen(Std.parseInt("880"),Std.parseInt("600"));
 			}
 			haxegon_Gfx.endframe();
 		} else {
@@ -49897,7 +49897,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 771011;
+	this.version = 936551;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -99492,8 +99492,8 @@ starling_display_DisplayObjectContainer.sBroadcastListeners = openfl__$Vector_Ve
 starling_display_DisplayObjectContainer.sSortBuffer = openfl__$Vector_Vector_$Impl_$.toObjectVector(null);
 starling_display_DisplayObjectContainer.sCacheToken = new starling_rendering_BatchToken();
 haxegon_Core.version = "0.12.0";
-haxegon_Core.WINDOW_WIDTH = "1280";
-haxegon_Core.WINDOW_HEIGHT = "720";
+haxegon_Core.WINDOW_WIDTH = "880";
+haxegon_Core.WINDOW_HEIGHT = "600";
 haxegon_Core._fullscreenbutton = false;
 haxegon_Core._fullscreenbuttonx = 0;
 haxegon_Core._fullscreenbuttony = 0;

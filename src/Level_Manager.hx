@@ -42,16 +42,16 @@ class Level_Manager {
 	------------ */
 	public function draw_level_selector(game:Main, simulating:Bool) {
 		// TEMPORARY POSITIONAL VALUES
-		var x = 720;
-		var y = 10;
+		var x = 620;
+		var y = 5;
 		var width = 200;
-		var height = 80;
+		var height = 60;
 		var padding = 6;
 		var title_padding = 10;
 		var level_icon_width = 20;
 		var level_icon_height = 8;
 		var cur_level_border_width = 2;
-		var next_prev_height = 38;
+		var next_prev_height = 28;
 		var next_prev_width = 40;
 		var border_width = 3;
 		// TEMPORARY COLOR VALUES
