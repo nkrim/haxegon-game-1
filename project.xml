@@ -4,17 +4,17 @@
   <set name="windowheight" value="600" />
   
 	<meta 
-    title="New Project" 
-    package="com.yournamehere.newproject" 
-    version="1.0.0" 
-    company="Your name here" 
+    title="Untitled Wire-Module Game" 
+    package="com.noahkrim.wiremodulegame" 
+    version="0.0.1" 
+    company="Noah Krim" 
   />
   
   <app swf-version="17.0" if="flash"/>
 	<app 
       main="haxegon.Load"
       path="bin" 
-      file="newproject" 
+      file="wiremodulegame" 
    />
 
   <window width="${windowwidth}" height="${windowheight}" if="flash || cpp || neko"></window>

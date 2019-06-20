@@ -20,11 +20,11 @@ import haxe.macro.Expr;
 	
 	public static function main () {
 		
-		lime.system.System.__registerEntryPoint ("newproject", create);
+		lime.system.System.__registerEntryPoint ("wiremodulegame", create);
 		
 		#if (js && html5)
 		#if (munit || utest)
-		lime.system.System.embed ("newproject", null, 880, 600);
+		lime.system.System.embed ("wiremodulegame", null, 880, 600);
 		#end
 		#else
 		create (null);
@@ -39,12 +39,12 @@ import haxe.macro.Expr;
 		
 		ManifestResources.init (config);
 		
-		app.meta["build"] = "56";
-		app.meta["company"] = "Your name here";
-		app.meta["file"] = "newproject";
-		app.meta["name"] = "New Project";
-		app.meta["packageName"] = "com.yournamehere.newproject";
-		app.meta["version"] = "1.0.0";
+		app.meta["build"] = "58";
+		app.meta["company"] = "Noah Krim";
+		app.meta["file"] = "wiremodulegame";
+		app.meta["name"] = "Untitled Wire-Module Game";
+		app.meta["packageName"] = "com.noahkrim.wiremodulegame";
+		app.meta["version"] = "0.0.1";
 		
 		
 		
@@ -65,7 +65,7 @@ import haxe.macro.Expr;
 			minimized: false,
 			parameters: {},
 			resizable: true,
-			title: "New Project",
+			title: "Untitled Wire-Module Game",
 			width: 880,
 			x: null,
 			y: null,

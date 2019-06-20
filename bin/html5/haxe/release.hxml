@@ -24,6 +24,6 @@
 -D html5
 -D web
 --remap flash:openfl
--js bin/html5/bin/newproject.js
+-js bin/html5/bin/wiremodulegame.js
 -cp bin/html5/haxe
 -D html5
