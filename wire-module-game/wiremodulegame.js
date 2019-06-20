@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","57");
+		_this.setReserved("build","58");
 	} else {
-		_this.h["build"] = "57";
+		_this.h["build"] = "58";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -912,9 +912,9 @@ ApplicationMain.create = function(config) {
 	}
 	var _this3 = app.meta;
 	if(__map_reserved["name"] != null) {
-		_this3.setReserved("name","Wire Module Game");
+		_this3.setReserved("name","Untitled Wire-Module Game");
 	} else {
-		_this3.h["name"] = "Wire Module Game";
+		_this3.h["name"] = "Untitled Wire-Module Game";
 	}
 	var _this4 = app.meta;
 	if(__map_reserved["packageName"] != null) {
@@ -928,7 +928,7 @@ ApplicationMain.create = function(config) {
 	} else {
 		_this5.h["version"] = "0.0.1";
 	}
-	var attributes = { allowHighDPI : true, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 600, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "Wire Module Game", width : 880, x : null, y : null};
+	var attributes = { allowHighDPI : true, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 600, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "Untitled Wire-Module Game", width : 880, x : null, y : null};
 	attributes.context = { antialiasing : 0, background : 0, colorDepth : 32, depth : true, hardware : true, stencil : true, type : null, vsync : true};
 	if(app.__window == null) {
 		if(config != null) {
@@ -7456,6 +7456,14 @@ Power_$Module.prototype = $extend(Wire_$Module.prototype,{
 		}
 	}
 	,handle_power_input: function(game,dir) {
+		if(this.toggle_aug != null && !this.toggle_aug.get_active_state()) {
+			return;
+		}
+		var input_status = this.get_wire_status(dir);
+		if(input_status != 0) {
+			return;
+		}
+		this.set_wire_status(dir,1);
 	}
 	,draw_module: function(x,y,simulating) {
 		Wire_$Module.prototype.draw_module.call(this,x,y,simulating);
@@ -8151,8 +8159,14 @@ Signal_$Manager.prototype = {
 		return HxOverrides.remove(this.universal_recievers,reciever);
 	}
 	,send_signal_to_channel: function(channel) {
-		this.channel_data_map[channel].queued_signals++;
-		this.tick_channel_signals[channel]++;
+		if(this.channel_data_map[channel].queued_signals != Signal_$Manager.int32_max) {
+			var ret = this.channel_data_map[channel].queued_signals++;
+			this.channel_data_map[channel].queued_signals = this.channel_data_map[channel].queued_signals | 0;
+		}
+		if(this.tick_channel_signals[channel] != Signal_$Manager.int32_max) {
+			var ret1 = this.tick_channel_signals[channel]++;
+			this.tick_channel_signals[channel] = this.tick_channel_signals[channel] | 0;
+		}
 	}
 	,resolve_universal_signals_once: function(game) {
 		var active_channels = [];
@@ -8161,7 +8175,11 @@ Signal_$Manager.prototype = {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var queued_signals = this.tick_channel_signals[i];
-			while(queued_signals-- > 0) active_channels.push(i);
+			while(queued_signals != 0) {
+				var ret = queued_signals--;
+				queued_signals = queued_signals | 0;
+				active_channels.push(i);
+			}
 		}
 		if(active_channels.length > 0) {
 			var _g2 = 0;
@@ -8198,7 +8216,7 @@ Signal_$Manager.prototype = {
 			var i = _g11++;
 			var queued_signals = copy_queue_signals[i];
 			var data1 = this.channel_data_map[i];
-			if(queued_signals > 0) {
+			if(queued_signals != 0) {
 				var _g21 = 0;
 				var _g3 = data1.aug_recievers;
 				while(_g21 < _g3.length) {
@@ -8214,7 +8232,7 @@ Signal_$Manager.prototype = {
 			var i1 = _g12++;
 			var queued_signals1 = copy_queue_signals[i1];
 			var data2 = this.channel_data_map[i1];
-			if(queued_signals1 > 0) {
+			if(queued_signals1 != 0) {
 				resolved_any_signals = true;
 				var _g22 = 0;
 				var _g31 = data2.recievers;
@@ -8223,7 +8241,8 @@ Signal_$Manager.prototype = {
 					++_g22;
 					reciever.recieve_signal(game);
 				}
-				data2.queued_signals--;
+				var ret = data2.queued_signals--;
+				data2.queued_signals = data2.queued_signals | 0;
 			}
 		}
 		return resolved_any_signals;
@@ -49946,7 +49965,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 760224;
+	this.version = 450503;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -99425,6 +99444,7 @@ Wire_$Module.module_sheet_name = "module_sheet";
 Wire_$Module.hover_opacity_off = 0.35;
 Wire_$Module.hover_opacity_on = 0.75;
 Signal_$Manager.channels = [436736,1983738,16061717,16772352,65482,12976358,16752128,11730719,16711838,8733952,9079434,16777215];
+Signal_$Manager.int32_max = -1;
 Tooltip.tooltip_sheet_name = "tooltip_sheet";
 Tooltip.tab_height = 16;
 Tooltip.channel_length = 14;

@@ -2,12 +2,15 @@ import haxegon.*;
 import Main;
 import Signal_Manager;
 import Signal_Manager.Universal_Signal_Reciever;
+import Wire_Module;
 
 /* INTERFACES 
 ============= */
 interface Level {
 	public function load_level(game:Main):Void;
 	public function unload_level(game:Main):Void;
+	public function get_grid_state():Array<Array<Wire_Module>>;
+	public function set_grid_state(grid:Array<Array<Wire_Module>>):Void;
 	public function draw_level(simulating:Bool):Void;
 	public function is_succesful():Bool;
 	public function has_been_completed():Bool;
@@ -43,6 +46,7 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	var read_pattern:Array<Array<Bool>>;
 	var succesful_repetitions:Int;
 	var completed:Bool;
+	var grid_state:Array<Array<Wire_Module>>;
 	// Computed vars
 	var max_line_width:Int;
 
@@ -52,6 +56,7 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		this.read_pattern = new Array<Array<Bool>>();
 		this.succesful_repetitions = 0;
 		this.completed = false;
+		this.grid_state = null;
 		// Compute max_line_width
 		this.max_line_width = 0;
 		for(line in pattern) {
@@ -69,6 +74,13 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	public function unload_level(game:Main) {
 		game.signal_manager.remove_universal_reciever(this);
 		restart_level();
+	}
+
+	public function get_grid_state() {
+		return this.grid_state;
+	}
+	public function set_grid_state(grid:Array<Array<Wire_Module>>) {
+		this.grid_state = grid;
 	}
 
 	public function is_succesful() {

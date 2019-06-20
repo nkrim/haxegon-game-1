@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","58");
+		_this.setReserved("build","59");
 	} else {
-		_this.h["build"] = "58";
+		_this.h["build"] = "59";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5837,6 +5837,8 @@ Level.__name__ = ["Level"];
 Level.prototype = {
 	load_level: null
 	,unload_level: null
+	,get_grid_state: null
+	,set_grid_state: null
 	,draw_level: null
 	,is_succesful: null
 	,has_been_completed: null
@@ -5861,6 +5863,7 @@ var Pattern_$Level = function(pattern) {
 	this.read_pattern = [];
 	this.succesful_repetitions = 0;
 	this.completed = false;
+	this.grid_state = null;
 	this.max_line_width = 0;
 	var _g = 0;
 	while(_g < pattern.length) {
@@ -5879,6 +5882,7 @@ Pattern_$Level.prototype = {
 	,read_pattern: null
 	,succesful_repetitions: null
 	,completed: null
+	,grid_state: null
 	,max_line_width: null
 	,load_level: function(game) {
 		game.signal_manager.add_universal_reciever(this);
@@ -5886,6 +5890,12 @@ Pattern_$Level.prototype = {
 	,unload_level: function(game) {
 		game.signal_manager.remove_universal_reciever(this);
 		this.restart_level();
+	}
+	,get_grid_state: function() {
+		return this.grid_state;
+	}
+	,set_grid_state: function(grid) {
+		this.grid_state = grid;
 	}
 	,is_succesful: function() {
 		var success = this.succesful_repetitions >= Pattern_$Level.required_repetitions;
@@ -6281,7 +6291,7 @@ Main.prototype = {
 	init: function() {
 		haxegon_Text.set_size(8);
 		haxegon_Gfx.clearcolor = 2236962;
-		this.reset_board();
+		this.reset_grid();
 		this.level_manager = new Level_$Manager(this.generate_levels());
 		this.level = this.level_manager.get_level();
 		this.signal_manager = new Signal_$Manager();
@@ -6363,6 +6373,7 @@ Main.prototype = {
 	,outline_color: null
 	,generate_levels: function() {
 		var levels = [];
+		levels.push(new Pattern_$Level([[0],[0],[0],[0]]));
 		levels.push(new Pattern_$Level([[0],[1],[2],[3]]));
 		levels.push(new Pattern_$Level([[0],[0,1],[0,2],[0,3]]));
 		levels.push(new Pattern_$Level([[0,1],[1,2],[0,1,2]]));
@@ -6401,7 +6412,7 @@ Main.prototype = {
 	,reset: function() {
 		this.level.unload_level(this);
 		this.signal_manager.reset_signal_manager();
-		this.reset_board();
+		this.reset_grid();
 		this.level.load_level(this);
 	}
 	,should_perform_play_tick: function() {
@@ -6479,7 +6490,7 @@ Main.prototype = {
 			}
 		}
 	}
-	,reset_board: function() {
+	,reset_grid: function() {
 		var _g = [];
 		var _g2 = 0;
 		var _g1 = this.grid_height;
@@ -6501,11 +6512,44 @@ Main.prototype = {
 			return false;
 		}
 		this.level.unload_level(this);
-		this.signal_manager.reset_signal_manager();
-		this.reset_board();
+		this.level.set_grid_state(this.wire_grid);
 		this.level = new_level;
+		var level_grid_state = this.level.get_grid_state();
+		if(level_grid_state != null) {
+			this.wire_grid = level_grid_state;
+		} else {
+			this.reset_grid();
+		}
+		this.reconfigure_signal_manager();
 		this.level.load_level(this);
 		return true;
+	}
+	,reconfigure_signal_manager: function() {
+		this.signal_manager.reset_signal_manager();
+		var _g = 0;
+		var _g1 = this.wire_grid;
+		while(_g < _g1.length) {
+			var row = _g1[_g];
+			++_g;
+			var _g2 = 0;
+			while(_g2 < row.length) {
+				var wm = row[_g2];
+				++_g2;
+				var reciever = Signal_$Manager.cast_to_reciever(wm);
+				if(reciever != null) {
+					this.signal_manager.add_reciever(reciever.get_channel(),reciever);
+				}
+				if(wm.toggle_aug != null) {
+					this.signal_manager.add_aug_reciever(wm.toggle_aug.get_channel(),wm.toggle_aug);
+				}
+				if(wm.rotator_aug != null) {
+					this.signal_manager.add_aug_reciever(wm.rotator_aug.get_channel(),wm.rotator_aug);
+				}
+			}
+		}
+	}
+	,get_wire_grid: function() {
+		return this.wire_grid;
 	}
 	,get_hover_cell: function() {
 		var mx = haxegon_Mouse.get_x() - this.grid_x;
@@ -49965,7 +50009,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 450503;
+	this.version = 838994;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

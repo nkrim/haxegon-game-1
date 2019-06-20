@@ -63,7 +63,7 @@ class Main {
 	  	Gfx.clearcolor = 0x222222;
 
 	  	// Init wire_grid with a fresh board
-	  	reset_board();
+	  	reset_grid();
 	  	// wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 
 	  	level_manager = new Level_Manager(generate_levels());
@@ -189,6 +189,7 @@ class Main {
   	=================== */
   	function generate_levels():Array<Level> {
   		var levels = new Array<Level>();
+  		levels.push(new Pattern_Level([[0],[0],[0],[0]]));
   		levels.push(new Pattern_Level([[0],[1],[2],[3]]));
   		levels.push(new Pattern_Level([[0],[0,1],[0,2],[0,3]]));
   		levels.push(new Pattern_Level([[0,1],[1,2],[0,1,2]]));
@@ -234,7 +235,7 @@ class Main {
   	function reset() {
   		level.unload_level(this);
 		signal_manager.reset_signal_manager();
-		reset_board();
+		reset_grid();
 		level.load_level(this);
   	}
 
@@ -290,7 +291,7 @@ class Main {
 			}
 		}
   	}
-  	function reset_board() {
+  	function reset_grid() {
   		this.wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
   	}
 
@@ -298,12 +299,37 @@ class Main {
   		if(new_level == null)
   			return false;
   		this.level.unload_level(this);
-		signal_manager.reset_signal_manager();
-		reset_board();
+		this.level.set_grid_state(this.wire_grid);
 		// Set new level
 		this.level = new_level;
+		var level_grid_state = this.level.get_grid_state();
+		if(level_grid_state != null)
+			this.wire_grid = level_grid_state;
+		else
+			reset_grid();
+		reconfigure_signal_manager();
 		this.level.load_level(this);
 		return true;
+  	}
+
+  	public function reconfigure_signal_manager() {
+  		this.signal_manager.reset_signal_manager();
+  		// Go through the grid and add all recievers and augmentations to the signal manager
+  		for(row in wire_grid) {
+			for(wm in row) {
+				var reciever = Signal_Manager.cast_to_reciever(wm);
+				if(reciever != null)
+					this.signal_manager.add_reciever(reciever.get_channel(), reciever);
+				if(wm.toggle_aug != null)
+					this.signal_manager.add_aug_reciever(wm.toggle_aug.get_channel(), wm.toggle_aug);
+				if(wm.rotator_aug != null)
+					this.signal_manager.add_aug_reciever(wm.rotator_aug.get_channel(), wm.rotator_aug);
+			}
+		}
+  	}
+
+  	public function get_wire_grid():Array<Array<Wire_Module>> {
+  		return this.wire_grid;
   	}
 
   	/* INTERACTION

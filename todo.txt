@@ -1,0 +1,4 @@
+TODO
+====================
+
+- Store grid layout in memory so switching levels doesn't delete the solution

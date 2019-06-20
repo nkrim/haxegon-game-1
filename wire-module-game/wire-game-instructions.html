@@ -4,7 +4,7 @@
 	
 	<meta charset="utf-8">
 	
-	<title>Instructions - Wire Module Game</title>
+	<title>Instructions - Untitled Wire-Module Game</title>
 	
 	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,17 +29,22 @@
 </head>
 
 <body>
-	<h2>Wire Module Game <i>(temporary title)</i></h1>
+	<h2>Untitled Wire-Module Game <i>(still thinking of a title)</i></h1>
 	<p><i>Any questions, comments, or suggestions can be sent to <b>nkrim62@gmail.com</b></i></p>
 	<h3>Instructions</h3>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;Click and drag to draw wires between grid cells, drag modules from the toolbar onto the board (or a wire module to delete any other module on a cell), and right-click a cell to gain access to extra options (like signal colors, diode output directions, and toggle and rotator augmentations).</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;Click and drag to draw wires between grid cells, drag modules from the toolbar onto the board, and right-click a cell to gain access to extra options like signal colors, diode output directions, and to add toggle and rotator augmentations. You can use a <b>Wire</b> from the toolbar to remove any other module from a cell.</p>
 	<br>
 	<h3>Base Mechanics</h3>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;Create a mechanism using modules connected via wires on the grid board. Send and recieve signals to communicate and create responsive systems that can perform more compicated logic and sequences. In the current build, all levels are <b>pattern levels</b> in which you have to send certain combinations of signals together in one single tick <i>(I plan on making more types of levels but I'm kind of stuck on deciding what would be good, so any ideas are welcome </i>n_n<i>)</i>. <br>&nbsp;&nbsp;&nbsp;&nbsp;
-	Each run of a mechanism will start with a <b>power tick</b> where all <b>power modules</b> send power out to all of their connected wires, and if any signals are sent (explained below), a series of <b>resolution ticks</b> will occur until all signals are resolved, after which another <b>power tick</b> will occur, ad infinitum.</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;This game involves connecting modules to mediate the flow of power through wires to create a mechanism to satisfy the goal of the given levels. You can use singals to dynamically control aspects of the mechanism, such as sending a burst of power or activating a <b>Rotator Augmentation</b> to rotate a cell 90deg. In the current build, all levels are <b>Pattern Levels</b>. In pattern levels you have to use <b>Emittor Modules</b> to send signals to differently colored channels in a specific sequence, and even simoultaneously. <i>(I plan on making more types of levels that allow the use of all channels freely)</i>.
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;The simulation works on a tick-based system, where on every tick multiple actions are taken across the board given how the power is flowing and which signals have been fired. There are two types of ticks, <b>Power</b> ticks and <b>Signal</b> ticks.
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;The simulation will always start with a <b>Power</b> tick, which causes all <b>Power Modules</b> to send power out of all connected wires in the cell (with 4 total directions, 1 for each cardinal direction). 
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Signal</b> ticks occur after a <b>Reciever Module</b> recieves a signal from any emittor set to the same channel color. The reciever will send power in the same way as a power module, but a power module will never activate during a signal tick. Once there are no more signals left to be recieved (hence no longer needing to perform a signal tick), the next tick will be a power tick, and the process will repeat.
 	<br>
 	<h3>Signals</h3>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;Signals are sent when an <b>emittor module</b> recieves power. Each emittor module has a channel (selected from the right-click menu), and when a module is powered it will send one signal for each powered input on the module during that tick, for every emittor module on the board. <br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Reciever modules</b> and <b>toggle and rotator augmentations</b> recieve signals from a signal manager, which queues up the signals for each colored channel and sends them out one tick at a time as <b>resolution ticks</b> (so if a blue and a green signal are sent, then one resolution tick will proceed afterwards which will resolve blue and green recievers and augmentations, however if two green signals are sent, two resolution ticks will proceed each one sending just one blue signal to recievers and augmentations). If there are no signals left in the signal manager's queue, then a <b>power tick</b> will follow. It should be noted that there will never be an instance where a <b>reciever module</b> and a <b>power module</b> fire at the same time. <br>&nbsp;&nbsp;&nbsp;&nbsp;For <b>pattern levels</b>, it considers consecutive signal emissions in a tick as one line of the pattern sequence, and will evaluate the next line on the next tick with signal emissions (any number of ticks can occur between these).</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;<b>Emittor Modules</b> each have a channel that they are connected to which is denoted by the color in the center (can be changed from the right-click menu). During each tick, after all the power has fully flowed, each emittor will check if it is recieving power from any of its connected wires. The emittor will send 1 tick for ever powered wire connected to it, 
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;The <b>Signal Manager</b> works behind the scenes and has a tally of all the signals it needs to relay to recieving components for each channel, and unless it has no signals left to process it will cause the next tick to be a signal tick. During a signal tick, the signal manager simoultaenously sends power to all channels that have any signals which have yet to be sent out. However, for example, if <span style="color: green; font-weight: bold;">2 green signals</span> were sent to the signal manager via emittors, then it needs <b>2 power ticks</b> until it has no more green signals to process; this is true for every channel. If there was also <span style="color: blue; font-weight: bold;">1 blue signal</span> that was sent along with the green ones, then the first signal tick will activate the augmentations and recievers that are set to both the <span style="color: green; font-weight: bold;">green</span> and <span style="color: blue; font-weight: bold;">blue</span> channels, and the following signal tick will just activate on the <span style="color: green; font-weight: bold;">green channel</span> since there was 1 more left in the queue. Of course, any signals that are emitted during the signal ticks will accumlate during this process, so there will be cases where a mechanism will only have the first initial power tick, and will end up only using signal ticks after that, forever.
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;On every signal tick, <b>Augmentations</b> of active channels activate first, so <b>Toggle Augmentations</b> will toggle their cell once between its on and off states, and <b>Rotator Augmentations</b> will rotate their cell once 90 degrees clockwise. After that, <b>Reciever Moduels</b> of active channels will activate and send power out to connected wires and flow throughout the system, potntially activating more emittors whose signals are then added on for the next signal tick to process.
+	<br>&nbsp;&nbsp;&nbsp;&nbsp;For <b>Pattern Levels</b>, every signal emitted during a single tick (if any) is matched against the next combination in the given sequence. So if <span style="color: green; font-weight: bold;">2 green signals</span> is shown in the first line of the sequence, then the first tick should be connected to two inputs on an emittor set to the green channel. Two green signal ticks will follow, but the <span style="color: green; font-weight: bold;">2 green signals</span> required by the pattern are evaluated together instantly, so the second tick of the program will be a signal tick that either has to power zero emittors OR it has to follow the next line in the pattern.</p>
 	<br>
 	<h3>Modules</h3>
 	<ul>
@@ -61,11 +66,11 @@
 		</li>
 		<li>
 			<b>Emittor Module</b><br>
-			<p>Will send one signal on the modules channel color (changeable from the right-click menu) for each connected wire that is powered.</p>
+			<p>Will send 1 signal on the modules channel color (changeable from the right-click menu) for each connected wire that is powered.</p>
 		</li>
 		<li>
 			<b>Reciever Module</b><br>
-			<p>When a signal of the same channel color (changeable from the right-click menu) is sent from the signal manager's queue, this module will emit power in the same as a power module but instead during a resolution tick.</p>
+			<p>When a signal of the same channel color (changeable from the right-click menu) is sent from the signal manager's queue, this module will emit power in the same as a power module but instead during a signal tick.</p>
 		</li>
 		<li>
 			<b>Bridge Module</b><br>
@@ -90,12 +95,12 @@
 	<ul>
 		<li>
 			<b>Pattern Levels</b><br>
-			<p>Pattern levels request a repeated sequence of signal emission combinations per tick (ticks with no signal emissions are ignored). Any extraneous signal emissions (of either the same channel or other unique channels) will break the pattern. The ordering of the colors in a pattern line are arbitrary for solving the level.</p>
+			<p>Pattern levels require a repeated sequence of signal emission combinations to be matched with a given sequence. For each line in the sequence, the same combination of channel signals must be sent in that tick (ticks with no signal emissions at all are ignored). Any extraneous signal emissions (of either the same channel or other unique channels) will break the pattern. The ordering of the colors in a pattern line are arbitrary for solving the level.</p>
 		</li>
 	</ul>
 	<br>
 	<h3>General tips that I've found helpful</h3>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;For pattern levels, the main tip I have is to either implement the entire level using power modules and augmentatoins (so that power is only sent on power ticks), <b>OR</b> to have one power module that is hooked up to the initial emittors for the first line of a pattern, and then resolve all further lines of the pattern using an infinite loop of reciever modules, so the entire run will have one power tick at the start and infinite signal resolution ticks following that. Power modules will never fire on the same tick as reciever modules, so while you can coordinate intermittently with resolution ticks, then have the signal manager flush itself so that another power tick can occur, this will not work out easily for many of the levels included (though it will work out for some).</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;For pattern levels, the main tip I have is to either implement the entire level using power modules and augmentatoins (so that power is only sent on power ticks), <b>OR</b> to have 1 power module that is hooked up to the initial emittors for the first line of a pattern, and then resolve all further lines of the pattern using an infinite loop of reciever modules, so the entire run will have 1 power tick at the start and infinite signal signal ticks following that. Power modules will never fire on the same tick as reciever modules, so while you can coordinate intermittently with signal ticks, then have the signal manager flush itself so that another power tick can occur, this will not work out easily for many of the levels included (though it will work out for some).</p>
 	<br>
 	<h3>Things I'm Working On (and could use suggestions for)</h3>
 	<ul>
