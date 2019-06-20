@@ -45,7 +45,17 @@ class Power_Module extends Wire_Module {
 		if(left_neighbor != null) { left_neighbor.handle_power_input(game, RIGHT); }
 	}
 
-	public override function handle_power_input(game : Main, dir : Direction) { }
+	public override function handle_power_input(game : Main, dir : Direction) {
+		// If toggle_aug exists and is inactive, do nothing
+		if(toggle_aug != null && !toggle_aug.get_active_state())
+			return;
+
+		var input_status = get_wire_status(dir);
+		if(input_status != off)
+			return;
+		// Set the input wire on
+		set_wire_status(dir, on);
+	}
 
 	public override function draw_module(x:Int, y:Int, simulating:Bool) {
 		super.draw_module(x, y, simulating);

@@ -1,4 +1,5 @@
 import haxegon.*;
+import haxe.Int32;
 import Main;
 import Map;
 import Reflect;
@@ -16,14 +17,14 @@ interface Signal_Reciever {
 	public function recieve_signal(game:Main):Void;
 }
 interface Universal_Signal_Reciever {
-	public function recieve_all_signals(channels:Array<Int>, game:Main):Void;
+	public function recieve_all_signals(channels:Array<Int32>, game:Main):Void;
 }
 
 
 /* TYPEDEFS
 =========== */
 typedef Channel_Data = {
-	queued_signals: Int,
+	queued_signals: Int32,
 	recievers: Array<Signal_Reciever>,
 	aug_recievers: Array<Augmentation>,
 }
@@ -51,7 +52,7 @@ class Signal_Manager {
 
 	// protected vars
 	var channel_data_map : Array<Channel_Data>;
-	var tick_channel_signals : Array<Int>;
+	var tick_channel_signals : Array<Int32>;
 	var universal_recievers : Array<Universal_Signal_Reciever>;
 
 	// Constructor
@@ -112,9 +113,12 @@ class Signal_Manager {
 	}
 	/* Interactions
 	--------------- */
+	static var int32_max:Int32 = 0xffffffff;
 	public function send_signal_to_channel(channel: Int) {
-		this.channel_data_map[channel].queued_signals++;
-		this.tick_channel_signals[channel]++;
+		if(this.channel_data_map[channel].queued_signals != int32_max)
+			this.channel_data_map[channel].queued_signals++;
+		if(this.tick_channel_signals[channel] != int32_max)
+			this.tick_channel_signals[channel]++;
 	}
 
 	// Resolves only one queued signal per-channel, to send 1 of each active signal to all universal receivers
@@ -123,21 +127,22 @@ class Signal_Manager {
 		var active_channels = new Array<Int>();
 		for(i in 0...this.channel_data_map.length) {
 			var queued_signals = this.tick_channel_signals[i];
-			while(queued_signals-- > 0) {
+			while(queued_signals != 0) {
+				queued_signals--;
 				active_channels.push(i);
 			}
 		}
 		if(active_channels.length > 0) {
 			for(universal_reciever in this.universal_recievers)
 				universal_reciever.recieve_all_signals(active_channels, game);
-			this.tick_channel_signals = [for (c in Signal_Manager.channels) 0];
+			this.tick_channel_signals = [for (c in Signal_Manager.channels) (0:Int32)];
 		}
 	}
 	// Resolves only one queued signal per-channel, to perform resolutions on a tick-by-tick basis
 	public function resolve_signals_once(game:Main):Bool {
 		var resolved_any_signals = false;
 		// Copy queued_signals into new array so as not to be corrupted by resolutions
-		var copy_queue_signals = new Array<Int>();
+		var copy_queue_signals = new Array<Int32>();
 		for(data in this.channel_data_map)
 			copy_queue_signals.push(data.queued_signals);
 
@@ -145,7 +150,7 @@ class Signal_Manager {
 		for(i in 0...this.channel_data_map.length) {
 			var queued_signals = copy_queue_signals[i];
 			var data = this.channel_data_map[i];
-			if(queued_signals > 0) {
+			if(queued_signals != 0) {
 				for(aug_reciever in data.aug_recievers) {
 					aug_reciever.recieve_signal(game);
 				}
@@ -155,7 +160,7 @@ class Signal_Manager {
 		for(i in 0...this.channel_data_map.length) {
 			var queued_signals = copy_queue_signals[i];
 			var data = this.channel_data_map[i];
-			if(queued_signals > 0) {
+			if(queued_signals != 0) {
 				resolved_any_signals = true;
 				for(reciever in data.recievers) {
 					reciever.recieve_signal(game);
