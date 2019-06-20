@@ -276,8 +276,37 @@ class Diode_Module extends Wire_Module {
 			return any_input_powered;
 		// If and_diode
 		return any_input_powered
-				&& (this.up_output || this.up == on) && (this.down_output || this.down == on) 
-				&& (this.left_output || this.left == on) && (this.right_output || this.right == on);
+				&& (this.up_output || this.up != off) && (this.down_output || this.down != off) 
+				&& (this.left_output || this.left != off) && (this.right_output || this.right != off);
+	}
+
+	public function rotate_outputs(?num_rots:Int=1) {
+		num_rots = num_rots%4;
+		if(num_rots == 0)
+			return;
+		var temp_status = this.up_output;
+		switch(num_rots) {
+			case 1: {
+				this.up_output = this.left_output;
+				this.left_output = this.down_output;
+				this.down_output = this.right_output;
+				this.right_output = temp_status;
+			}
+			case 2: {
+				this.up_output = this.down_output;
+				this.down_output = temp_status;
+				temp_status = this.left_output;
+				this.left_output = this.right_output;
+				this.right_output = temp_status;
+			}
+			case 3: {
+				this.up_output = this.right_output;
+				this.right_output = this.down_output;
+				this.down_output = this.left_output;
+				this.left_output = temp_status;
+			}
+			default: null;
+		}
 	}
 }
 

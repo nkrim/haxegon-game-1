@@ -3,6 +3,7 @@ import Main;
 import Main.Cell;
 import Wire_Module.*;
 import Wire_Module.Module_Sheet;
+import Modules.Diode_Module;
 import Signal_Manager.*;
 import Signal_Manager.Signal_Reciever;
 
@@ -148,6 +149,13 @@ class Rotator_Augmentation implements Augmentation {
 			}
 			default: null;
 		}
+
+		// Rotate outputs in diode
+		try {
+			var diode = cast(wm, Diode_Module);
+			diode.rotate_outputs(num_rots);
+		}
+		catch(msg:String) { }
 	}
 
 	/* RENDERING

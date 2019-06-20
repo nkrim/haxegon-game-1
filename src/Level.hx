@@ -36,7 +36,7 @@ class Level_Globals {
 class Pattern_Level implements Level implements Universal_Signal_Reciever {
 
 	// Statics
-	public static var required_repetitions = 10;
+	public static var required_repetitions = 5;
 
 	// Protected vars
 	var pattern:Array<Array<Int>>;

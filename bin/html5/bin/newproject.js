@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","54");
+		_this.setReserved("build","55");
 	} else {
-		_this.h["build"] = "54";
+		_this.h["build"] = "55";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -4383,6 +4383,15 @@ Rotator_$Augmentation.prototype = {
 			default:
 			}
 		}
+		try {
+			var diode = js_Boot.__cast(wm , Diode_$Module);
+			diode.rotate_outputs(num_rots);
+		} catch( msg ) {
+			haxe_CallStack.lastException = msg;
+			if (msg instanceof js__$Boot_HaxeError) msg = msg.val;
+			if( js_Boot.__instanceof(msg,String) ) {
+			} else throw(msg);
+		}
 	}
 	,draw: function(x,y) {
 		var main_sprite = 55 + 2 * this.rotation_index;
@@ -6355,7 +6364,11 @@ Main.prototype = {
 	,generate_levels: function() {
 		var levels = [];
 		levels.push(new Pattern_$Level([[0],[1],[2],[3]]));
+		levels.push(new Pattern_$Level([[0],[0,1],[0,2],[0,3]]));
+		levels.push(new Pattern_$Level([[0,1],[1,2],[0,1,2]]));
+		levels.push(new Pattern_$Level([[0,1,4],[2,3,4],[0,2,4],[1,3,4]]));
 		levels.push(new Pattern_$Level([[0,1],[2,3],[0,2],[1,3]]));
+		levels.push(new Pattern_$Level([[0,1,2],[1,2,3],[2,3,4],[3,4,5]]));
 		return levels;
 	}
 	,play: function() {
@@ -7701,14 +7714,48 @@ Diode_$Module.prototype = $extend(Wire_$Module.prototype,{
 		if(!this.and_diode) {
 			return any_input_powered;
 		}
-		if(any_input_powered && (this.up_output || this.up == 1) && (this.down_output || this.down == 1) && (this.left_output || this.left == 1)) {
+		if(any_input_powered && (this.up_output || this.up != 0) && (this.down_output || this.down != 0) && (this.left_output || this.left != 0)) {
 			if(!this.right_output) {
-				return this.right == 1;
+				return this.right != 0;
 			} else {
 				return true;
 			}
 		} else {
 			return false;
+		}
+	}
+	,rotate_outputs: function(num_rots) {
+		if(num_rots == null) {
+			num_rots = 1;
+		}
+		num_rots %= 4;
+		if(num_rots == 0) {
+			return;
+		}
+		var temp_status = this.up_output;
+		if(num_rots != null) {
+			switch(num_rots) {
+			case 1:
+				this.up_output = this.left_output;
+				this.left_output = this.down_output;
+				this.down_output = this.right_output;
+				this.right_output = temp_status;
+				break;
+			case 2:
+				this.up_output = this.down_output;
+				this.down_output = temp_status;
+				temp_status = this.left_output;
+				this.left_output = this.right_output;
+				this.right_output = temp_status;
+				break;
+			case 3:
+				this.up_output = this.right_output;
+				this.right_output = this.down_output;
+				this.down_output = this.left_output;
+				this.left_output = temp_status;
+				break;
+			default:
+			}
 		}
 	}
 	,__class__: Diode_$Module
@@ -49897,7 +49944,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 936551;
+	this.version = 464233;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -99367,7 +99414,7 @@ Gui.idcount = 0;
 Gui.newid = "";
 Gui.debugmode = false;
 Level_$Globals.level_sheet_name = "level_sheet";
-Pattern_$Level.required_repetitions = 10;
+Pattern_$Level.required_repetitions = 5;
 Main.module_side_length = 64;
 Main.half_module_length = 32;
 openfl_text_Font.__fontByName = new haxe_ds_StringMap();
