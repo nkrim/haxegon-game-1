@@ -45,6 +45,8 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	var pattern:Array<Array<Int>>;
 	var read_pattern:Array<Array<Bool>>;
 	var succesful_repetitions:Int;
+	var current_index:Int;
+	var current_run_failed:Bool;
 	var completed:Bool;
 	var grid_state:Array<Array<Wire_Module>>;
 	// Computed vars
@@ -55,6 +57,8 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		this.pattern = pattern;
 		this.read_pattern = new Array<Array<Bool>>();
 		this.succesful_repetitions = 0;
+		this.current_index = 0;
+		this.current_run_failed = false;
 		this.completed = false;
 		this.grid_state = null;
 		// Compute max_line_width
@@ -84,11 +88,7 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	}
 
 	public function is_succesful() {
-		var success = this.succesful_repetitions >= required_repetitions;
-		if(!success)
-			return false;
-		this.completed = true;
-		return true;
+		return this.succesful_repetitions >= required_repetitions;
 	}
 
 	public function has_been_completed() {
@@ -98,41 +98,28 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 	public function restart_level() {
 		read_pattern = new Array<Array<Bool>>();
 		succesful_repetitions = 0;
+		current_index = 0;
+		current_run_failed = false;
 	}
 
 	/* Universal_Signal_Reciever Implementation
 	--------------------------------- */
 	public function recieve_all_signals(channels:Array<Int>, game:Main) {
-		if(is_succesful())
+		// Exit if already failed or succesful
+		if(current_run_failed || is_succesful())
 			return;
 
-		var current_index = -1;
-		// If read_pattern matches pattern, go to next repetition and start a new read_pattern
-		if(read_pattern_matches()) {
-			succesful_repetitions++;
-			// If succesful, return out
-			if(is_succesful())
-				return;
+		// If read_pattern is at the end of the sequence, reset it for the next iteration
+		if(read_pattern.length == pattern.length) {
 			// Reset read_pattern for next iteration
 			read_pattern = new Array<Array<Bool>>();
-			// Insert new parallel array for the first pattern_line, initialized to full false
-			read_pattern.push([for (i in 0...pattern[0].length) false]);
 			current_index = 0;
-		}
-		// Otherwise, if read_pattern is shorter than pattern, go on to the next line
-		else if(read_pattern.length < pattern.length) {
-			current_index = read_pattern.length;
-			// Insert new parallel array for the current pattern_line, initialized to full false
-			read_pattern.push([for (i in 0...pattern[current_index].length) false]);
-		}
-		// Otherwise, failed, just let it run
-		else {
-			return;
 		}
 
 		// Process incoming signals
 		var pattern_line = pattern[current_index];
-		var read_pattern_line = read_pattern[current_index];
+		// Create new parallel array for the current pattern_line, initialized to full false
+		var read_pattern_line = [for (i in 0...pattern[current_index].length) false];
 		var num_valid_channels = 0;
 		for(i in 0...pattern_line.length) {
 			var current_channel = pattern_line[i];
@@ -146,6 +133,24 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		if(num_valid_channels < channels.length) {
 			read_pattern_line.push(false);
 		}
+
+		// Push the pattern line onto the read_pattern array
+		read_pattern.push(read_pattern_line);
+
+		// If read_pattern matches pattern, incremenet succesful_repetitions
+		if(read_pattern_matches()) {
+			succesful_repetitions++;
+			// If the solution is succesful in this current run, mark the level as completed
+			if(is_succesful())
+				this.completed = true;
+		}
+		// Otherwise, if read_pattern is shorter than pattern, go on to the next line
+		else if(read_pattern.length < pattern.length) {
+			current_index = read_pattern.length;
+		}
+		// Otherwise, failed, so set current_run_failed
+		else
+			current_run_failed = true;
 	}
 
 	/* Rendering

@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","59");
+		_this.setReserved("build","60");
 	} else {
-		_this.h["build"] = "59";
+		_this.h["build"] = "60";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5862,6 +5862,8 @@ var Pattern_$Level = function(pattern) {
 	this.pattern = pattern;
 	this.read_pattern = [];
 	this.succesful_repetitions = 0;
+	this.current_index = 0;
+	this.current_run_failed = false;
 	this.completed = false;
 	this.grid_state = null;
 	this.max_line_width = 0;
@@ -5881,6 +5883,8 @@ Pattern_$Level.prototype = {
 	pattern: null
 	,read_pattern: null
 	,succesful_repetitions: null
+	,current_index: null
+	,current_run_failed: null
 	,completed: null
 	,grid_state: null
 	,max_line_width: null
@@ -5898,12 +5902,7 @@ Pattern_$Level.prototype = {
 		this.grid_state = grid;
 	}
 	,is_succesful: function() {
-		var success = this.succesful_repetitions >= Pattern_$Level.required_repetitions;
-		if(!success) {
-			return false;
-		}
-		this.completed = true;
-		return true;
+		return this.succesful_repetitions >= Pattern_$Level.required_repetitions;
 	}
 	,has_been_completed: function() {
 		return this.completed;
@@ -5911,57 +5910,50 @@ Pattern_$Level.prototype = {
 	,restart_level: function() {
 		this.read_pattern = [];
 		this.succesful_repetitions = 0;
+		this.current_index = 0;
+		this.current_run_failed = false;
 	}
 	,recieve_all_signals: function(channels,game) {
-		if(this.is_succesful()) {
+		if(this.current_run_failed || this.is_succesful()) {
 			return;
 		}
-		var current_index = -1;
-		if(this.read_pattern_matches()) {
-			this.succesful_repetitions++;
-			if(this.is_succesful()) {
-				return;
-			}
+		if(this.read_pattern.length == this.pattern.length) {
 			this.read_pattern = [];
-			var tmp = this.read_pattern;
-			var _g = [];
-			var _g2 = 0;
-			var _g1 = this.pattern[0].length;
-			while(_g2 < _g1) {
-				var i = _g2++;
-				_g.push(false);
-			}
-			tmp.push(_g);
-			current_index = 0;
-		} else if(this.read_pattern.length < this.pattern.length) {
-			current_index = this.read_pattern.length;
-			var tmp1 = this.read_pattern;
-			var _g3 = [];
-			var _g21 = 0;
-			var _g11 = this.pattern[current_index].length;
-			while(_g21 < _g11) {
-				var i1 = _g21++;
-				_g3.push(false);
-			}
-			tmp1.push(_g3);
-		} else {
-			return;
+			this.current_index = 0;
 		}
-		var pattern_line = this.pattern[current_index];
-		var read_pattern_line = this.read_pattern[current_index];
+		var pattern_line = this.pattern[this.current_index];
+		var _g = [];
+		var _g2 = 0;
+		var _g1 = this.pattern[this.current_index].length;
+		while(_g2 < _g1) {
+			var i = _g2++;
+			_g.push(false);
+		}
+		var read_pattern_line = _g;
 		var num_valid_channels = 0;
-		var _g12 = 0;
-		var _g4 = pattern_line.length;
-		while(_g12 < _g4) {
-			var i2 = _g12++;
-			var current_channel = pattern_line[i2];
+		var _g21 = 0;
+		var _g11 = pattern_line.length;
+		while(_g21 < _g11) {
+			var i1 = _g21++;
+			var current_channel = pattern_line[i1];
 			if(channels.indexOf(current_channel) >= 0) {
-				read_pattern_line[i2] = true;
+				read_pattern_line[i1] = true;
 				++num_valid_channels;
 			}
 		}
 		if(num_valid_channels < channels.length) {
 			read_pattern_line.push(false);
+		}
+		this.read_pattern.push(read_pattern_line);
+		if(this.read_pattern_matches()) {
+			this.succesful_repetitions++;
+			if(this.is_succesful()) {
+				this.completed = true;
+			}
+		} else if(this.read_pattern.length < this.pattern.length) {
+			this.current_index = this.read_pattern.length;
+		} else {
+			this.current_run_failed = true;
 		}
 	}
 	,draw_level: function(simulating) {
@@ -50009,7 +50001,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 838994;
+	this.version = 483070;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

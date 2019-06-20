@@ -1,4 +1,8 @@
 TODO
 ====================
 
-- Store grid layout in memory so switching levels doesn't delete the solution
+- Adjust pattern_level's recieve_all_signals function to finish iteration on the correct tick
+
+- More level types
+- Serialization of grids
+- Better cell settings menu
