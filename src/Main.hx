@@ -192,6 +192,8 @@ class Main {
   		levels.push(new Pattern_Level([[0],[1],[2],[3]]));
   		levels.push(new Pattern_Level([[0],[0,1],[0,2],[0,3]]));
   		levels.push(new Pattern_Level([[0,1],[1,2],[0,1,2]]));
+  		levels.push(new Pattern_Level([[0],[0,0],[0,0,0],[0,0]]));
+  		levels.push(new Pattern_Level([[0],[1,1],[0,0,0],[1,1]]));
   		levels.push(new Pattern_Level([[0,1,4],[2,3,4],[0,2,4],[1,3,4]]));
   		levels.push(new Pattern_Level([[0,1],[2,3],[0,2],[1,3]]));
   		levels.push(new Pattern_Level([[0,1,2],[1,2,3],[2,3,4],[3,4,5]]));

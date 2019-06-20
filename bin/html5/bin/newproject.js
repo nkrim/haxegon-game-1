@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","55");
+		_this.setReserved("build","56");
 	} else {
-		_this.h["build"] = "55";
+		_this.h["build"] = "56";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -6366,6 +6366,8 @@ Main.prototype = {
 		levels.push(new Pattern_$Level([[0],[1],[2],[3]]));
 		levels.push(new Pattern_$Level([[0],[0,1],[0,2],[0,3]]));
 		levels.push(new Pattern_$Level([[0,1],[1,2],[0,1,2]]));
+		levels.push(new Pattern_$Level([[0],[0,0],[0,0,0],[0,0]]));
+		levels.push(new Pattern_$Level([[0],[1,1],[0,0,0],[1,1]]));
 		levels.push(new Pattern_$Level([[0,1,4],[2,3,4],[0,2,4],[1,3,4]]));
 		levels.push(new Pattern_$Level([[0,1],[2,3],[0,2],[1,3]]));
 		levels.push(new Pattern_$Level([[0,1,2],[1,2,3],[2,3,4],[3,4,5]]));
@@ -49944,7 +49946,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 464233;
+	this.version = 849911;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
