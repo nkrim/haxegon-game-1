@@ -111,6 +111,15 @@ class Signal_Manager {
 			return false;
 		return this.universal_recievers.remove(reciever);
 	}
+	public function remove_all_from_wire_module(wm:Wire_Module) {
+		var reciever = cast_to_reciever(wm);
+		if(reciever != null)
+			remove_reciever(reciever.get_channel(), reciever);
+		if(wm.toggle_aug != null)
+			remove_aug_reciever(wm.toggle_aug.get_channel(), wm.toggle_aug);
+		if(wm.rotator_aug != null)
+			remove_aug_reciever(wm.rotator_aug.get_channel(), wm.rotator_aug);
+	}
 	/* Interactions
 	--------------- */
 	static var int32_max:Int32 = 0xffffffff;
@@ -185,6 +194,8 @@ class Signal_Manager {
 			data.aug_recievers = new Array<Augmentation>();
 		}
 		this.universal_recievers = new Array<Universal_Signal_Reciever>();
+		// Reset tick_channel_signals even though it should already be empty wherever this is called
+		this.tick_channel_signals = [for (c in Signal_Manager.channels) (0:Int32)];
 	}
 
 	/* Helper Procedures

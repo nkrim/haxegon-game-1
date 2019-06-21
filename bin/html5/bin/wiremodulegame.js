@@ -894,9 +894,9 @@ ApplicationMain.create = function(config) {
 	ManifestResources.init(config);
 	var _this = app.meta;
 	if(__map_reserved["build"] != null) {
-		_this.setReserved("build","60");
+		_this.setReserved("build","61");
 	} else {
-		_this.h["build"] = "60";
+		_this.h["build"] = "61";
 	}
 	var _this1 = app.meta;
 	if(__map_reserved["company"] != null) {
@@ -5917,30 +5917,46 @@ Pattern_$Level.prototype = {
 		if(this.current_run_failed || this.is_succesful()) {
 			return;
 		}
+		var _g = [];
+		var _g2 = 0;
+		var _g1 = Signal_$Manager.channels.length;
+		while(_g2 < _g1) {
+			var i = _g2++;
+			_g.push(0);
+		}
+		var channel_freq = _g;
+		var _g11 = 0;
+		while(_g11 < channels.length) {
+			var c = channels[_g11];
+			++_g11;
+			channel_freq[c]++;
+		}
 		if(this.read_pattern.length == this.pattern.length) {
 			this.read_pattern = [];
 			this.current_index = 0;
 		}
 		var pattern_line = this.pattern[this.current_index];
-		var _g = [];
-		var _g2 = 0;
-		var _g1 = this.pattern[this.current_index].length;
-		while(_g2 < _g1) {
-			var i = _g2++;
-			_g.push(false);
+		var _g12 = [];
+		var _g3 = 0;
+		var _g21 = pattern_line.length;
+		while(_g3 < _g21) {
+			var i1 = _g3++;
+			_g12.push(false);
 		}
-		var read_pattern_line = _g;
+		var read_pattern_line = _g12;
 		var num_valid_channels = 0;
-		var _g21 = 0;
-		var _g11 = pattern_line.length;
-		while(_g21 < _g11) {
-			var i1 = _g21++;
-			var current_channel = pattern_line[i1];
-			if(channels.indexOf(current_channel) >= 0) {
-				read_pattern_line[i1] = true;
+		var _g31 = 0;
+		var _g22 = pattern_line.length;
+		while(_g31 < _g22) {
+			var i2 = _g31++;
+			var current_channel = pattern_line[i2];
+			if(channel_freq[current_channel] > 0) {
+				read_pattern_line[i2] = true;
 				++num_valid_channels;
+				channel_freq[current_channel]--;
 			}
 		}
+		haxe_Log.trace(read_pattern_line,{ fileName : "Level.hx", lineNumber : 137, className : "Pattern_Level", methodName : "recieve_all_signals"});
 		if(num_valid_channels < channels.length) {
 			read_pattern_line.push(false);
 		}
@@ -6284,9 +6300,9 @@ Main.prototype = {
 		haxegon_Text.set_size(8);
 		haxegon_Gfx.clearcolor = 2236962;
 		this.reset_grid();
+		this.signal_manager = new Signal_$Manager();
 		this.level_manager = new Level_$Manager(this.generate_levels());
 		this.level = this.level_manager.get_level();
-		this.signal_manager = new Signal_$Manager();
 		this.level.load_level(this);
 		Wire_$Module.load_module_spritesheet();
 		Tooltip.load_tooltip_spritesheet();
@@ -6332,6 +6348,7 @@ Main.prototype = {
 		if(!this.simulating) {
 			this.handle_wire_drawing_and_hovering();
 		}
+		this.handle_grid_keypresses();
 		this.handle_tooltip_interaction();
 		this.level_manager.draw_level_selector(this,this.simulating);
 		if(this.level != null) {
@@ -6500,6 +6517,10 @@ Main.prototype = {
 		this.wire_grid = _g;
 	}
 	,change_level: function(new_level) {
+		if(this.simulating) {
+			haxe_Log.trace("WARNING: change_level() called while simulating",{ fileName : "Main.hx", lineNumber : 303, className : "Main", methodName : "change_level"});
+			return false;
+		}
 		if(new_level == null) {
 			return false;
 		}
@@ -6576,6 +6597,25 @@ Main.prototype = {
 		}
 		if(this.tooltip.is_showing()) {
 			this.tooltip.handle_internal_interaction(this);
+		}
+	}
+	,handle_grid_keypresses: function() {
+		if(this.simulating || this.tooltip.hovering()) {
+			return;
+		}
+		var hover_cell = this.get_hover_cell();
+		if(hover_cell == null) {
+			return;
+		}
+		var wm = this.get_module_from_cell(hover_cell);
+		var any_valid_key_pressed = false;
+		if(haxegon_Input.justpressed(haxegon_Key.BACKSPACE) || haxegon_Input.justpressed(haxegon_Key.DELETE)) {
+			any_valid_key_pressed = true;
+			this.signal_manager.remove_all_from_wire_module(wm);
+			this.wire_grid[hover_cell.r][hover_cell.c] = new Wire_$Module(hover_cell);
+		}
+		if(any_valid_key_pressed && this.tooltip.is_showing()) {
+			this.tooltip.set_module(null);
 		}
 	}
 	,drawing_wires_initial_click: null
@@ -6766,10 +6806,11 @@ Main.prototype = {
 	,held_tool: null
 	,handle_and_draw_toolbar: function(simulating) {
 		if(this.holding_tool && haxegon_Mouse.leftreleased() && haxegon_Mouse.get_y() >= this.grid_y && haxegon_Mouse.get_x() >= this.grid_x) {
-			var target_cell = { r : (haxegon_Mouse.get_y() - this.grid_y) / Main.module_side_length | 0, c : (haxegon_Mouse.get_x() - this.grid_x) / Main.module_side_length | 0};
-			var target_wm = this.get_module_from_cell(target_cell);
-			if(target_wm != null) {
-				this.wire_grid[target_cell.r][target_cell.c] = this.new_module_from_tool(this.held_tool,target_cell,target_wm);
+			var hover_cell = this.get_hover_cell();
+			var hover_wm = this.get_module_from_cell(hover_cell);
+			if(hover_wm != null) {
+				this.signal_manager.remove_all_from_wire_module(hover_wm);
+				this.wire_grid[hover_cell.r][hover_cell.c] = this.new_module_from_tool(this.held_tool,hover_cell,hover_wm);
 			}
 		}
 		if(this.holding_tool && !haxegon_Mouse.leftheld()) {
@@ -8194,6 +8235,18 @@ Signal_$Manager.prototype = {
 		}
 		return HxOverrides.remove(this.universal_recievers,reciever);
 	}
+	,remove_all_from_wire_module: function(wm) {
+		var reciever = Signal_$Manager.cast_to_reciever(wm);
+		if(reciever != null) {
+			this.remove_reciever(reciever.get_channel(),reciever);
+		}
+		if(wm.toggle_aug != null) {
+			this.remove_aug_reciever(wm.toggle_aug.get_channel(),wm.toggle_aug);
+		}
+		if(wm.rotator_aug != null) {
+			this.remove_aug_reciever(wm.rotator_aug.get_channel(),wm.rotator_aug);
+		}
+	}
 	,send_signal_to_channel: function(channel) {
 		if(this.channel_data_map[channel].queued_signals != Signal_$Manager.int32_max) {
 			var ret = this.channel_data_map[channel].queued_signals++;
@@ -8303,6 +8356,15 @@ Signal_$Manager.prototype = {
 			data.aug_recievers = [];
 		}
 		this.universal_recievers = [];
+		var _g2 = [];
+		var _g11 = 0;
+		var _g21 = Signal_$Manager.channels;
+		while(_g11 < _g21.length) {
+			var c = _g21[_g11];
+			++_g11;
+			_g2.push(0);
+		}
+		this.tick_channel_signals = _g2;
 	}
 	,__class__: Signal_$Manager
 };
@@ -50001,7 +50063,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 483070;
+	this.version = 551080;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];

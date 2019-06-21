@@ -109,6 +109,11 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		if(current_run_failed || is_succesful())
 			return;
 
+		// Make frequency map of channels
+		var channel_freq = [for (i in 0...Signal_Manager.channels.length) 0];
+		for(c in channels) 
+			channel_freq[c]++;
+
 		// If read_pattern is at the end of the sequence, reset it for the next iteration
 		if(read_pattern.length == pattern.length) {
 			// Reset read_pattern for next iteration
@@ -119,15 +124,17 @@ class Pattern_Level implements Level implements Universal_Signal_Reciever {
 		// Process incoming signals
 		var pattern_line = pattern[current_index];
 		// Create new parallel array for the current pattern_line, initialized to full false
-		var read_pattern_line = [for (i in 0...pattern[current_index].length) false];
+		var read_pattern_line = [for (i in 0...pattern_line.length) false];
 		var num_valid_channels = 0;
 		for(i in 0...pattern_line.length) {
 			var current_channel = pattern_line[i];
-			if(channels.indexOf(current_channel) >= 0) {
+			if(channel_freq[current_channel] > 0) {
 				read_pattern_line[i] = true;
 				num_valid_channels++;
+				channel_freq[current_channel]--;
 			}
 		}
+		trace(read_pattern_line);
 		// If num_valid_channels is less than channels.length, then there were extraneous channel signals
 		// Mark this with an extra `false` at the end of the read_pattern_line
 		if(num_valid_channels < channels.length) {

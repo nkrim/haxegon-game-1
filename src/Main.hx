@@ -64,11 +64,11 @@ class Main {
 
 	  	// Init wire_grid with a fresh board
 	  	reset_grid();
-	  	// wire_grid = [for (r in 0...grid_height) [for (c in 0...grid_width) new Wire_Module({r:r,c:c})]];
 
+	  	// Setup signal and level managers
+	  	signal_manager = new Signal_Manager();
 	  	level_manager = new Level_Manager(generate_levels());
 	  	level = level_manager.get_level();
-	  	signal_manager = new Signal_Manager();
 
 	  	level.load_level(this);
 
@@ -129,6 +129,8 @@ class Main {
 	  	if(!simulating) {
 	  		handle_wire_drawing_and_hovering();
 	  	}
+
+	  	handle_grid_keypresses();
 
 	  	handle_tooltip_interaction();
 
@@ -296,11 +298,19 @@ class Main {
   	}
 
   	public function change_level(new_level:Level):Bool {
+  		// This shouldn't be called while simulating, trace error
+  		if(simulating) {
+  			trace("WARNING: change_level() called while simulating");
+  			return false;
+  		}
+
   		if(new_level == null)
   			return false;
+
+  		// Unload the level and give it the current grid state to store
   		this.level.unload_level(this);
 		this.level.set_grid_state(this.wire_grid);
-		// Set new level
+		// Set, configure, and load the new level
 		this.level = new_level;
 		var level_grid_state = this.level.get_grid_state();
 		if(level_grid_state != null)
@@ -412,6 +422,36 @@ class Main {
   		if(tooltip.is_showing()) {
   			tooltip.handle_internal_interaction(this);
   		}
+  	}
+
+  	// Keyboard shortcuts
+  	function handle_grid_keypresses() {
+  		// If simulating or hovering tooltip, do nothing
+  		if(simulating || tooltip.hovering())
+  			return;
+
+  		// Check if cursor is over a cell
+  		var hover_cell = get_hover_cell();
+  		if(hover_cell == null)
+  			return;
+  		var wm = get_module_from_cell(hover_cell);
+
+  		// Flag to check if any action has occured 
+  		var any_valid_key_pressed = false;
+
+  		// Check backspace/delete key for wiping cell
+  		if(Input.justpressed(Key.BACKSPACE) || Input.justpressed(Key.DELETE)) {
+  			any_valid_key_pressed = true;
+
+  			// Remove recievers and augs from signal manager
+  			signal_manager.remove_all_from_wire_module(wm);
+  			// Wipe cell from grid
+  			wire_grid[hover_cell.r][hover_cell.c] = new Wire_Module(hover_cell);
+  		}
+
+  		// If any valid key was pressed, close the tooltip
+  		if(any_valid_key_pressed && tooltip.is_showing())
+  			tooltip.set_module(null);
   	}
 
   	/* WIRE DRAWING RULES
@@ -703,10 +743,14 @@ class Main {
   	function handle_and_draw_toolbar(simulating:Bool) {
   		// Handle tool dropping
   		if(holding_tool && Mouse.leftreleased() && Mouse.y >= grid_y && Mouse.x >= grid_x) {
-  			var target_cell = { r: Std.int((Mouse.y - grid_y)/module_side_length), c: Std.int((Mouse.x - grid_x)/module_side_length) };
-  			var target_wm = get_module_from_cell(target_cell);
-  			if(target_wm != null) {
-  				wire_grid[target_cell.r][target_cell.c] = new_module_from_tool(held_tool, target_cell, target_wm);
+  			// var target_cell = { r: Std.int((Mouse.y - grid_y)/module_side_length), c: Std.int((Mouse.x - grid_x)/module_side_length) };
+  			var hover_cell = get_hover_cell();
+  			var hover_wm = get_module_from_cell(hover_cell);
+  			if(hover_wm != null) {
+  				// Clear wm from signal_manager
+  				signal_manager.remove_all_from_wire_module(hover_wm);
+  				// Replace hover_wm
+  				wire_grid[hover_cell.r][hover_cell.c] = new_module_from_tool(held_tool, hover_cell, hover_wm);
   			}
   		}
   		// Backup tool_holding stop

@@ -1,8 +1,14 @@
+====================
 TODO
 ====================
-
-- Adjust pattern_level's recieve_all_signals function to finish iteration on the correct tick
 
 - More level types
 - Serialization of grids
 - Better cell settings menu
+
+
+====================
+BUGS
+====================
+
+- Unknown bug that sometimes causes power not to spread properly (seems to be misunderstanding about which wires actually exist in a cell)
